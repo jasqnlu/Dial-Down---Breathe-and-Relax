@@ -113,6 +113,19 @@ enum SessionRecorder {
             Logger(subsystem: "com.jasonlu.breath", category: "sessionRecorder").warning("Save failed: \(error)")
         }
 
+        // Cancels today's streak-risk notification now that a session was
+        // just logged (scheduleStreakRiskCheck no-ops the reschedule since
+        // isStreakAtRisk is false right after recording, but always clears
+        // any previously pending request first). Matches the
+        // notificationsEnabled gate TodayView's reschedule uses.
+        if UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? true,
+           let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first {
+            let hour = UserDefaults.standard.object(forKey: "reminderHour") as? Int ?? 8
+            Task {
+                await NotificationService.shared.scheduleStreakRiskCheck(profile: profile, hour: hour)
+            }
+        }
+
         // HealthKit — no-op unless the user connected Apple Health in Settings;
         // never prompts here.
         Task {
