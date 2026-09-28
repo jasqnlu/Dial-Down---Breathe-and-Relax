@@ -19,6 +19,7 @@ struct TodayView: View {
     @Query private var exercises: [Exercise]
     @Query private var profiles: [UserProfile]
     @Query private var allRoutines: [Routine]
+    @Query private var sessions: [Session]
 
     /// Only the current account's routines — see `Routine.ownerID`.
     private var routines: [Routine] {
@@ -166,8 +167,36 @@ struct TodayView: View {
         return recommended.isEmpty ? Array(exercises.prefix(4)) : recommended
     }
 
+    /// Muscle groups under-trained in the last `ActivityInsightsEngine`
+    /// window, used to nudge `forYouExercises`' ranking and drive the
+    /// imbalance push notification. See `ActivityInsightsEngine`.
+    private var neglectedMuscleGroups: [String] {
+        let exercisesByID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
+        let scores = ActivityInsightsEngine.coverageScores(sessions: sessions, exercisesByID: exercisesByID)
+        return ActivityInsightsEngine.neglectedGroups(from: scores, threshold: 0.5)
+    }
+
     private var forYouExercises: [Exercise] {
-        GoalMeta.recommend(from: exercises, activeGoalIDs: activeGoalIDs, limit: 8)
+        GoalMeta.recommend(from: exercises, activeGoalIDs: activeGoalIDs, limit: 8, neglectedGroups: neglectedMuscleGroups)
+    }
+
+    /// Rides on the existing "Daily Reminders" toggle (`notificationsEnabled`)
+    /// rather than a separate opt-in for v1. Re-evaluated on every appearance
+    /// of Today so a session recorded elsewhere (or the passage of a day)
+    /// updates what's scheduled.
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    @AppStorage("reminderHour") private var reminderHour = 8
+
+    private func rescheduleActivityInsightNotifications(for profile: UserProfile) {
+        guard notificationsEnabled else {
+            NotificationService.shared.cancelInsightNotifications()
+            return
+        }
+        let groups = neglectedMuscleGroups
+        Task {
+            await NotificationService.shared.scheduleStreakRiskCheck(profile: profile, hour: reminderHour)
+            await NotificationService.shared.scheduleImbalanceSummary(neglectedGroups: groups, weekday: 1, hour: reminderHour)
+        }
     }
 
     /// Personalised recommendations for the rotating carousel, keyed off the
@@ -361,6 +390,7 @@ struct TodayView: View {
                 if broken != nil {
                     try? modelContext.save()
                 }
+                rescheduleActivityInsightNotifications(for: profile)
             }
         }
     }
