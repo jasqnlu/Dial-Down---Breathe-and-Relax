@@ -181,8 +181,50 @@ struct GoalMeta {
     /// Interleaves exercises from each active goal so all goals contribute
     /// equally, deduped, up to `limit`. Shared by ForYouSection and the
     /// widget's quick-session deep link.
-    static func recommend(from allExercises: [Exercise], activeGoalIDs: Set<String>, limit: Int) -> [Exercise] {
-        let activeGoals = GoalMeta.all.filter { activeGoalIDs.contains($0.id) }
+    static func recommend(
+        from allExercises: [Exercise], activeGoalIDs: Set<String>, limit: Int, goals: [GoalMeta] = GoalMeta.all
+    ) -> [Exercise] {
+        Array(candidatePool(from: allExercises, activeGoalIDs: activeGoalIDs, goals: goals).prefix(limit))
+    }
+
+    /// Same candidate pool as `recommend`, but re-ranked with a neglect
+    /// boost: exercises touching a currently-neglected muscle group
+    /// (`ActivityInsightsEngine.neglectedGroups`) move up in the ranking, so
+    /// under-trained areas surface in "Recommended for You" without
+    /// overriding the user's chosen goals outright. `finalScore =
+    /// positionScore + neglectWeight * neglectIndicator` — a plain linear
+    /// weighted sum, not a fitted model. `neglectWeight` defaults low
+    /// (0.4) so goal-tag order still dominates; it only nudges ranking.
+    static func recommend(
+        from allExercises: [Exercise],
+        activeGoalIDs: Set<String>,
+        limit: Int,
+        neglectedGroups: [String],
+        neglectWeight: Double = 0.4,
+        goals: [GoalMeta] = GoalMeta.all
+    ) -> [Exercise] {
+        let pool = candidatePool(from: allExercises, activeGoalIDs: activeGoalIDs, goals: goals)
+        guard !pool.isEmpty else { return [] }
+        guard !neglectedGroups.isEmpty, neglectWeight != 0 else { return Array(pool.prefix(limit)) }
+
+        let count = pool.count
+        let scored = pool.enumerated().map { index, exercise -> (exercise: Exercise, score: Double, index: Int) in
+            // Earlier position in goal order scores higher; last place scores 0.
+            let positionScore = count > 1 ? 1.0 - (Double(index) / Double(count - 1)) : 1.0
+            let isNeglected = exercise.targetBodyParts.contains { part in
+                neglectedGroups.contains { part.localizedCaseInsensitiveContains($0) }
+            }
+            let neglectIndicator = isNeglected ? 1.0 : 0.0
+            return (exercise, positionScore + neglectWeight * neglectIndicator, index)
+        }
+        let ranked = scored.sorted { lhs, rhs in
+            lhs.score != rhs.score ? lhs.score > rhs.score : lhs.index < rhs.index
+        }
+        return Array(ranked.prefix(limit).map(\.exercise))
+    }
+
+    private static func candidatePool(from allExercises: [Exercise], activeGoalIDs: Set<String>, goals: [GoalMeta]) -> [Exercise] {
+        let activeGoals = goals.filter { activeGoalIDs.contains($0.id) }
         guard !activeGoals.isEmpty else { return [] }
         let byName = Dictionary(grouping: allExercises, by: \.name).compactMapValues(\.first)
 
@@ -193,7 +235,7 @@ struct GoalMeta {
         }
 
         var index = 0
-        while result.count < limit {
+        while true {
             var addedAny = false
             for list in goalLists where index < list.count {
                 let ex = list[index]
