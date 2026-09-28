@@ -160,6 +160,7 @@ struct ProfileSettingsTab: View {
                             }
                         } else {
                             NotificationService.shared.cancelReminders()
+                            NotificationService.shared.cancelInsightNotifications()
                             UIApplication.shared.unregisterForRemoteNotifications()
                             if SupabaseService.isConfigured {
                                 try? await SupabaseService.shared.deletePushToken()
