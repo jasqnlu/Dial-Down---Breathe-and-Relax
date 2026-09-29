@@ -114,3 +114,20 @@ repo's `verify` skill (launch-arg state injection).
 `Services/SupabaseDTOs.swift`, `Services/SessionRecorder.swift`,
 `Breath__Relax___StretchApp.swift`, `Views/Profile/DataExportView.swift`,
 a new Supabase migration, and `GamificationServiceTests.swift`.
+
+## Amendments (found while writing the plan)
+
+- **Saver count is not max-merged.** `streakFreezeTokens` goes down when a saver
+  is used, so the "max wins" pull merge would resurrect used savers. Instead the
+  remote count is adopted only on a brand-new device (no local progress);
+  otherwise the local value is authoritative and is uploaded. `pointsSpent`
+  (monotonic) is max-merged as designed.
+- **Migration location.** The repo has no migrations folder; schema changes are
+  appended to `supabase_schema.sql` as `alter table … add column if not exists`.
+  The new lines are written there and not applied.
+- **Sync fields are optional** on `RemoteProfile` (`nil` is omitted from the
+  upload body) so older rows/clients neither fail to decode nor overwrite the
+  values.
+- The existing test `freezeTokensAccumulateUncapped` is renamed to
+  `freezeTokensAccumulateUpToCap`; its expectation (3 after 21 sessions) is
+  unchanged.
