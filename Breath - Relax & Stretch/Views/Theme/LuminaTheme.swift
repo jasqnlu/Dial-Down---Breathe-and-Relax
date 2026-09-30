@@ -38,6 +38,14 @@ extension Color {
     static let luminaOnSurfaceVariant = Color(UIColor.lumina(light: 0x3D4946, dark: 0xBCC9C5))
     static let luminaOutline          = Color(UIColor.lumina(light: 0xE1E3E4, dark: 0x2E3835))
     static let luminaGradientStart    = Color(UIColor.lumina(light: 0xFFCB84, dark: 0xC97A2E))
+
+    // Dial Down logo palette (Branding/logo-kit/GUIDELINES.md). The lobe
+    // gradient is fixed in both modes; only the head flips so it keeps
+    // contrast against the surface behind it.
+    static let brandEmber             = Color(UIColor(hex: 0xC75F0E))
+    static let brandAmber             = Color(UIColor(hex: 0xF59A3A))
+    static let brandGlow              = Color(UIColor(hex: 0xFFC978))
+    static let brandLogoHead          = Color(UIColor.lumina(light: 0xC75F0E, dark: 0xFFE2B0))
     static let luminaGradientEnd      = Color(UIColor.lumina(light: 0xD9701A, dark: 0x8A4008))
 }
 
