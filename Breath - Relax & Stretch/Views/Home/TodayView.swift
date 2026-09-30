@@ -342,6 +342,16 @@ struct TodayView: View {
                 Button("Restore Streak (\(profile.streakFreezeTokens) left)") {
                     GamificationService.restoreStreak(for: profile)
                     try? modelContext.save()
+                    ProfileSyncService.upload(profile)
+                    brokenStreakValue = nil
+                }
+            }
+            if let profile, profile.streakFreezeTokens == 0, GamificationService.canBuySaver(profile) {
+                Button("Buy & Restore (\(GamificationService.saverCost) pts)") {
+                    if GamificationService.buyAndRestore(for: profile) {
+                        try? modelContext.save()
+                        ProfileSyncService.upload(profile)
+                    }
                     brokenStreakValue = nil
                 }
             }

@@ -21,6 +21,7 @@ struct GamificationServiceTests {
     private func makeProfile(streak: Int = 0,
                              minutes: Int = 0,
                              points: Int = 0,
+                             pointsSpent: Int = 0,
                              badges: [String] = [],
                              lastSession: Date? = nil,
                              pendingStreakBreak: Int = 0,
@@ -36,6 +37,7 @@ struct GamificationServiceTests {
         p.streak = streak
         p.totalMinutes = minutes
         p.totalPoints = points
+        p.pointsSpent = pointsSpent
         p.badges = badges
         p.lastSessionDate = lastSession
         p.pendingStreakBreak = pendingStreakBreak
@@ -369,11 +371,101 @@ struct GamificationServiceTests {
         #expect(p.sessionsTowardNextFreezeToken == 0)
     }
 
-    @Test func freezeTokensAccumulateUncapped() {
+    @Test func freezeTokensAccumulateUpToCap() {
         let p = makeProfile(lastSession: noon(daysAgo: 1))
         for _ in 0..<21 {
             GamificationService.updateStreak(for: p)
         }
         #expect(p.streakFreezeTokens == 3)
+    }
+
+    // MARK: - Buying streak savers
+
+    @Test func spendablePointsIsTotalMinusSpent() {
+        let p = makeProfile(points: 400, pointsSpent: 150)
+        #expect(p.spendablePoints == 250)
+    }
+
+    @Test func spendablePointsClampsAtZero() {
+        let p = makeProfile(points: 100, pointsSpent: 250)
+        #expect(p.spendablePoints == 0)
+    }
+
+    @Test func buySaverDeductsPointsAndAddsToken() {
+        let p = makeProfile(points: 400)
+        #expect(GamificationService.buySaver(for: p) == true)
+        #expect(p.pointsSpent == 150)
+        #expect(p.streakFreezeTokens == 1)
+        #expect(p.totalPoints == 400)
+    }
+
+    @Test func buySaverWorksAtExactPrice() {
+        let p = makeProfile(points: 150)
+        #expect(GamificationService.buySaver(for: p) == true)
+        #expect(p.spendablePoints == 0)
+    }
+
+    @Test func buySaverFailsWithoutEnoughPoints() {
+        let p = makeProfile(points: 149)
+        #expect(GamificationService.buySaver(for: p) == false)
+        #expect(p.pointsSpent == 0)
+        #expect(p.streakFreezeTokens == 0)
+    }
+
+    @Test func buySaverFailsAtCap() {
+        let p = makeProfile(points: 1000, streakFreezeTokens: 3)
+        #expect(GamificationService.buySaver(for: p) == false)
+        #expect(p.pointsSpent == 0)
+        #expect(p.streakFreezeTokens == 3)
+    }
+
+    @Test func buyingUpToCapThenBlocked() {
+        let p = makeProfile(points: 1000)
+        #expect(GamificationService.buySaver(for: p))
+        #expect(GamificationService.buySaver(for: p))
+        #expect(GamificationService.buySaver(for: p))
+        #expect(GamificationService.buySaver(for: p) == false)
+        #expect(p.streakFreezeTokens == 3)
+        #expect(p.pointsSpent == 450)
+    }
+
+    @Test func buyingDoesNotChangeBadgeEligibility() {
+        let p = makeProfile(points: 500)
+        GamificationService.buySaver(for: p)
+        let badges = GamificationService.newBadges(for: p)
+        #expect(badges.contains("High Achiever"))
+    }
+
+    @Test func blockReasonValues() {
+        #expect(GamificationService.saverPurchaseBlockReason(makeProfile(points: 1000)) == nil)
+        #expect(GamificationService.saverPurchaseBlockReason(makeProfile(points: 108)) == .needMorePoints(42))
+        #expect(GamificationService.saverPurchaseBlockReason(makeProfile(points: 1000, streakFreezeTokens: 3)) == .atMax)
+        // At the cap wins over insufficient points.
+        #expect(GamificationService.saverPurchaseBlockReason(makeProfile(points: 0, streakFreezeTokens: 3)) == .atMax)
+    }
+
+    @Test func buyAndRestoreRestoresPendingBreak() {
+        let p = makeProfile(points: 200, pendingStreakBreak: 6)
+        #expect(GamificationService.buyAndRestore(for: p) == true)
+        #expect(p.streak == 6)
+        #expect(p.pendingStreakBreak == 0)
+        #expect(p.pointsSpent == 150)
+        #expect(p.streakFreezeTokens == 0) // bought one, spent one
+    }
+
+    @Test func buyAndRestoreFailsWithoutPointsAndKeepsBreakPending() {
+        let p = makeProfile(points: 10, pendingStreakBreak: 6)
+        #expect(GamificationService.buyAndRestore(for: p) == false)
+        #expect(p.pendingStreakBreak == 6)
+        #expect(p.pointsSpent == 0)
+    }
+
+    @Test func freeTokenSkippedAtCapButCounterResets() {
+        let p = makeProfile(lastSession: noon(daysAgo: 1), streakFreezeTokens: 3)
+        for _ in 0..<7 {
+            GamificationService.updateStreak(for: p)
+        }
+        #expect(p.streakFreezeTokens == 3)
+        #expect(p.sessionsTowardNextFreezeToken == 0)
     }
 }

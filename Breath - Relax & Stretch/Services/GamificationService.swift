@@ -56,7 +56,9 @@ struct GamificationService {
         profile.sessionsTowardNextFreezeToken += 1
         if profile.sessionsTowardNextFreezeToken >= 7 {
             profile.sessionsTowardNextFreezeToken = 0
-            profile.streakFreezeTokens += 1
+            if profile.streakFreezeTokens < maxSavers {
+                profile.streakFreezeTokens += 1
+            }
         }
     }
 
@@ -93,6 +95,49 @@ struct GamificationService {
     /// Acknowledges a lost streak without spending a token.
     static func dismissStreakBreak(for profile: UserProfile) {
         profile.pendingStreakBreak = 0
+    }
+
+    // MARK: - Buying Savers
+
+    static let saverCost = 150
+    static let maxSavers = 3
+
+    enum SaverBlockReason: Equatable {
+        case atMax
+        case needMorePoints(Int)
+    }
+
+    /// Why a purchase is blocked, or nil when allowed. Holding the maximum
+    /// takes precedence over being short on points.
+    static func saverPurchaseBlockReason(_ profile: UserProfile) -> SaverBlockReason? {
+        if profile.streakFreezeTokens >= maxSavers { return .atMax }
+        if profile.spendablePoints < saverCost {
+            return .needMorePoints(saverCost - profile.spendablePoints)
+        }
+        return nil
+    }
+
+    static func canBuySaver(_ profile: UserProfile) -> Bool {
+        saverPurchaseBlockReason(profile) == nil
+    }
+
+    /// Spends `saverCost` points for one streak saver. No-op (returns false)
+    /// when blocked. Lifetime `totalPoints` is deliberately left alone.
+    @discardableResult
+    static func buySaver(for profile: UserProfile) -> Bool {
+        guard canBuySaver(profile) else { return false }
+        profile.pointsSpent += saverCost
+        profile.streakFreezeTokens += 1
+        return true
+    }
+
+    /// For the "Streak Lost" alert when the user holds no savers: buy one and
+    /// immediately use it on the pending break. Nothing changes on failure.
+    @discardableResult
+    static func buyAndRestore(for profile: UserProfile) -> Bool {
+        guard profile.pendingStreakBreak > 0, buySaver(for: profile) else { return false }
+        restoreStreak(for: profile)
+        return true
     }
 
     // MARK: - Badges

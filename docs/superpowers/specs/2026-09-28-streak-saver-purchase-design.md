@@ -131,3 +131,20 @@ a new Supabase migration, and `GamificationServiceTests.swift`.
 - The existing test `freezeTokensAccumulateUncapped` is renamed to
   `freezeTokensAccumulateUpToCap`; its expectation (3 after 21 sessions) is
   unchanged.
+
+## Known v1 limitations
+
+- **A purchase on one device does not appear on another.** `pointsSpent` is
+  max-merged, so device B sees fewer spendable points, but B keeps its own saver
+  count (adopted from the server only on a brand-new device). B's next session
+  then uploads its own count. Saver counts are effectively per-device after the
+  first sync.
+- **Two devices buying at the same moment** can lose one purchase (see Error
+  handling).
+- **Legacy holders of more than 3 savers** (the free token was uncapped before
+  this feature) keep their extra savers locally; only `min(count, 3)` is
+  uploaded, because the server column is constrained to 0..3.
+- **Saver sync is a no-op until the `supabase_schema.sql` migration is applied.**
+  Saver fields go in a separate best-effort upsert, so the core profile upload
+  (points, streak, minutes) is unaffected either way.
+- **New strings are English-only** in es/fr/zh-Hans until a translation pass.

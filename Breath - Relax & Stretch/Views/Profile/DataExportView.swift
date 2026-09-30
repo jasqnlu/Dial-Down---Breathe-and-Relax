@@ -252,7 +252,7 @@ struct DataExportView: View {
 
         lines.append("")
         lines.append("# Profile")
-        lines.append("profileID,displayName,totalMinutes,totalPoints,streak,lastSessionDate,badges,streakFreezeTokens,sessionsTowardNextFreezeToken,pendingStreakBreak")
+        lines.append("profileID,displayName,totalMinutes,totalPoints,streak,lastSessionDate,badges,streakFreezeTokens,sessionsTowardNextFreezeToken,pendingStreakBreak,pointsSpent")
         if let p = profileRow {
             lines.append([
                 p.profileID,
@@ -264,7 +264,8 @@ struct DataExportView: View {
                 p.badges.joined(separator: ";"),
                 "\(p.streakFreezeTokens)",
                 "\(p.sessionsTowardNextFreezeToken)",
-                "\(p.pendingStreakBreak)"
+                "\(p.pendingStreakBreak)",
+                "\(p.pointsSpent)"
             ].joined(separator: ","))
         }
 
@@ -315,7 +316,8 @@ struct DataExportView: View {
                 "badges":                         p.badges,
                 "streakFreezeTokens":             p.streakFreezeTokens,
                 "sessionsTowardNextFreezeToken":  p.sessionsTowardNextFreezeToken,
-                "pendingStreakBreak":             p.pendingStreakBreak
+                "pendingStreakBreak":             p.pendingStreakBreak,
+                "pointsSpent":                    p.pointsSpent
             ]
             if let last = p.lastSessionDate { d["lastSessionDate"] = iso.string(from: last) }
             profileDict = d
@@ -385,6 +387,7 @@ private struct ProfileExportRow: Sendable {
     let streakFreezeTokens:            Int
     let sessionsTowardNextFreezeToken: Int
     let pendingStreakBreak:            Int
+    let pointsSpent:                   Int
 
     init(_ p: UserProfile) {
         profileID                     = p.profileID
@@ -397,6 +400,7 @@ private struct ProfileExportRow: Sendable {
         streakFreezeTokens            = p.streakFreezeTokens
         sessionsTowardNextFreezeToken = p.sessionsTowardNextFreezeToken
         pendingStreakBreak            = p.pendingStreakBreak
+        pointsSpent                   = p.pointsSpent
     }
 }
 

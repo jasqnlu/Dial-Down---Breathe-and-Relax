@@ -8,6 +8,9 @@ final class UserProfile {
     var displayName: String = ""
     var totalMinutes: Int = 0
     var totalPoints: Int = 0
+    /// Lifetime points spent on streak savers. Only ever increases, so the
+    /// "max wins" cross-device merge can never resurrect spent points.
+    var pointsSpent: Int = 0
     var streak: Int = 0
     var lastSessionDate: Date? = nil
     var badges: [String] = []
@@ -27,6 +30,34 @@ final class UserProfile {
         self.displayName = displayName
     }
 
+    /// Points available to spend. Lifetime `totalPoints` (badges, stats) is
+    /// untouched by spending. Clamped so a bad merge can't go negative.
+    var spendablePoints: Int { max(0, totalPoints - pointsSpent) }
+
+    /// Folds a remote `profiles` row into this profile. Monotonic fields take
+    /// the max. `streakFreezeTokens` goes up *and down* (buying vs. using), so
+    /// a max-merge would resurrect used savers; the remote count is adopted
+    /// only on a brand-new device (no local progress yet), otherwise the local
+    /// value is authoritative and gets uploaded.
+    func mergeRemote(_ remote: RemoteProfile) {
+        let isFreshDevice = totalPoints == 0 && streak == 0 && lastSessionDate == nil
+            && streakFreezeTokens == 0
+
+        totalPoints = max(totalPoints, remote.totalPoints)
+        totalMinutes = max(totalMinutes, remote.totalMinutes)
+        streak = max(streak, remote.streak)
+        if let remoteSpent = remote.pointsSpent {
+            pointsSpent = max(pointsSpent, remoteSpent)
+        }
+        if let remoteDate = remote.lastSessionAt,
+           remoteDate > (lastSessionDate ?? .distantPast) {
+            lastSessionDate = remoteDate
+        }
+        if isFreshDevice, let remoteTokens = remote.streakFreezeTokens {
+            streakFreezeTokens = min(GamificationService.maxSavers, max(0, remoteTokens))
+        }
+    }
+
     /// SwiftData can't enforce `.unique` on `profileID` once a CloudKit
     /// container is configured, so if sync ever produces two rows before a
     /// merge resolves, code that reads "the" profile via `.first` would
@@ -39,6 +70,9 @@ final class UserProfile {
         let survivor = all[0]
         for duplicate in all.dropFirst() {
             survivor.totalPoints += duplicate.totalPoints
+            survivor.pointsSpent += duplicate.pointsSpent
+            survivor.streakFreezeTokens = min(GamificationService.maxSavers,
+                max(survivor.streakFreezeTokens, duplicate.streakFreezeTokens))
             survivor.totalMinutes += duplicate.totalMinutes
             survivor.streak = max(survivor.streak, duplicate.streak)
             for badge in duplicate.badges where !survivor.badges.contains(badge) {

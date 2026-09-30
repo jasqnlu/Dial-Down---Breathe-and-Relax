@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import UIKit
 
 // MARK: - Settings Tab
@@ -14,6 +15,12 @@ struct ProfileSettingsTab: View {
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
     @State private var legalDocument: LegalDocument?
+    @Query private var profiles: [UserProfile]
+    /// Owned by ProfileView, which hosts the confirmation dialog: a dialog
+    /// attached to rows inside the parent List never presents.
+    @Binding var confirmingSaverPurchase: Bool
+
+    private var profile: UserProfile? { profiles.first }
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -59,6 +66,51 @@ struct ProfileSettingsTab: View {
 
     var body: some View {
         Group {
+            // Streak savers
+            if let profile {
+                Section {
+                    LabeledContent {
+                        Text("\(profile.streak)")
+                    } label: {
+                        Label("Current Streak", systemImage: "flame.fill")
+                    }
+                    LabeledContent {
+                        Text("\(profile.streakFreezeTokens) / \(GamificationService.maxSavers)")
+                    } label: {
+                        Label("Streak Savers", systemImage: "shield.lefthalf.filled")
+                    }
+                    LabeledContent {
+                        Text("\(profile.spendablePoints)")
+                            .accessibilityIdentifier("settings.spendablePoints")
+                    } label: {
+                        Label("Points to Spend", systemImage: "star.circle.fill")
+                    }
+                    Button {
+                        confirmingSaverPurchase = true
+                    } label: {
+                        Label("Buy Streak Saver — \(GamificationService.saverCost) pts",
+                              systemImage: "plus.circle.fill")
+                            .foregroundStyle(GamificationService.canBuySaver(profile) ? Color.accentColor : Color.secondary)
+                            .opacity(GamificationService.canBuySaver(profile) ? 1 : 0.4)
+                    }
+                    .disabled(!GamificationService.canBuySaver(profile))
+                    .accessibilityIdentifier("settings.buySaver")
+                } header: {
+                    Text("Streak Savers")
+                        .font(.luminaLabel)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                } footer: {
+                    switch GamificationService.saverPurchaseBlockReason(profile) {
+                    case .atMax:
+                        Text("You're holding the maximum number of savers.")
+                    case .needMorePoints(let needed):
+                        Text("Need \(needed) more points. You also earn a free saver every 7 sessions.")
+                    case nil:
+                        Text("A saver restores your streak if it lapses. You earn a free one every 7 sessions.")
+                    }
+                }
+            }
+
             // Goals
             Section {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
