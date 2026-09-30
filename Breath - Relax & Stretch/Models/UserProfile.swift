@@ -8,6 +8,9 @@ final class UserProfile {
     var displayName: String = ""
     var totalMinutes: Int = 0
     var totalPoints: Int = 0
+    /// Lifetime points spent on streak savers. Only ever increases, so the
+    /// "max wins" cross-device merge can never resurrect spent points.
+    var pointsSpent: Int = 0
     var streak: Int = 0
     var lastSessionDate: Date? = nil
     var badges: [String] = []
@@ -26,6 +29,10 @@ final class UserProfile {
         self.profileID = profileID
         self.displayName = displayName
     }
+
+    /// Points available to spend. Lifetime `totalPoints` (badges, stats) is
+    /// untouched by spending. Clamped so a bad merge can't go negative.
+    var spendablePoints: Int { max(0, totalPoints - pointsSpent) }
 
     /// SwiftData can't enforce `.unique` on `profileID` once a CloudKit
     /// container is configured, so if sync ever produces two rows before a
