@@ -181,6 +181,14 @@ actor SupabaseService {
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
+    /// Best-effort second upsert for the streak-saver columns. Kept apart from
+    /// `uploadProfile` so a database without the columns yet cannot break the
+    /// core upload. Callers use `try?`.
+    func uploadProfileSavers(_ savers: RemoteProfileSavers) async throws {
+        let data = try await MainActor.run { try Self.makeEncoder().encode(savers) }
+        try await post(path: "/rest/v1/profiles", body: data, upsert: true)
+    }
+
     /// Deletes the private profile row. Called on account deletion so the
     /// saved name and stats don't outlive the local identity that is rotated
     /// right after. Requires the profiles delete policy in supabase_schema.sql.

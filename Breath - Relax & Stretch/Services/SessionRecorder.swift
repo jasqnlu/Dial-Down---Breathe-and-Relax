@@ -150,13 +150,13 @@ enum SessionRecorder {
                 totalPoints: profile.totalPoints,
                 streak: profile.streak,
                 totalMinutes: profile.totalMinutes,
-                lastSessionAt: input.completedAt,
-                pointsSpent: profile.pointsSpent,
-                streakFreezeTokens: profile.streakFreezeTokens
+                lastSessionAt: input.completedAt
             )
+            let savers = RemoteProfileSavers(id: snapshot.id, profile: profile)
             Task {
                 guard SupabaseService.isConfigured, AuthManager.shared.isBackendAuthenticated else { return }
                 try? await SupabaseService.shared.uploadProfile(snapshot)
+                try? await SupabaseService.shared.uploadProfileSavers(savers)
                 if let handle = LeaderboardPreference.handle {
                     try? await SupabaseService.shared.joinLeaderboard(RemoteLeaderboardRow(
                         userID: snapshot.id, handle: handle,

@@ -609,6 +609,10 @@ struct RootView: View {
     /// `UserProfile.dedupe`, so a device that's behind catches up without a
     /// device that's ahead (but hasn't uploaded yet) ever losing progress.
     private func pullRemoteProfile() async {
+        #if DEBUG
+        // Seeded UI-test runs must not merge a real account's remote profile.
+        if UserDefaults.standard.dictionaryRepresentation().keys.contains(where: { $0.hasPrefix("uiTestSeed") }) { return }
+        #endif
         let log = Logger(subsystem: "com.jasonlu.breath", category: "profile")
         guard SupabaseService.isConfigured, auth.isBackendAuthenticated else {
             log.debug("pullRemoteProfile: skipped (configured=\(SupabaseService.isConfigured), backendAuthenticated=\(auth.isBackendAuthenticated))")

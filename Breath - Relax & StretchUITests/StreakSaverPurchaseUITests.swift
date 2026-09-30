@@ -33,13 +33,13 @@ final class StreakSaverPurchaseUITests: XCTestCase {
         var app = launch(points: 100, savers: 1, daysAgo: 0)
         openSettings(app)
         XCTAssertFalse(app.buttons["settings.buySaver"].isEnabled)
-        attach(app, "1a-need-more-points")
+        attach(app, "4b-dimmed-need-points")
         app.terminate()
 
         app = launch(points: 900, savers: 3, daysAgo: 0)
         openSettings(app)
         XCTAssertFalse(app.buttons["settings.buySaver"].isEnabled)
-        attach(app, "1b-at-max")
+        attach(app, "4a-dimmed-at-max")
     }
 
     func testPurchaseFromSettings() {
@@ -49,11 +49,11 @@ final class StreakSaverPurchaseUITests: XCTestCase {
         XCTAssertTrue(buy.isEnabled)
         attach(app, "2a-before")
         buy.tap()
-        _ = app.buttons["Buy Saver"].waitForExistence(timeout: 5)
+        XCTAssertTrue(app.buttons["Buy Saver"].waitForExistence(timeout: 5))
         attach(app, "2b-dialog")
         app.buttons["Buy Saver"].tap()
         XCTAssertTrue(app.staticTexts["1 / 3"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["50"].exists)
+        XCTAssertEqual(app.staticTexts["settings.spendablePoints"].label, "50")
         attach(app, "2c-after")
     }
 
@@ -65,5 +65,10 @@ final class StreakSaverPurchaseUITests: XCTestCase {
         restore.tap()
         XCTAssertTrue(restore.waitForNonExistence(timeout: 5))
         attach(app, "3b-restored")
+        // The saver was bought (150) and immediately used: 0 held, 50 left.
+        openSettings(app)
+        XCTAssertTrue(app.staticTexts["0 / 3"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["settings.spendablePoints"].label, "50")
+        attach(app, "3c-settings-after-restore")
     }
 }

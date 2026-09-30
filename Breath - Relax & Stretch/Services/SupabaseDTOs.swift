@@ -76,6 +76,37 @@ struct RemoteProfileName: Codable, Sendable {
     }
 }
 
+/// Upsert body for the streak-saver columns. Sent as a SEPARATE best-effort
+/// upsert after the core profile upload: PostgREST rejects the whole body if
+/// any column is unknown, so these must never ride along with the core fields
+/// (they would break every profile upload until the migration is applied).
+struct RemoteProfileSavers: Codable, Sendable {
+    let id: String
+    let pointsSpent: Int
+    let streakFreezeTokens: Int
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case pointsSpent = "points_spent"
+        case streakFreezeTokens = "streak_freeze_tokens"
+    }
+
+    init(id: String, pointsSpent: Int, streakFreezeTokens: Int) {
+        self.id = id
+        self.pointsSpent = pointsSpent
+        self.streakFreezeTokens = streakFreezeTokens
+    }
+
+    /// Clamps only the uploaded count to `maxSavers`; users who held more
+    /// before the cap existed keep their local value (grandfathered).
+    @MainActor
+    init(id: String, profile: UserProfile) {
+        self.init(id: id,
+                  pointsSpent: profile.pointsSpent,
+                  streakFreezeTokens: min(profile.streakFreezeTokens, GamificationService.maxSavers))
+    }
+}
+
 /// Upsert body for `push_tokens`. `user_id` *must* be sent explicitly: it's
 /// the table's primary key, `not null` with no default (see
 /// supabase_schema.sql), so PostgREST rejects a body without it. RLS still

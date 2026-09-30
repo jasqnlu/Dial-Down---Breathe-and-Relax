@@ -81,6 +81,7 @@ struct ProfileSettingsTab: View {
                     }
                     LabeledContent {
                         Text("\(profile.spendablePoints)")
+                            .accessibilityIdentifier("settings.spendablePoints")
                     } label: {
                         Label("Points to Spend", systemImage: "star.circle.fill")
                     }
@@ -89,6 +90,8 @@ struct ProfileSettingsTab: View {
                     } label: {
                         Label("Buy Streak Saver — \(GamificationService.saverCost) pts",
                               systemImage: "plus.circle.fill")
+                            .foregroundStyle(GamificationService.canBuySaver(profile) ? Color.accentColor : Color.secondary)
+                            .opacity(GamificationService.canBuySaver(profile) ? 1 : 0.4)
                     }
                     .disabled(!GamificationService.canBuySaver(profile))
                     .accessibilityIdentifier("settings.buySaver")

@@ -33,4 +33,23 @@ struct RemoteProfileTests {
         #expect(p.pointsSpent == nil)
         #expect(p.streakFreezeTokens == nil)
     }
+
+    @Test func saversBodyEncodesOnlyIdAndSaverColumns() throws {
+        let body = RemoteProfileSavers(id: "x", pointsSpent: 150, streakFreezeTokens: 2)
+        let data = try JSONEncoder().encode(body)
+        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(Set(json.keys) == ["id", "points_spent", "streak_freeze_tokens"])
+        #expect(json["points_spent"] as? Int == 150)
+        #expect(json["streak_freeze_tokens"] as? Int == 2)
+    }
+
+    @Test func saversBodyClampsUploadedCountButNotLocalValue() {
+        let profile = UserProfile(profileID: "p", displayName: "A")
+        profile.streakFreezeTokens = 7
+        profile.pointsSpent = 300
+        let body = RemoteProfileSavers(id: "x", profile: profile)
+        #expect(body.streakFreezeTokens == GamificationService.maxSavers)
+        #expect(body.pointsSpent == 300)
+        #expect(profile.streakFreezeTokens == 7)
+    }
 }
