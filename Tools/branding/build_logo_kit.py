@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Breath "Open Lungs · Airways" logo kit from one set of geometry.
+"""Build the Dial Down "Open Lungs · Airways" logo kit from one set of geometry.
 
 Every SVG in Branding/logo-kit is generated here — edit the geometry/palette below
 and re-run instead of hand-editing output files.
@@ -19,6 +19,11 @@ from fontTools.varLib.instancer import instantiateVariableFont
 from shapely import affinity
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import unary_union
+
+# ── Brand text ─────────────────────────────────────────────────────────
+WORD = "Dial Down"
+TAGLINE = "BREATHE AND RELAX"
+PREFIX = "dialdown"
 
 # ── Palette ────────────────────────────────────────────────────────────────
 EMBER = "#C75F0E"   # gradient base, head on light
@@ -95,7 +100,7 @@ def mark_svg(lobes, head, lobe_fill, head_fill):
             f'<path fill="{head_fill}" d="{d_of(head)}"/>')
 
 
-def svg(w, h, body, title="Breath logo"):
+def svg(w, h, body, title="Dial Down logo"):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w:.0f} {h:.0f}" role="img">'
             f'<title>{title}</title>{body}</svg>\n')
 
@@ -138,22 +143,22 @@ def main():
             f.write(content)
 
     # ── Symbol masters (256 canvas, mark 216 tall, optically lifted 2 px) ──
-    for name, airways in (("breath-symbol", True), ("breath-symbol-small", False)):
+    for name, airways in ((f"{PREFIX}-symbol", True), (f"{PREFIX}-symbol-small", False)):
         lobes, head = fit(build_mark(airways), 216, 128, 126)
         grad = f"<defs>{gradient('g', lobes)}</defs>"
         write(f"{name}.svg", svg(256, 256, grad + mark_svg(lobes, head, "url(#g)", EMBER)))
         write(f"{name}-on-dark.svg", svg(256, 256, grad + mark_svg(lobes, head, "url(#g)", CREAM)))
     lobes, head = fit(build_mark(True), 216, 128, 126)
-    write("breath-symbol-black.svg", svg(256, 256, mark_svg(lobes, head, "#000000", "#000000")))
-    write("breath-symbol-white.svg", svg(256, 256, mark_svg(lobes, head, "#FFFFFF", "#FFFFFF")))
-    write("breath-symbol-accent.svg", svg(256, 256, mark_svg(lobes, head, ACCENT, ACCENT)))
+    write(f"{PREFIX}-symbol-black.svg", svg(256, 256, mark_svg(lobes, head, "#000000", "#000000")))
+    write(f"{PREFIX}-symbol-white.svg", svg(256, 256, mark_svg(lobes, head, "#FFFFFF", "#FFFFFF")))
+    write(f"{PREFIX}-symbol-accent.svg", svg(256, 256, mark_svg(lobes, head, ACCENT, ACCENT)))
 
     # ── Lockups ────────────────────────────────────────────────────────────
     word = Type(a.font, 750)
     tag = Type(a.font, 700)
     WORD_SIZE, TAG_SIZE, TAG_TRACK = 124, 27, 0.2
-    ww = word.width("Breath", WORD_SIZE)
-    tw = tag.width("RELAX & STRETCH", TAG_SIZE, TAG_TRACK)
+    ww = word.width(WORD, WORD_SIZE)
+    tw = tag.width(TAGLINE, TAG_SIZE, TAG_TRACK)
 
     def horizontal(lobe_fill, head_fill, word_fill, tag_fill, defs_id):
         lb, hd = fit(build_mark(True), 216, 0, 128)
@@ -163,8 +168,8 @@ def main():
         w = x + max(ww, tw) + 20
         body = (f"<defs>{gradient(defs_id, lb)}</defs>" if lobe_fill.startswith("url") else "")
         body += mark_svg(lb, hd, lobe_fill, head_fill)
-        body += f'<path fill="{word_fill}" d="{word.path("Breath", WORD_SIZE, x - 4, 140)}"/>'
-        body += f'<path fill="{tag_fill}" d="{tag.path("RELAX & STRETCH", TAG_SIZE, x, 190, TAG_TRACK)}"/>'
+        body += f'<path fill="{word_fill}" d="{word.path(WORD, WORD_SIZE, x - 4, 140)}"/>'
+        body += f'<path fill="{tag_fill}" d="{tag.path(TAGLINE, TAG_SIZE, x, 190, TAG_TRACK)}"/>'
         return svg(w, 256, body)
 
     def stacked(lobe_fill, head_fill, word_fill, tag_fill, defs_id):
@@ -172,8 +177,8 @@ def main():
         lb, hd = fit(build_mark(True), 200, w / 2, 124)
         body = (f"<defs>{gradient(defs_id, lb)}</defs>" if lobe_fill.startswith("url") else "")
         body += mark_svg(lb, hd, lobe_fill, head_fill)
-        body += f'<path fill="{word_fill}" d="{word.path("Breath", WORD_SIZE, (w - ww) / 2, 344)}"/>'
-        body += f'<path fill="{tag_fill}" d="{tag.path("RELAX & STRETCH", TAG_SIZE, (w - tw) / 2, 394, TAG_TRACK)}"/>'
+        body += f'<path fill="{word_fill}" d="{word.path(WORD, WORD_SIZE, (w - ww) / 2, 344)}"/>'
+        body += f'<path fill="{tag_fill}" d="{tag.path(TAGLINE, TAG_SIZE, (w - tw) / 2, 394, TAG_TRACK)}"/>'
         return svg(w, 430, body)
 
     variants = {
@@ -183,10 +188,10 @@ def main():
         "-white": ("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"),
     }
     for suffix, v in variants.items():
-        write(f"breath-horizontal{suffix}.svg", horizontal(*v, "g"))
-        write(f"breath-stacked{suffix}.svg", stacked(*v, "g"))
-    wm = svg(ww + 16, 160, f'<path fill="{INK}" d="{word.path("Breath", WORD_SIZE, 8, 124)}"/>')
-    write("breath-wordmark.svg", wm)
+        write(f"{PREFIX}-horizontal{suffix}.svg", horizontal(*v, "g"))
+        write(f"{PREFIX}-stacked{suffix}.svg", stacked(*v, "g"))
+    wm = svg(ww + 16, 160, f'<path fill="{INK}" d="{word.path(WORD, WORD_SIZE, 8, 124)}"/>')
+    write(f"{PREFIX}-wordmark.svg", wm)
 
     # ── iOS app icons (1024, opaque, mark ~56 % of the tile, lifted 12 px) ──
     lb, hd = fit(build_mark(True), 574, 512, 500)
