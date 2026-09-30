@@ -8,28 +8,46 @@ import SwiftUI
 struct AppLoadingView: View {
     @State private var currentFact = BodyTrivia.randomFact()
 
+    /// Must match the system launch screen (Assets LaunchLogo): a 104 pt mark
+    /// whose centre sits 140 pt above the *full-screen* centre. The launch
+    /// image gets that lift from transparent padding below the mark, so the
+    /// hand-off from launch screen to splash has no jump.
+    static let markHeight: CGFloat = 104
+    static let markLift: CGFloat = 140
+
     var body: some View {
-        ZStack {
-            Color.luminaSurface.ignoresSafeArea()
+        GeometryReader { geo in
+            let markCenterY = geo.size.height / 2 - Self.markLift
+            ZStack(alignment: .top) {
+                Color.luminaSurface
 
-            VStack(spacing: 24) {
-                DialDownMark(motion: .introThenBreathing)
-                    .frame(height: 104)
+                DialDownMark(motion: .continueFromLaunch)
+                    .frame(height: Self.markHeight)
+                    .position(x: geo.size.width / 2, y: markCenterY)
 
-                Text("Dial Down - Breath and Relax")
-                    .font(.luminaDisplay)
-                    .foregroundStyle(Color.luminaOnSurface)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-
-                ProgressView()
-                    .controlSize(.large)
-                    .tint(Color.luminaPrimary)
-
-                triviaCard
+                content
+                    .frame(width: geo.size.width)
+                    .padding(.top, markCenterY + Self.markHeight / 2 + 24)
             }
-            .padding(.horizontal, 24)
         }
+        .ignoresSafeArea()
+    }
+
+    private var content: some View {
+        VStack(spacing: 24) {
+            Text("Dial Down - Breath and Relax")
+                .font(.luminaDisplay)
+                .foregroundStyle(Color.luminaOnSurface)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            ProgressView()
+                .controlSize(.large)
+                .tint(Color.luminaPrimary)
+
+            triviaCard
+        }
+        .padding(.horizontal, 24)
     }
 
     private var triviaCard: some View {

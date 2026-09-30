@@ -8,8 +8,10 @@ import SwiftUI
 
 enum DialDownMarkGeometry {
     /// Tight bounds of the mark on the concept grid (lobe tips at y 44, lobe
-    /// bases at y 214). Everything is mapped from this box into the view.
-    static let box = CGRect(x: 56, y: 44, width: 144, height: 170)
+    /// bases at y 214; the outer lobe curve bulges to x 55.09 / 200.91).
+    /// Everything is mapped from this box into the view. The launch-screen
+    /// image (Assets LaunchLogo) is cropped to these same bounds.
+    static let box = CGRect(x: 55.09, y: 44, width: 145.82, height: 170)
     static let aspectRatio = box.width / box.height
 
     typealias Cubic = (CGPoint, CGPoint, CGPoint, CGPoint)
@@ -96,8 +98,12 @@ struct DialDownMark: View {
         /// Lobes slowly open and settle on a 4 s inhale / 4 s exhale loop.
         case breathing
         /// Lobes grow up from the body, head drops in, airways draw on,
-        /// then the breathing loop starts. Used on the launch splash.
+        /// then the breathing loop starts.
         case introThenBreathing
+        /// Picks up from the system launch screen, which shows the lobes and
+        /// head without airways (Assets LaunchLogo): the airways draw on,
+        /// then the breathing loop starts. Used on the splash.
+        case continueFromLaunch
     }
 
     enum Style {
@@ -122,7 +128,7 @@ struct DialDownMark: View {
         let startsHidden = motion == .introThenBreathing
         _grown = State(initialValue: !startsHidden)
         _headShown = State(initialValue: !startsHidden)
-        _airwaysDrawn = State(initialValue: startsHidden ? 0 : 1)
+        _airwaysDrawn = State(initialValue: startsHidden || motion == .continueFromLaunch ? 0 : 1)
     }
 
     var body: some View {
@@ -196,14 +202,23 @@ struct DialDownMark: View {
                 grown = true; headShown = true; airwaysDrawn = 1
                 return
             }
-            // Whole intro lands in ~1.2 s so it finishes inside the splash's
-            // 1.5 s minimum hold (BreathRelaxStretchApp).
+            // Whole intro lands in ~1.2 s so it would finish inside the
+            // splash's 1.5 s minimum hold (BreathRelaxStretchApp).
             withAnimation(.spring(duration: 0.8, bounce: 0.25)) { grown = true }
             guard (try? await Task.sleep(for: .milliseconds(300))) != nil else { return }
             withAnimation(.spring(duration: 0.5, bounce: 0.35)) { headShown = true }
             guard (try? await Task.sleep(for: .milliseconds(150))) != nil else { return }
             withAnimation(.easeOut(duration: 0.7)) { airwaysDrawn = 1 }
             guard (try? await Task.sleep(for: .milliseconds(700))) != nil else { return }
+            startBreathing()
+        case .continueFromLaunch:
+            guard !reduceMotion else {
+                airwaysDrawn = 1
+                return
+            }
+            guard (try? await Task.sleep(for: .milliseconds(150))) != nil else { return }
+            withAnimation(.easeOut(duration: 0.8)) { airwaysDrawn = 1 }
+            guard (try? await Task.sleep(for: .milliseconds(800))) != nil else { return }
             startBreathing()
         }
     }
