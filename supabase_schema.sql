@@ -444,6 +444,11 @@ grant all on all tables in schema public to service_role;
 -- 2. profiles: real-name columns (PR #26) and owner-only policies.
 alter table profiles add column if not exists first_name text check (char_length(first_name) <= 40);
 alter table profiles add column if not exists last_name  text check (char_length(last_name)  <= 40);
+-- Streak saver purchases: points_spent only ever grows; tokens are capped at 3.
+alter table profiles add column if not exists points_spent int4 not null default 0
+  check (points_spent between 0 and 100000000);
+alter table profiles add column if not exists streak_freeze_tokens int4 not null default 0
+  check (streak_freeze_tokens between 0 and 3);
 
 drop policy if exists "profiles are publicly readable" on profiles;
 drop policy if exists "users can read their own profile" on profiles;

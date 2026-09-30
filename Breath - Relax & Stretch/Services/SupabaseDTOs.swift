@@ -40,6 +40,11 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     /// upload (which never sets names) can't overwrite the saved name.
     var firstName: String? = nil
     var lastName: String? = nil
+    /// Nullable so older rows/clients that lack the columns still decode, and
+    /// nil is omitted from the encoded body so an upload that doesn't know
+    /// these values can never overwrite them.
+    var pointsSpent: Int? = nil
+    var streakFreezeTokens: Int? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -50,6 +55,8 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
         case lastSessionAt = "last_session_at"
         case firstName    = "first_name"
         case lastName     = "last_name"
+        case pointsSpent  = "points_spent"
+        case streakFreezeTokens = "streak_freeze_tokens"
     }
 }
 

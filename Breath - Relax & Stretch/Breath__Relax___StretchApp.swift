@@ -602,13 +602,7 @@ struct RootView: View {
         }
         log.debug("pullRemoteProfile: local streak=\(profile.streak) remote streak=\(remote.streak)")
 
-        profile.totalPoints = max(profile.totalPoints, remote.totalPoints)
-        profile.totalMinutes = max(profile.totalMinutes, remote.totalMinutes)
-        profile.streak = max(profile.streak, remote.streak)
-        if let remoteDate = remote.lastSessionAt,
-           remoteDate > (profile.lastSessionDate ?? .distantPast) {
-            profile.lastSessionDate = remoteDate
-        }
+        profile.mergeRemote(remote)
         do {
             try modelContext.save()
         } catch {

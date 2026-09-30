@@ -150,7 +150,9 @@ enum SessionRecorder {
                 totalPoints: profile.totalPoints,
                 streak: profile.streak,
                 totalMinutes: profile.totalMinutes,
-                lastSessionAt: input.completedAt
+                lastSessionAt: input.completedAt,
+                pointsSpent: profile.pointsSpent,
+                streakFreezeTokens: profile.streakFreezeTokens
             )
             Task {
                 guard SupabaseService.isConfigured, AuthManager.shared.isBackendAuthenticated else { return }
