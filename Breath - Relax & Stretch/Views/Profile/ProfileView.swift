@@ -29,6 +29,8 @@ struct ProfileView: View {
     // user should land back on the segment they were on (usually Settings).
     @SceneStorage("profileSelectedTab") private var selectedTab: ProfileTab = .account
     @State private var showSignOutConfirm = false
+    @State private var confirmingSaverPurchase = false
+    @Environment(\.modelContext) private var modelContext
 
     // Profile photo
     @State private var profileImage: Image?
@@ -78,7 +80,7 @@ struct ProfileView: View {
                         ProfileAccountTab(profile: profile,
                                           showSignOutConfirm: $showSignOutConfirm)
                     case .settings:
-                        ProfileSettingsTab()
+                        ProfileSettingsTab(confirmingSaverPurchase: $confirmingSaverPurchase)
                     case .appearance:
                         ProfileAppearanceTab()
                     }
@@ -116,6 +118,19 @@ struct ProfileView: View {
                                 isPresented: $showSignOutConfirm,
                                 titleVisibility: .visible) {
                 Button("Sign Out", role: .destructive) { auth.signOut() }
+                Button("Cancel", role: .cancel) {}
+            }
+            .confirmationDialog(
+                "Spend \(GamificationService.saverCost) points on a streak saver?",
+                isPresented: $confirmingSaverPurchase,
+                titleVisibility: .visible
+            ) {
+                Button("Buy Saver") {
+                    if let profile, GamificationService.buySaver(for: profile) {
+                        try? modelContext.save()
+                        ProfileSyncService.upload(profile)
+                    }
+                }
                 Button("Cancel", role: .cancel) {}
             }
         }

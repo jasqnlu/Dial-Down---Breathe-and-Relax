@@ -539,18 +539,47 @@ struct RootView: View {
         UserProfile.dedupe(in: modelContext)
 
         let descriptor = FetchDescriptor<UserProfile>()
-        guard let existing = try? modelContext.fetch(descriptor), existing.isEmpty else { return }
+        guard let existing = try? modelContext.fetch(descriptor), existing.isEmpty else {
+            #if DEBUG
+            if let profile = try? modelContext.fetch(descriptor).first { applyUITestProfileSeed(to: profile) }
+            #endif
+            return
+        }
         let name = auth.displayName.isEmpty ? "User" : auth.displayName
         // Keyed by the anonymous UUID so guest and signed-in users work the
         // same way, and the email never doubles as an identifier.
         let profile = UserProfile(profileID: auth.anonymousID, displayName: name)
         modelContext.insert(profile)
+        #if DEBUG
+        applyUITestProfileSeed(to: profile)
+        #endif
         do {
             try modelContext.save()
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Profile save failed: \(error)")
         }
     }
+
+    #if DEBUG
+    /// Debug-only launch-argument seeding for UI verification, e.g.
+    /// `-uiTestSeedPoints 200 -uiTestSeedSavers 0 -uiTestSeedSpent 0
+    /// -uiTestSeedStreak 5 -uiTestSeedBreakDaysAgo 3`. No-op without the args.
+    private func applyUITestProfileSeed(to profile: UserProfile) {
+        let d = UserDefaults.standard
+        var changed = false
+        if d.object(forKey: "uiTestSeedPoints") != nil { profile.totalPoints = d.integer(forKey: "uiTestSeedPoints"); changed = true }
+        if d.object(forKey: "uiTestSeedSpent") != nil { profile.pointsSpent = d.integer(forKey: "uiTestSeedSpent"); changed = true }
+        if d.object(forKey: "uiTestSeedSavers") != nil { profile.streakFreezeTokens = d.integer(forKey: "uiTestSeedSavers"); changed = true }
+        if d.object(forKey: "uiTestSeedStreak") != nil { profile.streak = d.integer(forKey: "uiTestSeedStreak"); changed = true }
+        if d.object(forKey: "uiTestSeedBreakDaysAgo") != nil {
+            let days = d.integer(forKey: "uiTestSeedBreakDaysAgo")
+            profile.lastSessionDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())
+            profile.pendingStreakBreak = 0
+            changed = true
+        }
+        if changed { try? modelContext.save() }
+    }
+    #endif
 
     /// The local `UserProfile` is created at sign-in, before the name step runs
     /// (so it starts as "User"/"Apple User"). Keep it in step with the name the
