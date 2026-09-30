@@ -27,10 +27,9 @@ struct WelcomePage: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 60)
 
-                // Hero icon
-                Image(systemName: "lungs.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(Color.luminaPrimary)
+                // Hero logo
+                DialDownMark(motion: .breathing)
+                    .frame(height: 112)
                     .padding(.bottom, 28)
 
                 Text("Dial Down - Breath and Relax")

@@ -13,14 +13,8 @@ struct AppLoadingView: View {
             Color.luminaSurface.ignoresSafeArea()
 
             VStack(spacing: 24) {
-                ZStack {
-                    Circle()
-                        .fill(Color.luminaMintTint)
-                        .frame(width: 76, height: 76)
-                    Image(systemName: "lungs.fill")
-                        .font(.system(size: 34))
-                        .foregroundStyle(Color.luminaPrimary)
-                }
+                DialDownMark(motion: .introThenBreathing)
+                    .frame(height: 104)
 
                 Text("Dial Down - Breath and Relax")
                     .font(.luminaDisplay)

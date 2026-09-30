@@ -1,0 +1,32 @@
+{
+  "brand": "Dial Down",
+  "tagline": "Breathe and Relax",
+  "brief": "A breathing and stretching app for people who want a calm, short daily ritual. The old icon (a clock with a stick figure) said 'timer' and got noisy at small sizes; the new mark should say breath and stretch at a glance and hold up on the home screen.",
+  "adjectives": ["calm", "warm", "alive", "gentle"],
+  "criteria": "Success: reads as breath + stretch in one shape, keeps the app's amber equity, stays clear at 29 px, works in one colour and in iOS dark/tinted modes.",
+  "industry": "consumer-app",
+  "nav": ["Breathe", "Stretch", "Download"],
+  "brand_color": "#C75F0E",
+  "tile_color": "#0E1413",
+  "greyscale": false,
+  "designer": "Dial Down",
+  "round": 2,
+  "concepts": [
+    {
+      "name": "Open Lungs · Airways",
+      "symbol": "../dialdown-symbol.svg",
+      "lockup": "../dialdown-horizontal.svg",
+      "symbol_on_tile": "../dialdown-symbol-on-dark.svg",
+      "lockup_on_dark": "../dialdown-horizontal-on-dark.svg",
+      "idea": "Two lung lobes that are also arms raised overhead: breath and stretch in one shape, with the airways branching out of the body.",
+      "rationale": [
+        "One shape carries both halves of the name: lungs (breath) and a reaching figure (stretch)",
+        "Amber gradient rises bottom-to-top like an inhale and keeps the app's existing accent",
+        "Solid silhouette survives 29 px; airways add depth at icon and marketing sizes",
+        "Mirrored and built from one lobe curve, so it extends into patterns and motion (lobes can 'breathe')"
+      ]
+    }
+  ],
+  "recommendation": "Open Lungs · Airways, now installed as the iOS app icon (light, dark, tinted).",
+  "next_steps": ["Trademark search", "Update App Store screenshots and marketing site", "Optional: animate the lobes as a launch or breathing motion"]
+}

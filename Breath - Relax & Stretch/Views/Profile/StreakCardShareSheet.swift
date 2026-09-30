@@ -39,9 +39,13 @@ struct StreakCardView: View {
 
             Spacer(minLength: 0)
 
-            Text("Dial Down - Breath and Relax")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.7))
+            HStack(spacing: 6) {
+                DialDownMark(style: .solid(.white.opacity(0.7)))
+                    .frame(height: 16)
+                Text("Dial Down - Breath and Relax")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.7))
+            }
         }
         .padding(28)
         .frame(width: 320, height: 400)
