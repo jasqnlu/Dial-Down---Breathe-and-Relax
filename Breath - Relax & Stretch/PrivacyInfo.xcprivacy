@@ -28,11 +28,14 @@
 	    - System boot time APIs (systemUptime): not used anywhere.
 	    - Active keyboard APIs: not used anywhere.
 
-	  NSPrivacyCollectedDataTypes: two categories of data leave the device.
+	  NSPrivacyCollectedDataTypes: the following data leaves the device, only
+	  when the user is signed in (or opts in), all linked to the Supabase auth
+	  UUID (AuthManager.backendID) and none used for tracking.
 
 	    1. Profile and opt-in leaderboard data (SupabaseService.uploadProfile /
 	       joinLeaderboard; RemoteProfile and RemoteLeaderboardRow in
-	       Services/SupabaseDTOs.swift):
+	       Services/SupabaseDTOs.swift). Declared as UserID, Name and
+	       OtherUsageData (points/streak/total-minutes):
 	         - A private profile row (real name, points/streak/total-minutes,
 	           last session time) readable and writable ONLY by its owner, used
 	           to restore the account and to send streak reminders.
@@ -40,14 +43,29 @@
 	           generated pseudonymous handle (never a real name) plus
 	           points/streak/total-minutes, visible to other signed-in users
 	           without any user id. Leaving deletes it.
-	       Both are keyed by the Supabase auth UUID (AuthManager.backendID).
 
 	    2. Email address, sent to our authentication provider (Supabase) when
 	       creating or signing into an account via Sign in with Apple,
 	       Google, or email/password (SupabaseService.swift's
 	       signInWithApple/signInWithGoogle/signUpWithPassword/
-	       signInWithPassword). Used solely to verify identity on future
-	       sign-ins; never stored in the leaderboard row.
+	       signInWithPassword). Declared as EmailAddress. Used solely to verify
+	       identity on future sign-ins; never stored in the leaderboard row.
+
+	    3. Synced sessions and routines (SyncOutbox / SyncEngine; RemoteSession
+	       and RemoteRoutine in Services/SupabaseDTOs.swift), uploaded to the
+	       sessions and routines tables so they can be restored on another
+	       device:
+	         - Sessions (routine id, start/completion time, completion
+	           percent, points earned): declared as Fitness.
+	         - Routines (user-named exercise lists, borrowed-from id,
+	           per-exercise duration overrides): declared as OtherUserContent.
+
+	    4. Push notification token and time zone (SupabaseService push_tokens
+	       upload), only if the user turns on streak reminders. Covered by the
+	       UserID declaration (a device identifier tied to the account, used
+	       solely to send the reminder).
+
+	  Body-map annotations are stored in UserDefaults only and are not uploaded.
 
 	  The private profile row's first_name/last_name/display_name columns
 	  (RemoteProfileName in SupabaseDTOs.swift, written by the name step) are
@@ -103,6 +121,30 @@
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeFitness</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
