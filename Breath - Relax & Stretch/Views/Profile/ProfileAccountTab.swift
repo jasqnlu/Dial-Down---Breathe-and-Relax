@@ -10,6 +10,9 @@ struct ProfileAccountTab: View {
     @State private var appLockOn = false
     @State private var showingSignIn = false
     @State private var showDeleteConfirm = false
+    @Environment(\.modelContext) private var modelContext
+    @State private var isDeletingAccount = false
+    @State private var deleteError: String?
 
     var body: some View {
         Group {
@@ -92,8 +95,15 @@ struct ProfileAccountTab: View {
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
-                        Label("Delete Account", systemImage: "trash")
+                        HStack {
+                            Label("Delete Account", systemImage: "trash")
+                            if isDeletingAccount {
+                                Spacer()
+                                ProgressView()
+                            }
+                        }
                     }
+                    .disabled(isDeletingAccount)
                 }
             }
         }
@@ -108,14 +118,46 @@ struct ProfileAccountTab: View {
             isPresented: $showDeleteConfirm,
             titleVisibility: .visible
         ) {
-            Button("Delete Account", role: .destructive) { Task { try? await auth.deleteAccount(appleReauth: nil) } }
+            Button("Delete Account", role: .destructive) {
+                Task { await performAccountDeletion() }
+            }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Removes your sign-in credentials from this device. Your session history stays on this device and can be cleared separately in Settings.")
+            Text("This permanently deletes your account, your progress and leaderboard entry on our servers, and all app data on this iPhone, including session history, routines, and body-map marks. This can't be undone.")
+        }
+        .alert(
+            "Couldn't Delete Account",
+            isPresented: Binding(get: { deleteError != nil }, set: { if !$0 { deleteError = nil } })
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(deleteError ?? "")
         }
     }
 
     // MARK: Helpers
+
+    /// Apple users re-confirm first (Apple's revoke needs a fresh code).
+    /// Only after the server confirms is anything local touched; a cancelled
+    /// sheet is silent, and any other failure shows why and leaves the user
+    /// signed in to retry.
+    private func performAccountDeletion() async {
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+        do {
+            let reauth: AppleReauthCredential? = auth.provider == .apple
+                ? try await AppleReauthenticator().reauthenticate()
+                : nil
+            try await auth.deleteAccount(appleReauth: reauth)
+            NotificationService.shared.cancelReminders()
+            NotificationService.shared.cancelInsightNotifications()
+            try? LocalDataEraser.eraseAll(context: modelContext)
+        } catch is CancellationError {
+            // User dismissed the Apple sheet. Nothing to report.
+        } catch {
+            deleteError = error.localizedDescription
+        }
+    }
 
     private func challengeURL(for profile: UserProfile) -> URL? {
         ChallengePayload(fromName: profile.displayName, streak: profile.streak, totalPoints: profile.totalPoints).shareURL
