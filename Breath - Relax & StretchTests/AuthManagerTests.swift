@@ -26,8 +26,12 @@ struct AuthManagerTests {
         for key in Self.keysToReset { d.removeObject(forKey: key) }
     }
 
-    private func makeManager(supabase: SupabaseAuthenticating = FakeSupabaseAuthenticating()) -> AuthManager {
-        AuthManager(keychain: FakeKeychainStore(), supabase: supabase)
+    private func makeManager(
+        supabase: SupabaseAuthenticating = FakeSupabaseAuthenticating(),
+        deleter: SupabaseAccountDeleting = FakeAccountDeleter(),
+        keychain: FakeKeychainStore = FakeKeychainStore()
+    ) -> AuthManager {
+        AuthManager(keychain: keychain, supabase: supabase, accountDeleter: deleter)
     }
 
     // MARK: - signUp
@@ -201,14 +205,114 @@ struct AuthManagerTests {
         #expect(manager.backendID == manager.anonymousID)
     }
 
-    @Test func deleteAccountDropsTheSupabaseIdentity() async {
-        let fake = FakeSupabaseAuthenticating()
-        fake.signUpWithPasswordResult = .success("supabase-uid-123")
-        let manager = makeManager(supabase: fake)
+    // MARK: - Delete account
+
+    private func appleReauth() -> AppleReauthCredential {
+        AppleReauthCredential(appleUserID: "apple-user-1", authorizationCode: "code-1",
+                              identityToken: "id-token", rawNonce: "nonce")
+    }
+
+    /// Simulates an Apple user restored from UserDefaults: handleAppleCredential
+    /// needs a real ASAuthorizationAppleIDCredential, which tests can't build.
+    private func persistAppleSignIn(supabaseUserID: String?) {
+        let d = UserDefaults.standard
+        d.set(true, forKey: "auth.isSignedIn")
+        d.set("Ada", forKey: "auth.displayName")
+        d.set("apple", forKey: "auth.provider")
+        if let supabaseUserID { d.set(supabaseUserID, forKey: "auth.supabaseUserID") }
+    }
+
+    @Test func deleteAccountCallsTheServerThenClearsLocalSignIn() async throws {
+        let auth = FakeSupabaseAuthenticating()
+        auth.signUpWithPasswordResult = .success("supabase-uid-123")
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(supabase: auth, deleter: deleter)
         _ = await manager.signUp(email: "ada@example.com", password: "password123")
 
-        manager.deleteAccount()
+        try await manager.deleteAccount(appleReauth: nil)
+
+        #expect(deleter.calls == [nil])
+        #expect(!manager.isSignedIn)
         #expect(!manager.isBackendAuthenticated)
+    }
+
+    @Test func deleteAccountFailureKeepsTheUserSignedIn() async {
+        let auth = FakeSupabaseAuthenticating()
+        auth.signUpWithPasswordResult = .success("supabase-uid-123")
+        let deleter = FakeAccountDeleter()
+        deleter.result = .failure(AccountDeletionError.network)
+        let manager = makeManager(supabase: auth, deleter: deleter)
+        _ = await manager.signUp(email: "ada@example.com", password: "password123")
+
+        await #expect(throws: AccountDeletionError.network) {
+            try await manager.deleteAccount(appleReauth: nil)
+        }
+        #expect(manager.isSignedIn)
+        #expect(manager.isBackendAuthenticated)
+        #expect(manager.userEmail == "ada@example.com")
+    }
+
+    @Test func appleUserWithoutReauthIsRejectedBeforeAnyNetworkCall() async {
+        persistAppleSignIn(supabaseUserID: "apple-uid")
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(deleter: deleter)
+
+        await #expect(throws: AccountDeletionError.appleReauthRequired) {
+            try await manager.deleteAccount(appleReauth: nil)
+        }
+        #expect(deleter.calls.isEmpty)
+        #expect(manager.isSignedIn)
+    }
+
+    @Test func appleUserPassesTheCodeAndForgetsTheStoredAppleEmail() async throws {
+        persistAppleSignIn(supabaseUserID: "apple-uid")
+        let keychain = FakeKeychainStore()
+        keychain.save(account: "apple-email:apple-user-1", value: "ada@privaterelay.appleid.com")
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(deleter: deleter, keychain: keychain)
+
+        try await manager.deleteAccount(appleReauth: appleReauth())
+
+        #expect(deleter.calls == ["code-1"])
+        #expect(keychain.loadCredential(account: "apple-email:apple-user-1") == nil)
+        #expect(!manager.isSignedIn)
+    }
+
+    @Test func appleUserWithoutBackendSessionExchangesFirst() async throws {
+        persistAppleSignIn(supabaseUserID: nil)
+        let auth = FakeSupabaseAuthenticating()
+        auth.signInWithAppleResult = .success("apple-uid-late")
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(supabase: auth, deleter: deleter)
+
+        try await manager.deleteAccount(appleReauth: appleReauth())
+
+        #expect(deleter.calls == ["code-1"])
+        #expect(!manager.isSignedIn)
+    }
+
+    @Test func appleUserWhoseLateExchangeFailsIsNotDeleted() async {
+        persistAppleSignIn(supabaseUserID: nil)
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(deleter: deleter) // signInWithApple fails by default
+
+        await #expect(throws: AccountDeletionError.server) {
+            try await manager.deleteAccount(appleReauth: appleReauth())
+        }
+        #expect(deleter.calls.isEmpty)
+        #expect(manager.isSignedIn)
+    }
+
+    @Test func localOnlyAccountIsClearedWithoutAServerCall() async throws {
+        let d = UserDefaults.standard
+        d.set(true, forKey: "auth.isSignedIn")
+        d.set("email", forKey: "auth.provider")
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(deleter: deleter)
+
+        try await manager.deleteAccount(appleReauth: nil)
+
+        #expect(deleter.calls.isEmpty)
         #expect(!manager.isSignedIn)
     }
 
@@ -371,5 +475,15 @@ private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @uncheck
     }
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
         try signInWithPasswordResult.get()
+    }
+}
+
+private final class FakeAccountDeleter: SupabaseAccountDeleting, @unchecked Sendable {
+    var result: Result<Void, Error> = .success(())
+    private(set) var calls: [String?] = []
+
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
+        calls.append(appleAuthorizationCode)
+        try result.get()
     }
 }

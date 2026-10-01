@@ -108,7 +108,7 @@ struct ProfileAccountTab: View {
             isPresented: $showDeleteConfirm,
             titleVisibility: .visible
         ) {
-            Button("Delete Account", role: .destructive) { auth.deleteAccount() }
+            Button("Delete Account", role: .destructive) { Task { try? await auth.deleteAccount(appleReauth: nil) } }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Removes your sign-in credentials from this device. Your session history stays on this device and can be cleared separately in Settings.")
