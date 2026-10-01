@@ -49,7 +49,14 @@
 	       signInWithPassword). Used solely to verify identity on future
 	       sign-ins; never stored in the leaderboard row.
 
-	  Neither category is used for tracking.
+	  The private profile row's first_name/last_name/display_name columns
+	  (RemoteProfileName in SupabaseDTOs.swift, written by the name step) are
+	  declared below as NSPrivacyCollectedDataTypeName.
+
+	  Apple Health (HealthKit) and Calendar (EventKit) data is read and
+	  written on-device only and never uploaded, so neither is declared here.
+
+	  None of these categories is used for tracking.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
@@ -72,6 +79,18 @@
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeName</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>

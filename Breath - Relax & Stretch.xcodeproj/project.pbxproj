@@ -406,7 +406,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "BreathRelaxStretch-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Dial Down - Breath and Relax";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dial Down";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Adds each completed session to your calendar and finds free slots to suggest your next session, when you turn on calendar sync.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";
@@ -460,7 +460,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "BreathRelaxStretch-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Dial Down - Breath and Relax";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dial Down";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Adds each completed session to your calendar and finds free slots to suggest your next session, when you turn on calendar sync.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";

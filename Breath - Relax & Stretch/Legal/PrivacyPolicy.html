@@ -25,10 +25,10 @@
 </head>
 <body>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: September 8, 2026</p>
+  <p class="updated">Last updated: September 30, 2026</p>
 
   <p>
-    This Privacy Policy describes how Dial Down - Breath and Relax (the "App") handles your
+    This Privacy Policy describes how Dial Down – Breathe and Relax (the "App") handles your
     information. We built the App to work fully offline by default, and only share data with our
     backend when you opt in to features that require it.
   </p>
@@ -42,17 +42,32 @@
 
   <h2>2. Information We Collect When You Sign In</h2>
   <p>
-    If you choose to create an account or sign in (including via Sign in with Apple or Google), the
-    App may sync certain data to our backend, hosted on Supabase, in order to support:
+    If you choose to create an account or sign in (via Sign in with Apple, Google, or email and
+    password), the App stores a private profile on our backend, hosted on Supabase, so your
+    progress can be restored when you sign in again. This profile contains:
   </p>
   <ul>
-    <li>Cross-device backup and sync of your progress and routines.</li>
-    <li>Optional social features, such as leaderboards and shared challenges.</li>
+    <li>An account identifier.</li>
+    <li>Your name (first name, last name, and display name) as you entered it.</li>
+    <li>Progress totals: points, current streak, total minutes practiced, streak savers, and the
+      time of your most recent session.</li>
   </ul>
   <p>
-    This may include an account identifier, display name, workout/session summaries, streaks, and
-    aggregate progress statistics. We do not collect more information than is reasonably necessary
-    to provide these features.
+    Your profile can only be read or changed by you. Your individual sessions, routines, and
+    body-map annotations are not uploaded.
+  </p>
+  <p>
+    <strong>Leaderboard (optional):</strong> if you choose to join the leaderboard, a generated
+    nickname (never your real name) and your points, streak, and total minutes are visible to other
+    signed-in users. Leaving the leaderboard deletes that entry.
+  </p>
+  <p>
+    <strong>Streak reminders (optional):</strong> if you turn on notifications, your device's push
+    notification token and time zone are stored so we can send a reminder before your streak
+    breaks. Turning reminders off, signing out, or deleting your account removes them.
+  </p>
+  <p>
+    We do not collect more information than is reasonably necessary to provide these features.
   </p>
   <p>
     <strong>Note on Sign in with Apple, Google, and Email/Password:</strong> all three sign-in
@@ -62,45 +77,76 @@
     authentication provider's own account records so it can verify your identity on future
     sign-ins. If you sign in with an email and password, that password is also verified and
     stored by our authentication provider using industry-standard hashing; we never see or store
-    your password ourselves. Your email is kept separate from, and is not linked to, the
-    workout/progress data described above, which is always keyed to an anonymous identifier
-    rather than your email.
+    your password ourselves. Your email is held only in our authentication provider's account
+    records; your profile and progress data are stored separately, under your account identifier
+    rather than your email address.
   </p>
 
-  <h2>3. No Purchases</h2>
+  <h2>3. Apple Health</h2>
+  <p>
+    If you allow it, the App connects to Apple Health (HealthKit) on your device:
+  </p>
+  <ul>
+    <li><strong>Read:</strong> your sleep data from the most recent night, used only to suggest a
+      gentler routine when you seem under-rested.</li>
+    <li><strong>Write:</strong> stretch sessions as Flexibility workouts (with an active-energy
+      estimate) and breathing sessions as Mindful Minutes.</li>
+  </ul>
+  <p>
+    Health data is processed only on your device. It is never uploaded to our backend, never
+    shared with third parties, and never used for advertising, marketing, or data mining. You can
+    turn off the App's access at any time in the Health app or in Settings &rarr; Privacy &amp;
+    Security &rarr; Health.
+  </p>
+
+  <h2>4. Calendar</h2>
+  <p>
+    If you turn on calendar sync, the App adds each completed session to your default calendar and
+    reads the times of your upcoming events to suggest a free slot for your next session. Calendar
+    data stays on your device and is never uploaded or shared. You can turn off access at any time
+    in Settings &rarr; Privacy &amp; Security &rarr; Calendars.
+  </p>
+
+  <h2>5. Face ID</h2>
+  <p>
+    If you turn on App Lock, the App uses Face ID (or your device passcode) to unlock. This check
+    is handled entirely by iOS; the App never receives or stores your biometric data.
+  </p>
+
+  <h2>6. No Purchases</h2>
   <p>
     The App is entirely free and does not offer subscriptions, purchases, or a donation/tip
     mechanism of any kind. No payment information is collected, processed, or stored by the App or
     by us.
   </p>
 
-  <h2>4. Data Sharing</h2>
+  <h2>7. Data Sharing</h2>
   <p>
     We do not sell your personal information. We do not share your data with third parties except as
     necessary to operate the App (for example, our backend infrastructure provider, Supabase) or as
     required by law.
   </p>
 
-  <h2>5. Data Retention and Deletion</h2>
+  <h2>8. Data Retention and Deletion</h2>
   <p>
     Locally stored data remains on your device until you delete the App or clear it yourself. If you
     have a synced account, you may request deletion of your account and associated backend data at
     any time via the in-app data export/delete tools or by contacting us (see below).
   </p>
 
-  <h2>6. Children's Privacy</h2>
+  <h2>9. Children's Privacy</h2>
   <p>
     The App is not directed to children under 13, and we do not knowingly collect personal
     information from children under 13.
   </p>
 
-  <h2>7. Changes to This Policy</h2>
+  <h2>10. Changes to This Policy</h2>
   <p>
     We may update this Privacy Policy from time to time. Material changes will be reflected by an
     updated "Last updated" date above.
   </p>
 
-  <h2>8. Contact</h2>
+  <h2>11. Contact</h2>
   <p>
     Questions about this Privacy Policy or requests regarding your data can be sent to:
     <em>dialdownn@gmail.com</em>.

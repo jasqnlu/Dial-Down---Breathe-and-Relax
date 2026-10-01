@@ -42,7 +42,7 @@ struct StreakCardView: View {
             HStack(spacing: 6) {
                 DialDownMark(style: .solid(.white.opacity(0.7)))
                     .frame(height: 16)
-                Text("Dial Down - Breath and Relax")
+                Text("Dial Down – Breathe and Relax")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white.opacity(0.7))
             }
