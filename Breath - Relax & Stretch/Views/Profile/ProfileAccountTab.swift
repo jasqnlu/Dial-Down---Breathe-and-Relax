@@ -142,6 +142,7 @@ struct ProfileAccountTab: View {
     /// sheet is silent, and any other failure shows why and leaves the user
     /// signed in to retry.
     private func performAccountDeletion() async {
+        let context = modelContext
         isDeletingAccount = true
         defer { isDeletingAccount = false }
         do {
@@ -151,7 +152,7 @@ struct ProfileAccountTab: View {
             try await auth.deleteAccount(appleReauth: reauth)
             NotificationService.shared.cancelReminders()
             NotificationService.shared.cancelInsightNotifications()
-            try? LocalDataEraser.eraseAll(context: modelContext)
+            try? LocalDataEraser.eraseAll(context: context)
         } catch is CancellationError {
             // User dismissed the Apple sheet. Nothing to report.
         } catch {

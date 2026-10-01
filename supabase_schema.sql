@@ -188,9 +188,9 @@ create policy "users can update their profile"
   using (auth.uid() is not null and id = auth.uid()::text)
   with check (auth.uid() is not null and id = auth.uid()::text);
 
--- Delete Account flow (AuthManager.deleteAccount → SupabaseService
--- .deleteProfile) removes the leaderboard row *before* revoking the session,
--- so the token still authorizes this policy at that moment.
+-- Account deletion is done server-side by the `delete-account` Edge Function
+-- (service role). This client delete policy remains for other client paths
+-- (e.g. leaving the leaderboard, disabling reminders).
 create policy "users can delete their profile"
   on profiles for delete
   using (auth.uid() is not null and id = auth.uid()::text);

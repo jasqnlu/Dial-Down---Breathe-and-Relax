@@ -394,9 +394,10 @@ enabled = true
 verify_jwt = true
 
 # Called by the app's Delete Account button with the user's own access
-# token. verify_jwt rejects anonymous callers at the gateway; the function
-# additionally resolves the user from that token and only ever deletes
-# that user. See supabase/functions/delete-account/handler.ts.
+# token. The gateway's verify_jwt check is defense-in-depth only; the real
+# guard is the function resolving the caller from their own access token
+# and only ever deleting that user. See
+# supabase/functions/delete-account/handler.ts.
 [functions.delete-account]
 enabled = true
 verify_jwt = true

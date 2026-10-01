@@ -49,6 +49,8 @@ async function importP8(pem: string): Promise<CryptoKey> {
   const stripped = pem
     .replace(/-----BEGIN PRIVATE KEY-----/, "")
     .replace(/-----END PRIVATE KEY-----/, "")
+    // A .p8 pasted into a secret store can arrive with literal "\n" text.
+    .replace(/\\n/g, "")
     .replace(/\s+/g, "");
   const der = Uint8Array.from(atob(stripped), (c) => c.charCodeAt(0));
   return crypto.subtle.importKey(

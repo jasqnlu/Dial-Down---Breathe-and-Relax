@@ -496,8 +496,7 @@ final class AuthManager: ObservableObject {
         pendingAppleRetry = nil
         guard SupabaseService.isConfigured else { return }
         Task.detached {
-            // Best-effort, and ordered *before* the revoke for the same reason
-            // deleteAccount orders deleteProfile first: the push_tokens delete
+            // Best-effort, and ordered *before* the revoke: the push_tokens delete
             // policy is `auth.uid()::text = user_id`, so the row can only be
             // removed while the session that owns it is still valid. Left
             // behind, a token nothing can ever address again keeps receiving

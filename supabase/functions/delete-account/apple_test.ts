@@ -112,3 +112,16 @@ Deno.test("a failed revoke call throws at the revoke step", async () => {
   assertEquals(err.step, "revoke");
   assertEquals(err.status, 503);
 });
+
+Deno.test("client secret still verifies when the PEM's newlines are literal backslash-n text", async () => {
+  const { cfg, publicKey } = await testConfig();
+  const escaped = { ...cfg, privateKeyPEM: cfg.privateKeyPEM.replace(/\n/g, "\\n") };
+  assertEquals(escaped.privateKeyPEM.includes("\n"), false);
+  const jwt = await makeAppleClientSecret(escaped);
+  const [h, p, s] = jwt.split(".");
+  const ok = await crypto.subtle.verify(
+    { name: "ECDSA", hash: "SHA-256" }, publicKey,
+    b64urlDecode(s) as BufferSource, new TextEncoder().encode(`${h}.${p}`),
+  );
+  assertEquals(ok, true);
+});

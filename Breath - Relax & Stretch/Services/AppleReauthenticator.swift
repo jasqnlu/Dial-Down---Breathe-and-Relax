@@ -57,12 +57,22 @@ final class AppleReauthenticator: NSObject,
         }
     }
 
+    @available(iOS, deprecated: 26.0, message: "uses the scene-less anchor as a last resort")
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         if let key = scenes.flatMap(\.windows).first(where: { $0.isKeyWindow }) {
             return key
         }
-        return ASPresentationAnchor(windowScene: scenes[0])
+        return scenes.first.map { ASPresentationAnchor(windowScene: $0) } ?? Self.detachedAnchor()
+    }
+
+    /// Last-resort anchor when no window scene exists (never expected while the
+    /// app is foregrounded). The scene-less init is deprecated in iOS 26 and no
+    /// scene-based alternative exists without a scene, so it is isolated in a
+    /// function that is itself marked deprecated, which keeps the build clean.
+    @available(iOS, deprecated: 26.0)
+    private static func detachedAnchor() -> ASPresentationAnchor {
+        ASPresentationAnchor()
     }
 
     private func finish(_ result: Result<AppleReauthCredential, Error>) {
