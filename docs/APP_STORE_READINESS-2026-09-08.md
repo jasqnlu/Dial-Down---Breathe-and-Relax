@@ -52,6 +52,8 @@ doc says; a couple are new discoveries.
      Z-Anatomy / BodyParts3D credit, authors table, CC BY-SA 4.0 license link, and "changes made"
      statement from `ASSET_CREDITS.md` §1, plus the Manrope/SIL OFL credit.
 
+- ~~In-app account deletion didn't delete the server account~~ **Code complete 2026-10-01 on branch feature/account-deletion — pending deploy + live test.** The new `delete-account` Supabase Edge Function (`supabase/functions/delete-account/`) revokes Sign in with Apple first (Apple users re-confirm at delete time), then deletes every row the user owns and the Supabase auth user; the app only wipes local data after the server confirms. **Still outstanding:** set the Apple secrets, deploy the function, and run the live email + Apple deletion tests (see `docs/superpowers/plans/2026-10-01-account-deletion.md` Task 7).
+
 ## ⚠️ High-priority, ship-quality risk (not auto-rejected, but will hurt reviews/ratings)
 
 5. ~~Localization is only ~28% complete~~ **Fixed 2026-09-09.** All 369 string-catalog keys now
