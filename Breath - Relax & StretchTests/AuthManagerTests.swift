@@ -303,6 +303,30 @@ struct AuthManagerTests {
         #expect(manager.isSignedIn)
     }
 
+    @Test func appleLateExchangeWhileOfflineReportsNetworkNotServer() async {
+        persistAppleSignIn(supabaseUserID: nil)
+        let auth = FakeSupabaseAuthenticating()
+        auth.signInWithAppleResult = .failure(URLError(.notConnectedToInternet))
+        let deleter = FakeAccountDeleter()
+        let manager = makeManager(supabase: auth, deleter: deleter)
+
+        await #expect(throws: AccountDeletionError.network) {
+            try await manager.deleteAccount(appleReauth: appleReauth())
+        }
+        #expect(deleter.calls.isEmpty)
+        #expect(manager.isSignedIn)
+    }
+
+    @Test func signOutResetsTheProviderToTheDefault() {
+        persistAppleSignIn(supabaseUserID: nil)
+        let manager = makeManager()
+        #expect(manager.provider == .apple)
+
+        manager.signOut()
+
+        #expect(manager.provider == .email)
+    }
+
     @Test func localOnlyAccountIsClearedWithoutAServerCall() async throws {
         let d = UserDefaults.standard
         d.set(true, forKey: "auth.isSignedIn")

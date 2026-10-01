@@ -486,6 +486,7 @@ final class AuthManager: ObservableObject {
         firstName   = ""
         lastName    = ""
         userEmail   = ""
+        provider    = .email // the initial default; kProvider was removed above
     }
 
     /// Drops the Supabase user id and (best-effort) revokes the session's
@@ -530,6 +531,8 @@ final class AuthManager: ObservableObject {
                     let uid = try await supabase.signInWithApple(
                         identityToken: reauth.identityToken, nonce: reauth.rawNonce)
                     UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+                } catch is URLError {
+                    throw AccountDeletionError.network
                 } catch {
                     throw AccountDeletionError.server
                 }

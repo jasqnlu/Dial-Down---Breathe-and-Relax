@@ -152,6 +152,9 @@ struct ProfileAccountTab: View {
             try await auth.deleteAccount(appleReauth: reauth)
             NotificationService.shared.cancelReminders()
             NotificationService.shared.cancelInsightNotifications()
+            // Best-effort: the account is already gone server-side, so a
+            // failed wipe step can't be undone or retried; LocalDataEraser
+            // runs every step regardless and logs each failure.
             try? LocalDataEraser.eraseAll(context: context)
         } catch is CancellationError {
             // User dismissed the Apple sheet. Nothing to report.

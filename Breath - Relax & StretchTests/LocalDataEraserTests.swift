@@ -75,6 +75,31 @@ struct LocalDataEraserTests {
         #expect(defaults.object(forKey: "hasCompletedOnboarding") as? Bool == false)
     }
 
+    private struct StepFailed: Error, Equatable { let name: String }
+
+    /// One failing step must not stop the rest of the wipe: every step
+    /// runs, and the first failure is the one reported.
+    @Test func everyStepRunsEvenAfterOneFailsAndTheFirstFailureIsReported() {
+        var ran: [String] = []
+        #expect(throws: StepFailed(name: "data")) {
+            try LocalDataEraser.runEveryStep([
+                (name: "data",     run: { ran.append("data");  throw StepFailed(name: "data") }),
+                (name: "photo",    run: { ran.append("photo"); throw StepFailed(name: "photo") }),
+                (name: "settings", run: { ran.append("settings") }),
+            ])
+        }
+        #expect(ran == ["data", "photo", "settings"])
+    }
+
+    @Test func runEveryStepSucceedsWhenNoStepFails() throws {
+        var ran: [String] = []
+        try LocalDataEraser.runEveryStep([
+            (name: "a", run: { ran.append("a") }),
+            (name: "b", run: { ran.append("b") }),
+        ])
+        #expect(ran == ["a", "b"])
+    }
+
     @Test func eraseDeletesTheProfilePhotoAndToleratesItMissing() throws {
         let docs = try tempDocuments()
         let photo = docs.appendingPathComponent("profile_photo.jpg")

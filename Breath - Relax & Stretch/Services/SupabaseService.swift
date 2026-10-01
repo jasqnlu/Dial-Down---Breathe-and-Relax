@@ -189,17 +189,6 @@ actor SupabaseService {
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
-    /// Deletes the private profile row. Called on account deletion so the
-    /// saved name and stats don't outlive the local identity that is rotated
-    /// right after. Requires the profiles delete policy in supabase_schema.sql.
-    func deleteProfile(id: String) async throws {
-        // Strict percent-encoding (unreserved characters only): the id should
-        // always be a UUID, but it round-trips through UserDefaults, so never
-        // let a stray `&`/`=` rewrite the PostgREST filter expression.
-        let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
-        try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
-    }
-
     // MARK: - Sync engine (routines + sessions)
     // See docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
     // A "delete" in the outbox still calls uploadRoutine — deletes are soft
