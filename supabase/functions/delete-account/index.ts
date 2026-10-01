@@ -11,6 +11,7 @@
 // and nothing is deleted (fail closed).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleDeleteAccount } from "./handler.ts";
+import { resolveCaller } from "./caller.ts";
 import { revokeAppleAuthorization } from "./apple.ts";
 
 const admin = createClient(
@@ -21,7 +22,8 @@ const admin = createClient(
 
 // [table, owner column]. None of these has a foreign key to auth.users
 // (see supabase_schema.sql), so deleting the auth user would NOT cascade.
-// Each one is removed explicitly. push_tokens goes first so the streak cron
+// Each one is removed explicitly (and swept again after the auth delete —
+// see handler.ts). push_tokens goes first so the streak cron
 // can't push to an account that's halfway through deletion.
 const OWNED_ROWS: ReadonlyArray<readonly [string, string]> = [
   ["push_tokens", "user_id"],
@@ -39,15 +41,19 @@ function requiredEnv(name: string): string {
 
 Deno.serve((req) =>
   handleDeleteAccount(req, {
-    async getUser(jwt) {
-      const { data, error } = await admin.auth.getUser(jwt);
-      if (error || !data.user) return null;
-      const meta = (data.user.app_metadata as Record<string, unknown>) ?? {};
-      const providers: string[] = Array.isArray(meta.providers)
-        ? meta.providers as string[]
-        : typeof meta.provider === "string" ? [meta.provider] : [];
-      return { id: data.user.id, providers };
-    },
+    resolveCaller: (jwt) =>
+      resolveCaller(jwt, {
+        async getUser(token) {
+          const { data, error } = await admin.auth.getUser(token);
+          return { user: data.user, error: error ? { status: error.status, code: error.code } : null };
+        },
+        async userExists(userID) {
+          const { data, error } = await admin.auth.admin.getUserById(userID);
+          if (data.user) return true;
+          if (error && (error.status === 404 || error.code === "user_not_found")) return false;
+          throw error ?? new Error("getUserById returned neither a user nor an error");
+        },
+      }),
     async revokeApple(code) {
       await revokeAppleAuthorization(code, {
         teamID: requiredEnv("APPLE_TEAM_ID"),
