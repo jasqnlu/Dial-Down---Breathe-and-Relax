@@ -538,3 +538,64 @@ $$;
 
 revoke all on function get_leaderboard(int) from public, anon;
 grant execute on function get_leaderboard(int) to authenticated;
+
+-- ── Reject rows for deleted accounts (account-deletion hardening, 2026-10-01) ──
+-- The owner columns below are text, and none has a foreign key to
+-- auth.users, so nothing stops a client whose access token outlives its
+-- account (a second device, or a sync already in flight) from re-inserting
+-- rows after the delete-account Edge Function has swept them. Access tokens
+-- stay valid for up to an hour after the user is deleted, and the insert
+-- policies only compare auth.uid() to the owner column. This trigger rejects
+-- any new row whose owner no longer exists in auth.users (SQLSTATE 23503,
+-- like a foreign-key violation), for clients and the service role alike.
+-- A null owner (e.g. an ownerless routine) isn't a deleted account and is
+-- left alone. Lives in the unexposed `private` schema; clients can't call it.
+create schema if not exists private;
+
+create or replace function private.reject_rows_for_missing_owner()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  owner_text text := to_jsonb(new) ->> tg_argv[0];
+  owner_id   uuid;
+begin
+  if owner_text is null then
+    return new;
+  end if;
+  begin
+    owner_id := owner_text::uuid;
+  exception when invalid_text_representation then
+    owner_id := null;
+  end;
+  if owner_id is null or not exists (select 1 from auth.users u where u.id = owner_id) then
+    raise exception 'owner % of a new % row does not exist', owner_text, tg_table_name
+      using errcode = 'foreign_key_violation';
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function private.reject_rows_for_missing_owner() from public, anon, authenticated;
+
+drop trigger if exists reject_missing_owner on sessions;
+create trigger reject_missing_owner before insert on sessions
+  for each row execute function private.reject_rows_for_missing_owner('user_id');
+
+drop trigger if exists reject_missing_owner on routines;
+create trigger reject_missing_owner before insert on routines
+  for each row execute function private.reject_rows_for_missing_owner('author_id');
+
+drop trigger if exists reject_missing_owner on profiles;
+create trigger reject_missing_owner before insert on profiles
+  for each row execute function private.reject_rows_for_missing_owner('id');
+
+drop trigger if exists reject_missing_owner on push_tokens;
+create trigger reject_missing_owner before insert on push_tokens
+  for each row execute function private.reject_rows_for_missing_owner('user_id');
+
+drop trigger if exists reject_missing_owner on leaderboard;
+create trigger reject_missing_owner before insert on leaderboard
+  for each row execute function private.reject_rows_for_missing_owner('user_id');
