@@ -462,6 +462,18 @@ extension SupabaseServiceTests {
         #expect(keychain.loadCredential(account: "supabase.session") == nil)
     }
 
+    /// On weak Wi-Fi the default 60 s timeout leaves the user staring at a
+    /// spinner; 30 s is ample for the server's few-second deletion, and a
+    /// timed-out success is safe to retry (the function is idempotent).
+    @Test @MainActor func deleteAccountGivesUpAfterThirtySeconds() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("{}".utf8))])
+        let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+
+        try await service.deleteAccount(appleAuthorizationCode: nil)
+
+        #expect(session.requests.first?.timeoutInterval == 30)
+    }
+
     @Test @MainActor func deleteAccountOmitsTheCodeKeyForNonAppleAccounts() async throws {
         let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("{}".utf8))])
         let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)

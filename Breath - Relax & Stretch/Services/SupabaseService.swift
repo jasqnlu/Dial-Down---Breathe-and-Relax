@@ -489,6 +489,11 @@ actor SupabaseService {
             throw AccountDeletionError.notSignedIn
         }
         var request = bareRequest(path: "/functions/v1/delete-account", method: "POST")
+        // Not the default 60 s: on weak Wi-Fi that's a minute of spinner.
+        // The deletion itself takes a few seconds, and if a timeout hides a
+        // success, retrying is safe — the function treats an already-deleted
+        // account as success.
+        request.timeoutInterval = 30
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONEncoder().encode(
             DeleteAccountBody(appleAuthorizationCode: appleAuthorizationCode))
