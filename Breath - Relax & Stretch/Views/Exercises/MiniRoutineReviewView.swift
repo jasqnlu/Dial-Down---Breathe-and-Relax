@@ -105,7 +105,7 @@ struct MiniRoutineReviewView: View {
                         exerciseDurationOverrides: durationOverrides,
                         ownerID: auth.backendID
                     )
-                    modelContext.insert(routine)
+                    routine.insertAndQueueForSync(in: modelContext)
                     try? modelContext.save()
                     onFinished()
                     dismiss()

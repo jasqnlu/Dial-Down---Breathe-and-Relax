@@ -204,8 +204,7 @@ struct RoutineBuilderView: View {
                 exerciseDurationOverrides: durationOverrides,
                 ownerID: auth.backendID
             )
-            modelContext.insert(routine)
-            routine.markUpdated(in: modelContext)
+            routine.insertAndQueueForSync(in: modelContext)
 
             if let profile = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
                 GamificationService.awardBadge("Routine Builder", to: profile)

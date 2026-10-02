@@ -78,7 +78,7 @@ struct ImportRoutineView: View {
 
     private func saveRoutine() {
         let routine = Routine(name: payload.name, exerciseIDs: matched.map { $0.uuid }, ownerID: auth.backendID)
-        modelContext.insert(routine)
+        routine.insertAndQueueForSync(in: modelContext)
         do {
             try modelContext.save()
         } catch {
