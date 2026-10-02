@@ -220,7 +220,7 @@ struct ExerciseListView: View {
 
     /// Real Liquid Glass (`.glassEffect`), replacing the previous hand-rolled
     /// approximation (an opaque capsule fill + a gradient `strokeBorder` +
-    /// two colored shadows). The deployment target is iOS 26.5, so the actual
+    /// two colored shadows). The deployment target is iOS 26, so the actual
     /// API is available — no need to keep faking the look.
     private var searchBar: some View {
         HStack(spacing: 10) {

@@ -54,7 +54,7 @@ docs/                            Design notes, plans and readiness checklists
 
 ## Building
 
-Requirements: a recent Xcode with the iOS 26 SDK (the deployment target is iOS 26.5).
+Requirements: a recent Xcode with the iOS 26 SDK (the deployment target is iOS 26.0).
 
 1. Clone the repo and open `Breath - Relax & Stretch.xcodeproj`.
 2. Choose an iPhone simulator and run. The app works offline with no extra setup.
