@@ -494,6 +494,12 @@ create table if not exists leaderboard (
 alter table leaderboard enable row level security;
 
 grant select, insert, update, delete on public.leaderboard to authenticated;
+-- The blanket `grant all on all tables ... to service_role` earlier in this
+-- file only covers tables that existed when it ran, and this table is
+-- created after it — so service_role (the delete-account Edge Function)
+-- needs its own grant. Without it, account deletion fails with
+-- "permission denied for table leaderboard".
+grant select, insert, update, delete on public.leaderboard to service_role;
 
 create policy "users can read their own leaderboard row"
   on leaderboard for select to authenticated
