@@ -285,8 +285,7 @@ struct TodayView: View {
                                 pinnedOrder: nextPinnedOrder(),
                                 ownerID: auth.backendID
                             )
-                            modelContext.insert(routine)
-                            routine.markUpdated(in: modelContext)
+                            routine.insertAndQueueForSync(in: modelContext)
                             customizeManagedRoutineIDString = routine.uuid.uuidString
                         }
                     } else {

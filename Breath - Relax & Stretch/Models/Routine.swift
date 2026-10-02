@@ -66,6 +66,17 @@ final class Routine {
         self.updatedAt = Date()
     }
 
+    /// Saves a newly created routine AND queues it for upload. Every place
+    /// that creates a routine should use this instead of a bare
+    /// `context.insert` — two creation paths once inserted without queueing,
+    /// so those routines never synced. (Routines pulled *from* the server are
+    /// inserted directly by `SyncEngine` and must not be re-queued.)
+    @MainActor
+    func insertAndQueueForSync(in context: ModelContext) {
+        context.insert(self)
+        markUpdated(in: context)
+    }
+
     /// Marks this routine changed and queues it for the next sync drain.
     /// Every mutation site (rename, exercise edit, pin/unpin, reorder, and
     /// the `.delete` case below) should go through this instead of touching
