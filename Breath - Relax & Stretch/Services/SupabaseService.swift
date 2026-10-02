@@ -189,17 +189,6 @@ actor SupabaseService {
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
-    /// Deletes the private profile row. Called on account deletion so the
-    /// saved name and stats don't outlive the local identity that is rotated
-    /// right after. Requires the profiles delete policy in supabase_schema.sql.
-    func deleteProfile(id: String) async throws {
-        // Strict percent-encoding (unreserved characters only): the id should
-        // always be a UUID, but it round-trips through UserDefaults, so never
-        // let a stray `&`/`=` rewrite the PostgREST filter expression.
-        let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
-        try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
-    }
-
     // MARK: - Sync engine (routines + sessions)
     // See docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
     // A "delete" in the outbox still calls uploadRoutine — deletes are soft
@@ -488,6 +477,42 @@ actor SupabaseService {
         return (try? await refreshSession(current))?.accessToken
     }
 
+    // MARK: - Account deletion
+
+    /// Calls the `delete-account` Edge Function, which revokes Sign in with
+    /// Apple (when a code is given), deletes every row this user owns, then
+    /// the auth user itself. On any failure it throws and leaves the local
+    /// session alone so the caller can keep the user signed in to retry; on
+    /// success the now-dead session is cleared.
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
+        guard let token = await currentAccessToken() else {
+            throw AccountDeletionError.notSignedIn
+        }
+        var request = bareRequest(path: "/functions/v1/delete-account", method: "POST")
+        // Not the default 60 s: on weak Wi-Fi that's a minute of spinner.
+        // The deletion itself takes a few seconds, and if a timeout hides a
+        // success, retrying is safe — the function treats an already-deleted
+        // account as success.
+        request.timeoutInterval = 30
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONEncoder().encode(
+            DeleteAccountBody(appleAuthorizationCode: appleAuthorizationCode))
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await urlSession.data(for: request)
+        } catch {
+            throw AccountDeletionError.network
+        }
+        guard let http = response as? HTTPURLResponse else { throw AccountDeletionError.server }
+        guard (200..<300).contains(http.statusCode) else {
+            let code = (try? JSONDecoder().decode(DeleteAccountErrorBody.self, from: data))?.error
+            throw AccountDeletionError(serverCode: code, status: http.statusCode)
+        }
+        storeSession(nil)
+    }
+
     // MARK: - HTTP helpers
 
     @discardableResult
@@ -598,6 +623,14 @@ protocol SupabaseProfileStoring: Sendable {
 }
 
 extension SupabaseService: SupabaseProfileStoring {}
+
+/// Account-deletion seam so AuthManager's delete flow is testable without
+/// the network.
+protocol SupabaseAccountDeleting: Sendable {
+    func deleteAccount(appleAuthorizationCode: String?) async throws
+}
+
+extension SupabaseService: SupabaseAccountDeleting {}
 
 // DTOs live in SupabaseDTOs.swift — kept separate so Swift 6 never
 // infers @MainActor isolation on their synthesised Codable conformances.

@@ -6,6 +6,18 @@ import LocalAuthentication
 import CryptoKit
 import os
 
+/// What the Sign in with Apple re-confirm sheet hands back before Delete
+/// Account (see AppleReauthenticator). `authorizationCode` is the one-time
+/// code the server trades with Apple to revoke this app's authorization;
+/// `identityToken` + `rawNonce` let a user whose original Supabase exchange
+/// failed get a session first; `appleUserID` locates the cached Apple email.
+nonisolated struct AppleReauthCredential: Sendable, Equatable {
+    let appleUserID: String
+    let authorizationCode: String
+    let identityToken: String
+    let rawNonce: String?
+}
+
 // MARK: - Auth Provider
 
 enum AuthProvider: String, Codable {
@@ -172,6 +184,7 @@ final class AuthManager: ObservableObject {
 
     private let keychain: KeychainStore
     private let supabase: SupabaseAuthenticating
+    private let accountDeleter: SupabaseAccountDeleting
 
     /// Raw nonce for the in-flight Sign in with Apple request; its SHA-256 is
     /// embedded in the Apple identity token, and Supabase verifies the pair.
@@ -182,10 +195,12 @@ final class AuthManager: ObservableObject {
     /// go through `.shared`.
     init(
         keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.auth"),
-        supabase: SupabaseAuthenticating = SupabaseService.shared
+        supabase: SupabaseAuthenticating = SupabaseService.shared,
+        accountDeleter: SupabaseAccountDeleting = SupabaseService.shared
     ) {
         self.keychain = keychain
         self.supabase = supabase
+        self.accountDeleter = accountDeleter
         loadPersistedState()
     }
 
@@ -361,7 +376,7 @@ final class AuthManager: ObservableObject {
     /// Random URL-safe nonce for Sign in with Apple. The slight modulo bias
     /// is irrelevant here — the nonce only needs to be unpredictable, not
     /// uniformly distributed.
-    nonisolated private static func randomNonce(length: Int = 32) -> String {
+    nonisolated static func randomNonce(length: Int = 32) -> String {
         let charset = Array("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-._")
         var bytes = [UInt8](repeating: 0, count: length)
         let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
@@ -471,6 +486,7 @@ final class AuthManager: ObservableObject {
         firstName   = ""
         lastName    = ""
         userEmail   = ""
+        provider    = .email // the initial default; kProvider was removed above
     }
 
     /// Drops the Supabase user id and (best-effort) revokes the session's
@@ -481,8 +497,7 @@ final class AuthManager: ObservableObject {
         pendingAppleRetry = nil
         guard SupabaseService.isConfigured else { return }
         Task.detached {
-            // Best-effort, and ordered *before* the revoke for the same reason
-            // deleteAccount orders deleteProfile first: the push_tokens delete
+            // Best-effort, and ordered *before* the revoke: the push_tokens delete
             // policy is `auth.uid()::text = user_id`, so the row can only be
             // removed while the session that owns it is still valid. Left
             // behind, a token nothing can ever address again keeps receiving
@@ -493,42 +508,55 @@ final class AuthManager: ObservableObject {
     }
 
     // MARK: - Delete account
-    // App Store Guideline 5.1.1(v): apps offering account creation must offer
-    // in-app account deletion. Removes the stored credential + name from the
-    // keychain, resets all auth state, and rotates the anonymous backend ID so
-    // no future upload can be linked to the deleted identity. Local session
-    // history (SwiftData) is untouched — it belongs to the device, not the account.
+    // App Store Guideline 5.1.1(v): in-app deletion must delete the account
+    // itself, and Sign in with Apple accounts must also have their Apple
+    // authorization revoked. The delete-account Edge Function does both
+    // server-side. Decision 2026-10-01: nothing local is cleared unless the
+    // server confirms; on any failure this throws and the user stays signed
+    // in to retry. The caller wipes local data (LocalDataEraser) after this
+    // returns.
 
-    func deleteAccount() {
-        // Best-effort: remove the leaderboard row and the private profile row
-        // before rotating the identity — once rotated, nothing can ever
-        // address them again. Ordered inside one task: both delete policies
-        // require auth.uid() to match, so the rows must go *before* the
-        // session is revoked.
+    func deleteAccount(appleReauth: AppleReauthCredential?) async throws {
+        if provider == .apple && appleReauth == nil {
+            throw AccountDeletionError.appleReauthRequired
+        }
+
         if SupabaseService.isConfigured {
-            let departingID = backendID
-            Task.detached {
-                // Same ordering rule as deleteProfile below: push_tokens'
-                // delete policy is `auth.uid()::text = user_id`, so the row
-                // must go before the session is revoked — afterwards nothing
-                // can ever authorize removing it, and a deleted account's
-                // device would keep receiving streak pushes.
-                try? await SupabaseService.shared.deletePushToken()
-                try? await SupabaseService.shared.leaveLeaderboard()
-                try? await SupabaseService.shared.deleteProfile(id: departingID)
-                await SupabaseService.shared.signOut()
+            // An Apple user whose original token exchange failed has no
+            // stored Supabase id but may still have a server account. Get a
+            // session from the fresh re-auth token first, never a local-only
+            // delete that would orphan it.
+            if !isBackendAuthenticated, let reauth = appleReauth {
+                do {
+                    let uid = try await supabase.signInWithApple(
+                        identityToken: reauth.identityToken, nonce: reauth.rawNonce)
+                    UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+                } catch is URLError {
+                    throw AccountDeletionError.network
+                } catch {
+                    throw AccountDeletionError.server
+                }
+            }
+            // Not backend-authenticated here means the account never existed
+            // server-side, so there's nothing remote to delete.
+            if isBackendAuthenticated {
+                try await accountDeleter.deleteAccount(
+                    appleAuthorizationCode: appleReauth?.authorizationCode)
             }
         }
+
+        // Server confirmed (or there was no server account). Clear auth state.
+        if let appleUserID = appleReauth?.appleUserID {
+            keychain.delete(account: "apple-email:\(appleUserID)")
+        }
         let d = UserDefaults.standard
-        d.removeObject(forKey: kDisplayName)
-        d.removeObject(forKey: kEmail)
-        d.removeObject(forKey: kProvider)
         d.removeObject(forKey: kTwoFAEnabled)
         d.removeObject(forKey: kAnonymousID)
         d.removeObject(forKey: kSupabaseUserID)
-        // Not signOut() — that would race a second Supabase sign-out against
-        // the ordered delete-then-revoke task above.
+        backendSyncFailed = false
+        pendingAppleRetry = nil
         clearLocalSignIn()
+        objectWillChange.send() // backendID/isBackendAuthenticated changed
     }
 
     // MARK: - Biometrics

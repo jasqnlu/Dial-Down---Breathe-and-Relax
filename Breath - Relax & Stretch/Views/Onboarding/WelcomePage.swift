@@ -32,7 +32,7 @@ struct WelcomePage: View {
                     .frame(height: 112)
                     .padding(.bottom, 28)
 
-                Text("Dial Down - Breath and Relax")
+                Text("Dial Down – Breathe and Relax")
                     .font(.luminaDisplay)
                     .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)

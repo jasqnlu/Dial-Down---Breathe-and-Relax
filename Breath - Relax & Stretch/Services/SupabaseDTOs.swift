@@ -222,3 +222,19 @@ struct RemoteLeaderboardRow: Codable, Sendable {
         case totalMinutes = "total_minutes"
     }
 }
+
+/// Body for the delete-account Edge Function. A nil code is omitted from
+/// the JSON (synthesized Encodable uses encodeIfPresent), which is what the
+/// function expects for non-Apple accounts.
+nonisolated struct DeleteAccountBody: Encodable, Sendable {
+    let appleAuthorizationCode: String?
+
+    enum CodingKeys: String, CodingKey {
+        case appleAuthorizationCode = "apple_authorization_code"
+    }
+}
+
+/// `{"error": "<code>"}`, the delete-account function's failure body.
+nonisolated struct DeleteAccountErrorBody: Decodable, Sendable {
+    let error: String?
+}

@@ -290,6 +290,7 @@ private final class FakeSupabaseKeychainStore: KeychainStore {
 private final class FakeHTTPSession: SupabaseHTTPSession, @unchecked Sendable {
     enum Canned {
         case success(status: Int, body: Data)
+        case failure(URLError)
     }
     private var responses: [Canned]
     private var recorded: [URLRequest] = []
@@ -318,6 +319,8 @@ private final class FakeHTTPSession: SupabaseHTTPSession, @unchecked Sendable {
                 httpVersion: nil, headerFields: nil
             )!
             return (body, response)
+        case .failure(let error):
+            throw error
         }
     }
 }
@@ -433,5 +436,100 @@ extension SupabaseServiceTests {
         let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
         try await service.leaveLeaderboard()
         #expect(session.requests.isEmpty)   // never sends an unfiltered DELETE
+    }
+}
+
+// MARK: - Account deletion
+
+extension SupabaseServiceTests {
+
+    @Test @MainActor func deleteAccountPostsTheCodeWithTheUserTokenAndClearsTheSession() async throws {
+        let keychain = try signedInKeychain(userID: "u1")
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data(#"{"deleted":true}"#.utf8))
+        ])
+        let service = SupabaseService(keychain: keychain, urlSession: session)
+
+        try await service.deleteAccount(appleAuthorizationCode: "code-1")
+
+        let request = try #require(session.requests.first)
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/functions/v1/delete-account")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer access")
+        let requestBody = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: requestBody) as? [String: Any])
+        #expect(json["apple_authorization_code"] as? String == "code-1")
+        #expect(keychain.loadCredential(account: "supabase.session") == nil)
+    }
+
+    /// On weak Wi-Fi the default 60 s timeout leaves the user staring at a
+    /// spinner; 30 s is ample for the server's few-second deletion, and a
+    /// timed-out success is safe to retry (the function is idempotent).
+    @Test @MainActor func deleteAccountGivesUpAfterThirtySeconds() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("{}".utf8))])
+        let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+
+        try await service.deleteAccount(appleAuthorizationCode: nil)
+
+        #expect(session.requests.first?.timeoutInterval == 30)
+    }
+
+    @Test @MainActor func deleteAccountOmitsTheCodeKeyForNonAppleAccounts() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("{}".utf8))])
+        let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+
+        try await service.deleteAccount(appleAuthorizationCode: nil)
+
+        let body = try #require(session.requests.first?.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json["apple_authorization_code"] == nil)
+    }
+
+    @Test @MainActor func deleteAccountWithoutASessionThrowsNotSignedInWithoutCallingTheNetwork() async {
+        let session = FakeHTTPSession(responses: [])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+
+        await #expect(throws: AccountDeletionError.notSignedIn) {
+            try await service.deleteAccount(appleAuthorizationCode: nil)
+        }
+        #expect(session.requests.isEmpty)
+    }
+
+    @Test @MainActor func deleteAccountMapsAppleRevokeFailureAndKeepsTheSession() async throws {
+        let keychain = try signedInKeychain(userID: "u1")
+        let session = FakeHTTPSession(responses: [
+            .success(status: 502, body: Data(#"{"error":"apple_revoke_failed"}"#.utf8))
+        ])
+        let service = SupabaseService(keychain: keychain, urlSession: session)
+
+        await #expect(throws: AccountDeletionError.appleRevokeFailed) {
+            try await service.deleteAccount(appleAuthorizationCode: "c")
+        }
+        #expect(keychain.loadCredential(account: "supabase.session") != nil)
+    }
+
+    @Test @MainActor func deleteAccountMapsServerCodesAndStatuses() async throws {
+        let cases: [(Int, String, AccountDeletionError)] = [
+            (400, #"{"error":"apple_reauth_required"}"#, .appleReauthRequired),
+            (401, #"{"error":"unauthorized"}"#, .notSignedIn),
+            (500, #"{"error":"delete_failed"}"#, .server),
+            (503, "<html>gateway</html>", .server),
+        ]
+        for (status, body, expected) in cases {
+            let session = FakeHTTPSession(responses: [.success(status: status, body: Data(body.utf8))])
+            let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+            await #expect(throws: expected) {
+                try await service.deleteAccount(appleAuthorizationCode: "c")
+            }
+        }
+    }
+
+    @Test @MainActor func deleteAccountMapsATransportErrorToNetwork() async throws {
+        let session = FakeHTTPSession(responses: [.failure(URLError(.notConnectedToInternet))])
+        let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+
+        await #expect(throws: AccountDeletionError.network) {
+            try await service.deleteAccount(appleAuthorizationCode: nil)
+        }
     }
 }

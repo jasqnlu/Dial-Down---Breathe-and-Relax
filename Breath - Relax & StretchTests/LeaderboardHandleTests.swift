@@ -2,6 +2,10 @@ import Testing
 import Foundation
 @testable import BreathRelaxStretch
 
+// .serialized: the preference-cache tests read and write the process-global
+// LeaderboardPreference (UserDefaults.standard); run concurrently, one test's
+// "Calm Otter 4821" lands between the other's write and its nil expectation.
+@Suite(.serialized)
 struct LeaderboardHandleTests {
 
     /// Deterministic RNG (SplitMix64) so generation tests never flake.

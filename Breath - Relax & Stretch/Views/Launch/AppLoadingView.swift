@@ -35,7 +35,7 @@ struct AppLoadingView: View {
 
     private var content: some View {
         VStack(spacing: 24) {
-            Text("Dial Down - Breath and Relax")
+            Text("Dial Down – Breathe and Relax")
                 .font(.luminaDisplay)
                 .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
