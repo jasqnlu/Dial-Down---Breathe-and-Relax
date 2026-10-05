@@ -106,6 +106,7 @@ enum SeedMigrator {
             } else {
                 // Brand-new in v4 — insert it as-is.
                 let exercise = Exercise(
+                    uuid: Exercise.seedUUID(seedID: seedID, name: name),
                     name: name, type: type, targetBodyParts: parts,
                     durationSeconds: duration, difficulty: difficulty,
                     instructions: instructions,
@@ -286,6 +287,7 @@ enum SeedMigrator {
 
             let cueStyle = (raw["cueStyle"] as? String).flatMap { ExerciseCueStyle(rawValue: $0.capitalized) } ?? .hold
             let exercise = Exercise(
+                uuid: Exercise.seedUUID(seedID: seedID, name: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions,

@@ -213,7 +213,7 @@ struct BreathRelaxStretchApp: App {
             // renamed exercise. Falls back to the old name-hash only if the
             // seed entry is somehow missing/malformed a valid id.
             let exercise = Exercise(
-                uuid: seedID.flatMap(UUID.init) ?? Exercise.stableSeedUUID(forName: name),
+                uuid: Exercise.seedUUID(seedID: seedID, name: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution,
