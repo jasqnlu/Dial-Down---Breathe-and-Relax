@@ -662,4 +662,62 @@ struct SeedMigratorTests {
         let changed = SeedMigrator.claimOwnerlessRoutines(context: context, claimant: "user-123")
         #expect(!changed)
     }
+
+    // MARK: - Migration-inserted exercises get the seed's permanent uuid
+
+    // Exercise.init defaults `uuid` to a fresh random UUID, so an insert that
+    // doesn't pass one gives the same exercise a different identity on an
+    // upgraded install than on a fresh one (which seeds from the "id" field).
+    // Session/Routine exerciseIDs and Supabase compare these across devices.
+
+    private let permanentID = "6f1c2a52-8d0e-5b7a-9c3d-2e4f5a6b7c8d"
+
+    @Test func v4InsertedExerciseUsesTheSeedIDAsItsUUID() throws {
+        let context = makeContext()
+        let raw = [rawExercise(id: permanentID, name: "New Stretch")]
+        _ = SeedMigrator.migrateV4(context: context, rawExercises: raw)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 1)
+        #expect(all[0].uuid == UUID(uuidString: permanentID))
+    }
+
+    @Test func v9InsertedExerciseUsesTheSeedIDAsItsUUID() throws {
+        let context = makeContext()
+        let raw = [rawExercise(id: permanentID, name: "Standing Tibialis Raise (Toe Lifts)")]
+        _ = SeedMigrator.migrateV9(context: context, rawExercises: raw)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 1)
+        #expect(all[0].uuid == UUID(uuidString: permanentID))
+    }
+
+    @Test func migrationInsertFallsBackToTheNameHashForAMalformedSeedID() throws {
+        let context = makeContext()
+        let raw = [rawExercise(id: "not-a-uuid", name: "New Stretch")]
+        _ = SeedMigrator.migrateV4(context: context, rawExercises: raw)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 1)
+        #expect(all[0].uuid == Exercise.stableSeedUUID(forName: "New Stretch"))
+    }
+
+    @Test func v4NeverRewritesTheUUIDOfAnExistingRow() throws {
+        let context = makeContext()
+        let original = UUID()
+        let exercise = Exercise(
+            uuid: original, name: "Quad Stretch", type: .stretch,
+            targetBodyParts: ["Left Leg"], durationSeconds: 60,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = permanentID
+        context.insert(exercise)
+        try context.save()
+
+        _ = SeedMigrator.migrateV4(context: context, rawExercises: [rawExercise(id: permanentID, name: "Quad Stretch")])
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 1)
+        #expect(all[0].uuid == original)
+    }
 }

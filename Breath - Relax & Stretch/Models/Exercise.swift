@@ -202,6 +202,15 @@ final class Exercise {
         self.cueStyle = cueStyle
     }
 
+    /// The uuid a bundled seed exercise should carry: the catalog entry's own
+    /// permanent `"id"` when it parses as a UUID, else the name-derived
+    /// fallback. Every path that inserts a seed exercise (first-launch
+    /// seeding and the migrations that add exercises to upgraded installs)
+    /// uses this, so a fresh install and an upgraded one agree on identity.
+    static func seedUUID(seedID: String?, name: String) -> UUID {
+        seedID.flatMap(UUID.init(uuidString:)) ?? stableSeedUUID(forName: name)
+    }
+
     /// Deterministic UUID derived from an exercise's name, so seeding the same
     /// bundled catalog on two different installs produces the same id instead
     /// of `Exercise.init`'s default `uuid: UUID = UUID()` generating a fresh
