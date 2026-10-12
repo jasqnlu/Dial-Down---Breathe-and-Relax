@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 import Combine
-import AudioToolbox
 import StoreKit
 
 struct SessionPlayerView: View {
@@ -66,11 +65,6 @@ struct SessionPlayerView: View {
     private let impactMedium  = UIImpactFeedbackGenerator(style: .medium)
     private let notifySuccess = UINotificationFeedbackGenerator()
 
-    // Sound IDs (AudioToolbox built-in system sounds — no audio files needed)
-    private let soundTick:       SystemSoundID = 1104  // keyboard click — breathing cue
-    private let soundTransition: SystemSoundID = 1057  // short tock — exercise advance
-    private let soundComplete:   SystemSoundID = 1016  // tweet chime — session done
-    private let soundCueBeep: SystemSoundID = 1103  // soft low tock — cue reminder
     @State private var breathTick = 0  // counts seconds to fire cue every 4s
     @State private var cueBadgePulsing = false
     @State private var instructionCueIndex = 0
@@ -163,6 +157,7 @@ struct SessionPlayerView: View {
         }
         .onAppear {
             sessionStarted = Date()
+            SoundCueService.shared.prepare()
             beginNextExercise()
             impactLight.prepare()
             impactMedium.prepare()
@@ -190,9 +185,9 @@ struct SessionPlayerView: View {
                     // phase-transition beeps for pattern exercises, whose
                     // phase boundaries don't align with a 4s grid (e.g.
                     // 4-7-8 Breathing's 19s cycle) — suppress it there.
-                    if breathTick % 4 == 0, activeBreathPattern == nil { AudioServicesPlaySystemSound(soundTick) }
+                    if breathTick % 4 == 0, activeBreathPattern == nil { SoundCueService.shared.play(.tick) }
                 } else {
-                    AudioServicesPlaySystemSound(soundCueBeep)
+                    SoundCueService.shared.play(.cueBeep)
                     advanceToNext(completion: 1.0)
                 }
             }
@@ -705,7 +700,7 @@ struct SessionPlayerView: View {
             // on-screen text; the phase label is the more actionable cue.
             VoiceCueService.shared.speak(exercise.name)
         }
-        AudioServicesPlaySystemSound(soundCueBeep)
+        SoundCueService.shared.play(.cueBeep)
         instructionCueTask?.cancel()
         instructionCueIndex = 0
         if let pattern = activeBreathPattern {
@@ -729,7 +724,7 @@ struct SessionPlayerView: View {
                     withAnimation(.easeOut(duration: 0.35)) {
                         instructionCueIndex = (instructionCueIndex + 1) % count
                     }
-                    AudioServicesPlaySystemSound(soundCueBeep)
+                    SoundCueService.shared.play(.cueBeep)
                 }
             }
         }
@@ -745,7 +740,7 @@ struct SessionPlayerView: View {
         sideSwitchPending = false
         impactMedium.impactOccurred()
         VoiceCueService.shared.speak("Switch sides")
-        AudioServicesPlaySystemSound(soundCueBeep)
+        SoundCueService.shared.play(.cueBeep)
     }
 
     /// Called every 1Hz tick when a breath pattern is active. Derives the
@@ -763,7 +758,7 @@ struct SessionPlayerView: View {
         withAnimation(.easeOut(duration: 0.35)) {
             currentBreathPhaseStepIndex = resolved.phaseIndex
         }
-        AudioServicesPlaySystemSound(soundCueBeep)
+        SoundCueService.shared.play(.cueBeep)
         VoiceCueService.shared.speak(pattern[resolved.phaseIndex].label)
     }
 
@@ -792,7 +787,7 @@ struct SessionPlayerView: View {
 
         if currentIndex + 1 < exercises.count {
             impactMedium.impactOccurred()
-            AudioServicesPlaySystemSound(soundTransition)
+            SoundCueService.shared.play(.transition)
             currentIndex += 1
             breathTick = 0
             if showGetReady {
@@ -804,7 +799,7 @@ struct SessionPlayerView: View {
             // Session complete
             instructionCueTask?.cancel()
             notifySuccess.notificationOccurred(.success)
-            AudioServicesPlaySystemSound(soundComplete)
+            SoundCueService.shared.play(.complete)
             saveSession()
             showingSummary = true
         }

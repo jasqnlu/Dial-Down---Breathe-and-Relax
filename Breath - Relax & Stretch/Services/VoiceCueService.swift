@@ -7,6 +7,7 @@ final class VoiceCueService {
 
     func speak(_ text: String) {
         guard UserDefaults.standard.bool(forKey: "voiceCuesEnabled") else { return }
+        AppAudioSession.configureIfNeeded()
         synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate   = AVSpeechUtteranceDefaultSpeechRate * 0.85
