@@ -2342,16 +2342,7 @@
         "Release and switch legs."
       ],
       "id": "448bf1d9-1284-5c54-b151-6f75290d4df1",
-      "animationName": "left_seated_calf_stretch_with_towel.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.08, 0.70],
-        "angle": 60,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "left_seated_calf_stretch_with_towel.mp4"
     },
     {
       "name": "Right Seated Calf Stretch with Towel",
@@ -2371,16 +2362,7 @@
         "Release and switch legs."
       ],
       "id": "7b5db71f-b938-5df5-b8b3-b6877b7f7e2d",
-      "animationName": "right_seated_calf_stretch_with_towel.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.92, 0.70],
-        "angle": 120,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "right_seated_calf_stretch_with_towel.mp4"
     },
     {
       "name": "Kneeling Tibialis Stretch",
@@ -2463,16 +2445,7 @@
         "This mobilises the ankle and gently stretches the muscles along the shin."
       ],
       "id": "3d2d6f07-2542-5d17-ab93-cb3691c274bf",
-      "animationName": "shin_and_ankle_mobiliser.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Trace letters in the air with your toes",
-        "shape": "swingArc",
-        "anchor": [0.48, 0.86],
-        "angle": -30,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "shin_and_ankle_mobiliser.mp4"
     },
     {
       "name": "Ankle Alphabet",
@@ -2492,16 +2465,7 @@
         "Switch feet and repeat."
       ],
       "id": "fe4dea3b-f897-5d26-bd98-456d2a9f96ca",
-      "animationName": "ankle_alphabet.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Trace letters with your toes",
-        "shape": "swingArc",
-        "anchor": [0.35, 0.85],
-        "angle": -30,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "ankle_alphabet.mp4"
     },
     {
       "name": "Wrist & Forearm Release",
@@ -3624,16 +3588,7 @@
       ],
       "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "ca88ac04-f55d-45c9-9693-19f6829c6283",
-      "animationName": "left_step_edge_calf_drop_stretch.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Let your heel drop below the step",
-        "shape": "pushPull",
-        "anchor": [0.53, 0.85],
-        "angle": -90,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "left_step_edge_calf_drop_stretch.mp4"
     },
     {
       "name": "Right Step-Edge Calf Drop Stretch",
@@ -3653,16 +3608,7 @@
       ],
       "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8",
-      "animationName": "right_step_edge_calf_drop_stretch.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Let your heel drop below the step",
-        "shape": "pushPull",
-        "anchor": [0.53, 0.85],
-        "angle": -90,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "right_step_edge_calf_drop_stretch.mp4"
     },
     {
       "name": "Left Scalene Neck Stretch",
@@ -3802,16 +3748,7 @@
         "Release slowly, then repeat on the other side on another round."
       ],
       "id": "8193d6e7-e24e-4c4c-bb03-3bdaa2be18d5",
-      "animationName": "left_plantar_fascia_stretch_toe_raise.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.30, 0.68],
-        "angle": 100,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "left_plantar_fascia_stretch_toe_raise.mp4"
     },
     {
       "name": "Right Plantar Fascia Stretch (Toe Raise)",
@@ -3830,16 +3767,7 @@
         "Release slowly, then repeat on the other side on another round."
       ],
       "id": "3966e57e-0f8d-42a8-bbb3-0eed3813ddf3",
-      "animationName": "right_plantar_fascia_stretch_toe_raise.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.68, 0.68],
-        "angle": 80,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "right_plantar_fascia_stretch_toe_raise.mp4"
     },
     {
       "name": "Left Standing Crescent Moon Side Stretch",
@@ -4520,16 +4448,7 @@
         "Hold, then release and switch sides on another round."
       ],
       "id": "bab80254-c9e0-472a-9dfd-f369a0b4232e",
-      "animationName": "standing_ankle_dorsiflexion_stretch_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Ease your knee forward toward the wall",
-        "shape": "pushPull",
-        "anchor": [0.40, 0.62],
-        "angle": 180,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "standing_ankle_dorsiflexion_stretch_left.mp4"
     },
     {
       "name": "Standing Ankle Dorsiflexion Stretch (Right)",
@@ -4549,16 +4468,7 @@
         "Hold, then release and switch sides on another round."
       ],
       "id": "ab2582db-e52c-4820-baed-89ef91592ede",
-      "animationName": "standing_ankle_dorsiflexion_stretch_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Ease your knee forward toward the wall",
-        "shape": "pushPull",
-        "anchor": [0.40, 0.62],
-        "angle": 180,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "standing_ankle_dorsiflexion_stretch_right.mp4"
     },
     {
       "name": "20-20-20 Focus Shift",
@@ -4914,16 +4824,7 @@
         "Repeat the lift-and-lower rhythm for the full duration."
       ],
       "id": "37492316-8e25-4f91-a06a-de0b59895bf9",
-      "animationName": "standing_tibialis_raise_toe_lifts.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Lift your toes up off the floor",
-        "shape": "pushPull",
-        "anchor": [0.58, 0.88],
-        "angle": 90,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "standing_tibialis_raise_toe_lifts.mp4"
     },
     {
       "name": "Thumb Extension Stretch (Left)",
@@ -5138,16 +5039,7 @@
         "Release and repeat 2-3 times."
       ],
       "id": "b0fad07e-df19-42e4-83db-a9995fd00628",
-      "animationName": "seated_toe_to_shin_stretch_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.08, 0.70],
-        "angle": 80,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_toe_to_shin_stretch_left.mp4"
     },
     {
       "name": "Seated Toe-to-Shin Stretch (Right)",
@@ -5166,16 +5058,7 @@
         "Release and repeat 2-3 times."
       ],
       "id": "f11229f1-5862-4760-89c6-3ea24b9a39dc",
-      "animationName": "seated_toe_to_shin_stretch_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull your toes back toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.08, 0.70],
-        "angle": 80,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_toe_to_shin_stretch_right.mp4"
     },
     {
       "name": "Jaw Relaxation Drop",
@@ -5532,16 +5415,7 @@
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
       "id": "9862ec55-41c7-44f8-ae44-7b89d3c93431",
-      "animationName": "seated_assisted_tibialis_stretch_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Point your foot down and away from your shin",
-        "shape": "pushPull",
-        "anchor": [0.65, 0.75],
-        "angle": -70,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_assisted_tibialis_stretch_left.mp4"
     },
     {
       "name": "Seated Assisted Tibialis Stretch (Right)",
@@ -5561,16 +5435,7 @@
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
       "id": "f36fa60d-4df8-4421-96b8-75dced467874",
-      "animationName": "seated_assisted_tibialis_stretch_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Point your foot down and away from your shin",
-        "shape": "pushPull",
-        "anchor": [0.35, 0.75],
-        "angle": -110,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_assisted_tibialis_stretch_right.mp4"
     },
     {
       "name": "Active Shoulder Shrug & Release (Left)",
@@ -6148,16 +6013,7 @@
       ],
       "caution": "Hold a stable railing throughout - do not attempt without support.",
       "id": "5136a327-e3d0-494e-8fc4-ddef8c44cb03",
-      "animationName": "standing_calf_stretch_on_stair_edge_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Let your heel drop below the step",
-        "shape": "pushPull",
-        "anchor": [0.53, 0.85],
-        "angle": -90,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "standing_calf_stretch_on_stair_edge_left.mp4"
     },
     {
       "name": "Standing Calf Stretch on Stair Edge (Right)",
@@ -6177,16 +6033,7 @@
       ],
       "caution": "Hold a stable railing throughout - do not attempt without support.",
       "id": "77789fbf-a5c7-4901-ba63-1347806f8540",
-      "animationName": "standing_calf_stretch_on_stair_edge_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Let your heel drop below the step",
-        "shape": "pushPull",
-        "anchor": [0.53, 0.85],
-        "angle": -90,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "standing_calf_stretch_on_stair_edge_right.mp4"
     },
     {
       "name": "Downward-Facing Dog Calf Pump",
@@ -6205,16 +6052,7 @@
         "Continue the gentle pedaling motion for the full duration."
       ],
       "id": "88e274ef-bf80-4e67-8675-3de9d5d9676a",
-      "animationName": "downward_facing_dog_calf_pump.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Press one heel toward the floor",
-        "shape": "pushPull",
-        "anchor": [0.52, 0.83],
-        "angle": -90,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "downward_facing_dog_calf_pump.mp4"
     },
     {
       "name": "Seated Calf Stretch with Towel (Left)",
@@ -6347,16 +6185,7 @@
         "Hold for 20-30 seconds, breathing steadily."
       ],
       "id": "135be4d4-96cd-4443-be45-0a8fb2fc3e2c",
-      "animationName": "standing_bilateral_calf_stretch_on_incline_board.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Lean your body forward from the ankles",
-        "shape": "pushPull",
-        "anchor": [0.45, 0.30],
-        "angle": 160,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "standing_bilateral_calf_stretch_on_incline_board.mp4"
     },
     {
       "name": "Kneeling Tibialis Stretch, Toes Tucked (Left)",
@@ -6415,16 +6244,7 @@
         "Hold for 15-20 seconds, then release slowly."
       ],
       "id": "a2f75877-873a-49a6-90e0-20367b208b02",
-      "animationName": "seated_shin_stretch_with_strap_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull the strap to point your toes away",
-        "shape": "pushPull",
-        "anchor": [0.06, 0.62],
-        "angle": 200,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_shin_stretch_with_strap_left.mp4"
     },
     {
       "name": "Seated Shin Stretch with Strap (Right)",
@@ -6443,16 +6263,7 @@
         "Hold for 15-20 seconds, then release slowly."
       ],
       "id": "7c09f0cd-c973-42ce-840b-c522529c3c36",
-      "animationName": "seated_shin_stretch_with_strap_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull the strap to point your toes away",
-        "shape": "pushPull",
-        "anchor": [0.06, 0.62],
-        "angle": 200,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "seated_shin_stretch_with_strap_right.mp4"
     },
     {
       "name": "Standing Tibialis Stretch Against Wall",
@@ -6490,16 +6301,7 @@
         "Continue the circles for the full duration to release tension along the shin."
       ],
       "id": "f1764e04-7d0c-4a45-a1f3-7d8aac82c6e8",
-      "animationName": "ankle_circles_for_tibialis_release_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Circle your ankle slowly in both directions",
-        "shape": "rotate",
-        "anchor": [0.10, 0.62],
-        "angle": 0,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "ankle_circles_for_tibialis_release_left.mp4"
     },
     {
       "name": "Ankle Circles for Tibialis Release (Right)",
@@ -6518,16 +6320,7 @@
         "Continue the circles for the full duration to release tension along the shin."
       ],
       "id": "fa2a73fa-772d-4af3-b5c6-0b7fd2767a4b",
-      "animationName": "ankle_circles_for_tibialis_release_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Circle your ankle slowly in both directions",
-        "shape": "rotate",
-        "anchor": [0.10, 0.62],
-        "angle": 0,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "ankle_circles_for_tibialis_release_right.mp4"
     },
     {
       "name": "Cross-Legged Shin Pull (Left)",
@@ -6546,16 +6339,7 @@
         "Hold for 15-20 seconds, then switch the leg position."
       ],
       "id": "b5956057-9f8d-4ef4-8df0-7defebfe920f",
-      "animationName": "cross_legged_shin_pull_left.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull the top of your foot toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.62, 0.68],
-        "angle": 100,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "cross_legged_shin_pull_left.mp4"
     },
     {
       "name": "Cross-Legged Shin Pull (Right)",
@@ -6574,16 +6358,7 @@
         "Hold for 15-20 seconds, then switch the leg position."
       ],
       "id": "838d0e43-8479-4b0f-b21d-ab6da41ad164",
-      "animationName": "cross_legged_shin_pull_right.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Pull the top of your foot toward your shin",
-        "shape": "pushPull",
-        "anchor": [0.38, 0.68],
-        "angle": 80,
-        "startTime": 1.5,
-        "duration": 2.0
-      }
+      "animationName": "cross_legged_shin_pull_right.mp4"
     },
     {
       "name": "Standing Quad Stretch Against Wall (Left)",
@@ -7313,16 +7088,7 @@
         "Continue alternating flex and point slowly for the full duration."
       ],
       "id": "37ffc022-5591-4aab-a374-4cba77a70c1b",
-      "animationName": "seated_foot_flex_and_point_flow.mp4",
-      "animationIsApproximate": true,
-      "animationCallout": {
-        "text": "Flex your feet back, then point your toes away",
-        "shape": "swingArc",
-        "anchor": [0.06, 0.72],
-        "angle": 180,
-        "startTime": 1.0,
-        "duration": 2.0
-      }
+      "animationName": "seated_foot_flex_and_point_flow.mp4"
     },
     {
       "name": "Standing Toe Curl Towel Grip (Both Feet)",

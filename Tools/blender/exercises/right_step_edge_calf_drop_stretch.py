@@ -18,6 +18,8 @@ default front camera: highlight present, so this was a camera-angle bug,
 not a missing/mis-tagged highlight). Fixed by mirroring the azimuth to -90
 so the right leg becomes the near, visible one — same fix class as any
 other single-leg exercise where the target leg must face the camera.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -39,11 +41,11 @@ CAMERA_AZIMUTH = -90
 WORKED_KEYWORDS = ("right calve",)
 
 POSES = {
-    0:   {},
-    30:  {"spine": (r(3), 0, 0)},
-    60:  {"spine": (r(6), 0, 0)},
-    90:  {"spine": (r(3), 0, 0)},
-    120: {},
+    0: {"foot.R": (0, 0, 0)},
+    30: {"spine": (r(3), 0, 0), "foot.R": (r(-12), 0, 0)},
+    60: {"spine": (r(6), 0, 0), "foot.R": (r(-24), 0, 0)},
+    90: {"spine": (r(3), 0, 0), "foot.R": (r(-12), 0, 0)},
+    120: {"foot.R": (0, 0, 0)},
 }
 
 L.run(globals())

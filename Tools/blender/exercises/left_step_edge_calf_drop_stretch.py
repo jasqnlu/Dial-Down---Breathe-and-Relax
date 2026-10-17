@@ -13,6 +13,8 @@ from reading as a frozen frame) with the calf highlighted. Flagged
 dorsiflexion) isn't shown.
 
 Highlight: Left Calves.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -34,11 +36,11 @@ CAMERA_AZIMUTH = 90
 WORKED_KEYWORDS = ("left calve",)
 
 POSES = {
-    0:   {},
-    30:  {"spine": (r(3), 0, 0)},
-    60:  {"spine": (r(6), 0, 0)},
-    90:  {"spine": (r(3), 0, 0)},
-    120: {},
+    0: {"foot.L": (0, 0, 0)},
+    30: {"spine": (r(3), 0, 0), "foot.L": (r(-12), 0, 0)},
+    60: {"spine": (r(6), 0, 0), "foot.L": (r(-24), 0, 0)},
+    90: {"spine": (r(3), 0, 0), "foot.L": (r(-12), 0, 0)},
+    120: {"foot.L": (0, 0, 0)},
 }
 
 L.run(globals())

@@ -624,6 +624,32 @@ struct SeedMigratorTests {
         #expect(all[0].animationCallout == nil)
     }
 
+    /// An animation that gets fixed drops both its callout and its
+    /// approximate flag from the bundle; already-seeded installs must lose
+    /// them too, not keep showing the old "inaccurate" messaging.
+    @Test func v10AndV12ClearFixedAnimationsMessaging() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Ankle Alphabet", type: .stretch,
+            targetBodyParts: ["Right Foot"], durationSeconds: 60,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "ankle-alphabet-id"
+        exercise.animationIsApproximate = true
+        exercise.animationCallout = AnimationCallout.parse(fromRawExercise: ["animationCallout": rawCallout()])
+        context.insert(exercise)
+        try context.save()
+
+        let raw = rawExercise(id: "ankle-alphabet-id", name: "Ankle Alphabet")   // no flag, no callout
+        #expect(SeedMigrator.migrateV10(context: context, rawExercises: [raw]))
+        #expect(SeedMigrator.migrateV12(context: context, rawExercises: [raw]))
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(!all[0].animationIsApproximate)
+        #expect(all[0].animationCallout == nil)
+        #expect(!all[0].showsApproximateAnimationNote)
+    }
+
     // MARK: - claimOwnerlessRoutines
 
     private func makeRoutineContext() -> ModelContext {

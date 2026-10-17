@@ -9,6 +9,8 @@ an alternating small shin bend on each leg in turn as the "pedal" motion.
 Flagged `animationIsApproximate`.
 
 Highlight: both Calves.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -32,12 +34,12 @@ WORKED_KEYWORDS = (['calve'])
 POSES = {
     0:   {"spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
           "upperarm.L": (r(-95), 0, 0), "upperarm.R": (r(-95), 0, 0)},
-    30:  {"spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
+    30:  {"foot.L": (r(20), 0, 0), "foot.R": (r(-12), 0, 0), "spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
           "upperarm.L": (r(-95), 0, 0), "upperarm.R": (r(-95), 0, 0),
           "shin.L": (r(-16), 0, 0)},
     60:  {"spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
           "upperarm.L": (r(-95), 0, 0), "upperarm.R": (r(-95), 0, 0)},
-    90:  {"spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
+    90:  {"foot.R": (r(20), 0, 0), "foot.L": (r(-12), 0, 0), "spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),
           "upperarm.L": (r(-95), 0, 0), "upperarm.R": (r(-95), 0, 0),
           "shin.R": (r(-16), 0, 0)},
     120: {"spine": (r(55), 0, 0), "chest": (r(40), 0, 0), "head": (r(10), 0, 0),

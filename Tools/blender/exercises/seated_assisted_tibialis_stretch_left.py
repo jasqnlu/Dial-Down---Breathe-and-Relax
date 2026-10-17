@@ -1,8 +1,10 @@
 """Seated Assisted Tibialis Stretch (Left) — muscle-body + skin-head animation.
 
-60-exercise batch. Same cross-legged seated shape as cross_legged_shin_pull_left.py (ankle crossed over the opposite knee) -- this is the same exercise concept under a different name. No independent ankle/toe joint exists on this rig (rigid convex-hulled foot 'mitt' 100% weighted to the shin bone -- see the hand/wrist batch's rig-limitation finding, which generalizes identically to feet); the actual toe/ankle motion can't be shown. Flagged animationIsApproximate.
+60-exercise batch. Same cross-legged seated shape as cross_legged_shin_pull_left.py (ankle crossed over the opposite knee) -- this is the same exercise concept under a different name.
 
 Highlight: Left Tibialis, Left Foot.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -25,16 +27,18 @@ CAMERA_AZIMUTH = 20
 ORTHO_SCALE_MULT = 1.3
 
 _LEGS = {
-    "thigh.L": (r(-75), 0, -r(30)), "shin.L": (r(90), 0, 0),
-    "thigh.R": (r(-75), 0, 0), "shin.R": (r(90), 0, 0),
+    "thigh.L": (r(-75), 0, r(-30)),
+    "shin.L": (r(90), 0, 0),
+    "thigh.R": (r(-75), 0, 0),
+    "shin.R": (r(90), 0, 0),
 }
 
 POSES = {
-    0:   {**_LEGS},
-    30:  {**_LEGS, "upperarm.L": (r(-30), 0, 0)},
-    60:  {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0)},
-    90:  {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0)},
-    120: {**_LEGS},
+    0: {**_LEGS, "foot.L": (0, 0, 0)},
+    30: {**_LEGS, "upperarm.L": (r(-30), 0, 0), "foot.L": (r(15), 0, 0)},
+    60: {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0), "foot.L": (r(30), 0, 0)},
+    90: {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0), "foot.L": (r(30), 0, 0)},
+    120: {**_LEGS, "foot.L": (0, 0, 0)},
 }
 
 L.run_seated(globals())

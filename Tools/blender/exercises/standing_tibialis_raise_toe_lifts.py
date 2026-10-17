@@ -8,6 +8,8 @@ bilateral `shin` backward tilt (the only available shin-local motion)
 standing in for the toes lifting. Flagged `animationIsApproximate`.
 
 Highlight: both Tibialis.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -28,11 +30,11 @@ CAMERA_AZIMUTH = 90
 WORKED_KEYWORDS = (['left tibialis', 'right tibialis'])
 
 POSES = {
-    0:   {},
-    30:  {"shin.L": (r(-8), 0, 0), "shin.R": (r(-8), 0, 0)},
-    60:  {"shin.L": (r(-14), 0, 0), "shin.R": (r(-14), 0, 0)},
-    90:  {"shin.L": (r(-8), 0, 0), "shin.R": (r(-8), 0, 0)},
-    120: {},
+    0: {"foot.L": (0, 0, 0), "foot.R": (0, 0, 0)},
+    30: {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0)},
+    60: {"foot.L": (r(-28), 0, 0), "foot.R": (r(-28), 0, 0)},
+    90: {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0)},
+    120: {"foot.L": (0, 0, 0), "foot.R": (0, 0, 0)},
 }
 
 L.run(globals())

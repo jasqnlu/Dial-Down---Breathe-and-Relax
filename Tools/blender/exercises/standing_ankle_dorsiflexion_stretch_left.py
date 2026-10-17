@@ -10,6 +10,8 @@ family in ANIMATION_HANDOFF.md's tenth-batch note. Flagged
 `animationIsApproximate`.
 
 Highlight: Left Tibialis + Left Calves.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -31,13 +33,10 @@ ORTHO_SCALE_MULT = 1.3
 WORKED_KEYWORDS = (['left tibialis', 'left calve'])
 
 POSES = {
-    0:   {},
-    30:  {"thigh.L": (r(4), 0, 0), "thigh.R": (r(-8), 0, 0), "shin.R": (r(10), 0, 0),
-          "upperarm.L": (r(-30), 0, 0), "upperarm.R": (r(-30), 0, 0)},
-    60:  {"thigh.L": (r(6), 0, 0), "thigh.R": (r(-14), 0, 0), "shin.R": (r(16), 0, 0),
-          "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-45), 0, 0)},
-    90:  {"thigh.L": (r(6), 0, 0), "thigh.R": (r(-14), 0, 0), "shin.R": (r(16), 0, 0),
-          "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-45), 0, 0)},
+    0: {},
+    30: {"thigh.L": (r(-9), 0, 0), "shin.L": (r(18), 0, 0), "foot.L": (r(-9), 0, 0), "thigh.R": (r(-12), 0, 0), "shin.R": (r(12), 0, 0), "upperarm.L": (r(-27), 0, 0), "upperarm.R": (r(-27), 0, 0)},
+    60: {"thigh.L": (r(-15), 0, 0), "shin.L": (r(30), 0, 0), "foot.L": (r(-15), 0, 0), "thigh.R": (r(-20), 0, 0), "shin.R": (r(20), 0, 0), "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-45), 0, 0)},
+    90: {"thigh.L": (r(-15), 0, 0), "shin.L": (r(30), 0, 0), "foot.L": (r(-15), 0, 0), "thigh.R": (r(-20), 0, 0), "shin.R": (r(20), 0, 0), "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-45), 0, 0)},
     120: {},
 }
 

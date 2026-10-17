@@ -12,6 +12,8 @@ highlight.
 
 Highlight: Left Foot, matching the exercise's tag. Flagged
 `animationIsApproximate`.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -29,6 +31,7 @@ EXERCISE = "seated_toe_to_shin_stretch_left"
 VIDEO_NAME = "seated_toe_to_shin_stretch_left.mp4"
 
 CAMERA_AZIMUTH = 90
+CENTER_ON_POSE = True
 ORTHO_SCALE_MULT = 1.4
 
 WORKED_KEYWORDS = ("left foot",)
@@ -40,11 +43,11 @@ _LEGS = {
 
 POSES = {
     0:   {**_LEGS},
-    30:  {**_LEGS, "spine": (r(8), 0, 0),
+    30:  {"foot.L": (r(-12.5), 0, 0), **_LEGS, "spine": (r(8), 0, 0),
           "upperarm.L": (r(-30), 0, 0), "upperarm.R": (r(-15), 0, 0)},
-    60:  {**_LEGS, "spine": (r(15), 0, 0),
+    60:  {"foot.L": (r(-25), 0, 0), **_LEGS, "spine": (r(15), 0, 0),
           "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-20), 0, 0)},
-    90:  {**_LEGS, "spine": (r(15), 0, 0),
+    90:  {"foot.L": (r(-25), 0, 0), **_LEGS, "spine": (r(15), 0, 0),
           "upperarm.L": (r(-45), 0, 0), "upperarm.R": (r(-20), 0, 0)},
     120: {**_LEGS},
 }

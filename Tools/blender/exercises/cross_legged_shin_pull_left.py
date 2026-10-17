@@ -1,8 +1,10 @@
 """Cross-Legged Shin Pull (Left) — muscle-body + skin-head animation.
 
-60-exercise batch. Seated cross-legged (`thigh` local-Z abduction crossing the ankle over the opposite knee, reusing seated_cross_ankle_glute_stretch's proven cross-leg shape) plus a forward hand reach toward the foot. No independent ankle/toe joint exists on this rig (rigid convex-hulled foot 'mitt' 100% weighted to the shin bone -- see the hand/wrist batch's rig-limitation finding, which generalizes identically to feet); the actual toe/ankle motion can't be shown. Flagged animationIsApproximate.
+60-exercise batch. Seated cross-legged (`thigh` local-Z abduction crossing the ankle over the opposite knee, reusing seated_cross_ankle_glute_stretch's proven cross-leg shape) plus a forward hand reach toward the foot.
 
 Highlight: Left Tibialis.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -25,16 +27,18 @@ CAMERA_AZIMUTH = 20
 ORTHO_SCALE_MULT = 1.3
 
 _LEGS = {
-    "thigh.L": (r(-75), 0, -r(30)), "shin.L": (r(90), 0, 0),
-    "thigh.R": (r(-75), 0, 0), "shin.R": (r(90), 0, 0),
+    "thigh.L": (r(-75), 0, r(-30)),
+    "shin.L": (r(90), 0, 0),
+    "thigh.R": (r(-75), 0, 0),
+    "shin.R": (r(90), 0, 0),
 }
 
 POSES = {
-    0:   {**_LEGS},
-    30:  {**_LEGS, "upperarm.L": (r(-30), 0, 0)},
-    60:  {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0)},
-    90:  {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0)},
-    120: {**_LEGS},
+    0: {**_LEGS, "foot.L": (0, 0, 0)},
+    30: {**_LEGS, "upperarm.L": (r(-30), 0, 0), "foot.L": (r(-12.5), 0, 0)},
+    60: {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0), "foot.L": (r(-25), 0, 0)},
+    90: {**_LEGS, "upperarm.L": (r(-55), 0, 0), "spine": (r(8), 0, 0), "foot.L": (r(-25), 0, 0)},
+    120: {**_LEGS, "foot.L": (0, 0, 0)},
 }
 
 L.run_seated(globals())

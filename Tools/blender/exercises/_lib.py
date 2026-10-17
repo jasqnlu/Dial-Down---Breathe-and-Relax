@@ -66,7 +66,19 @@ FR = {
     "feet": 0.02, "knee": 0.28, "hip": 0.50, "spine_top": 0.68,
     "chest_top": 0.80, "shoulder": 0.80, "neck": 0.84, "head_top": 1.00,
     "elbow": 0.615, "wrist": 0.44,
+    # Ankle pivot: the top of the foot mitt (measured 2026-10-17 -- mitt top sits
+    # at y~0, z~0.083 on the 1.916-tall model), slightly lower = joint centre.
+    "ankle": 0.031,
 }
+# foot.{L,R} bone geometry, as fractions of height. Head = ankle pivot, tail =
+# toward the toes (the figure faces -Y). See ANIMATION_HANDOFF.md "Ankle joint".
+ANKLE_Y = 0.008
+TOE_Y = -0.057
+TOE_Z = 0.005
+# Bones that ONLY carry a rigid mitt. They are kept out of muscle joint-blending
+# and nearest-bone fallback, so adding them changes no muscle's weights and every
+# clip that leaves them unrotated renders pixel-identical to before.
+MITT_ONLY_BONES = {"foot.L", "foot.R"}
 SHOULDER_X = 0.12
 HIP_X = 0.055
 
@@ -233,6 +245,12 @@ def build_armature(lo, hi):
         ("shin.L",     (xh, 0, z(FR["knee"])),      (xh, 0, z(FR["feet"])), "thigh.L"),
         ("thigh.R",    (-xh, 0, z(FR["hip"])),      (-xh, 0, z(FR["knee"])), "hips"),
         ("shin.R",     (-xh, 0, z(FR["knee"])),     (-xh, 0, z(FR["feet"])), "thigh.R"),
+        # Ankle joint (added 2026-10-17). The foot mitt is rigidly weighted to
+        # these, so at zero rotation every pre-existing clip renders exactly as
+        # before (the foot just follows the shin, same as when it was weighted
+        # to the shin directly).
+        ("foot.L",     (xh, ANKLE_Y * h, z(FR["ankle"])),  (xh, TOE_Y * h, z(TOE_Z)), "shin.L"),
+        ("foot.R",     (-xh, ANKLE_Y * h, z(FR["ankle"])), (-xh, TOE_Y * h, z(TOE_Z)), "shin.R"),
     ]
     arm_data = bpy.data.armatures.new("Rig")
     arm_obj = bpy.data.objects.new("Rig", arm_data)
@@ -251,7 +269,8 @@ def build_armature(lo, hi):
             ebs[name].parent = ebs[parent]
     bpy.ops.object.mode_set(mode='OBJECT')
     bone_segs = [(b.name, b.head_local.copy(), b.tail_local.copy())
-                 for b in arm_obj.data.bones if b.use_deform]
+                 for b in arm_obj.data.bones
+                 if b.use_deform and b.name not in MITT_ONLY_BONES]
     return arm_obj, bone_segs
 
 
@@ -305,8 +324,13 @@ def add_armature(obj, arm_obj):
     obj.matrix_parent_inverse = arm_obj.matrix_world.inverted()
 
 
+def uses_feet(cfg):
+    """True when an exercise poses the ankle (`foot.*`) bones anywhere."""
+    return any(b in MITT_ONLY_BONES for pose in cfg.get("POSES", {}).values() for b in pose)
+
+
 def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
-                  blend_top_k=BLEND_TOP_K, blend_power=BLEND_POWER):
+                  blend_top_k=BLEND_TOP_K, blend_power=BLEND_POWER, pin_feet=False):
     """`blend_top_k`/`blend_power` override the module defaults for this
     build only — added 2026-08-20 for `run_supine`'s ROLL_DEG=0 family,
     whose extreme hip fold needs a wider, softer blend than every other
@@ -327,12 +351,13 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
     seg_by_name = {name: (h, t) for name, h, t in bone_segs}
     cand_by_bone = {}
     for b in arm_obj.data.bones:
-        if not b.use_deform:
+        if not b.use_deform or b.name in MITT_ONLY_BONES:
             continue
         names = [b.name]
         if b.parent and b.parent.use_deform:
             names.append(b.parent.name)
-        names += [c.name for c in b.children if c.use_deform]
+        names += [c.name for c in b.children
+                  if c.use_deform and c.name not in MITT_ONLY_BONES]
         cand_by_bone[b.name] = names
 
     skin = None
@@ -374,6 +399,27 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
         vg = obj.vertex_groups.get(bone) or obj.vertex_groups.new(name=bone)
         vg.add([v.index for v in obj.data.vertices], 1.0, 'REPLACE')
 
+    ankles = {s: arm_obj.data.bones[f"foot.{s}"].head_local.copy()
+              for s in ("L", "R") if arm_obj.data.bones.get(f"foot.{s}")}
+
+    def pin_below_ankle(obj):
+        """Move any muscle vertex below the ankle pivot onto that side's foot
+        bone. The long toe tendons and the Achilles insertion are tagged as
+        shin muscles but run down into the foot; left on the shin they poke
+        out like bristles when the foot rotates. Only applied when the
+        exercise poses `foot.*` (`pin_feet`): it also drops the small thigh
+        share those vertices get from joint-blending, which would otherwise
+        nudge every older clip's framing by a few millimetres on re-render."""
+        for v in obj.data.vertices:
+            side = "L" if v.co.x > 0 else "R"
+            a = ankles.get(side)
+            if a is None or v.co.z >= a.z:
+                continue
+            for vg in obj.vertex_groups:
+                vg.remove([v.index])
+            vg = obj.vertex_groups.get(f"foot.{side}") or obj.vertex_groups.new(name=f"foot.{side}")
+            vg.add([v.index], 1.0, 'REPLACE')
+
     for o in meshes:
         info = lookup(o.name) or {}
         if info.get("layer") == "skin" or o.name.lower().startswith("bodyskin"):
@@ -388,7 +434,7 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
         if "hand" in gl or "foot" in gl:
             side = "L" if gl.startswith("left") else "R"
             part = "foot" if "foot" in gl else "hand"
-            bone = f"shin.{side}" if part == "foot" else f"forearm.{side}"
+            bone = f"foot.{side}" if part == "foot" else f"forearm.{side}"
             entry = hull_objs.setdefault(f"{part}.{side}", {"bone": bone, "objs": []})
             entry["objs"].append(o)
             continue
@@ -401,6 +447,8 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
             bone = nearest_bone(centroid, bone_segs)
             counts["fallback"] += 1
         blend_weights(o, bone)
+        if pin_feet:
+            pin_below_ankle(o)
         # material
         worked = any(k in group.lower() for k in worked_keywords)
         o.data.materials.clear()
@@ -815,7 +863,7 @@ def run_quadruped(cfg):
         lo, hi = normalize_orientation(meshes)
         arm_obj, bone_segs = build_armature(lo, hi)
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], pin_feet=uses_feet(cfg))
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")
@@ -934,7 +982,7 @@ def run_seated(cfg):
         lo, hi = normalize_orientation(meshes)
         arm_obj, bone_segs = build_armature(lo, hi)
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], pin_feet=uses_feet(cfg))
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")
@@ -976,6 +1024,11 @@ def run_seated(cfg):
         bpy.context.scene.camera = cam
         loc, rot = camera_for_azimuth(cfg["CAMERA_AZIMUTH"], center.z, radius=6.0)
         cam.location = Vector(loc)
+        if cfg.get("CENTER_ON_POSE"):
+            # Opt-in (2026-10-17): aim at the posed body, not the world origin.
+            # Long-sit poses stretch the legs far forward of the origin, and the
+            # default aim crops the feet off the frame edge.
+            cam.location += Vector((center.x, center.y, 0))
         cam.rotation_euler = Euler(rot)
 
         render_all_supine(cam, out_dir, exercise, peak_frame)
@@ -1036,7 +1089,7 @@ def run_supine_side(cfg):
         lo, hi = normalize_orientation(meshes)
         arm_obj, bone_segs = build_armature(lo, hi)
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], pin_feet=uses_feet(cfg))
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")
@@ -1150,7 +1203,7 @@ def run_supine(cfg):
         else:
             blend_kwargs = {}
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], **blend_kwargs)
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], pin_feet=uses_feet(cfg), **blend_kwargs)
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")
@@ -1266,7 +1319,7 @@ def run(cfg):
 
         arm_obj, bone_segs = build_armature(lo, hi)
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], pin_feet=uses_feet(cfg))
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")

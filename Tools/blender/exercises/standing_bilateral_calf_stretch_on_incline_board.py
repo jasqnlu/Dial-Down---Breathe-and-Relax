@@ -8,6 +8,8 @@ while the legs stay straight and planted — the closest available proxy.
 Flagged `animationIsApproximate`.
 
 Highlight: both Calves.
+
+2026-10-17: re-authored on the new `foot.{L,R}` ankle bone (see ANIMATION_HANDOFF.md "Ankle joint") -- the foot itself now moves.
 """
 import sys
 import os
@@ -28,11 +30,11 @@ CAMERA_AZIMUTH = 90
 WORKED_KEYWORDS = (['calve'])
 
 POSES = {
-    0:   {},
-    30:  {"spine": (r(6), 0, 0)},
-    60:  {"spine": (r(10), 0, 0)},
-    90:  {"spine": (r(10), 0, 0)},
-    120: {},
+    0:   {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0), },
+    30:  {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0), "spine": (r(6), 0, 0)},
+    60:  {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0), "spine": (r(10), 0, 0)},
+    90:  {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0), "spine": (r(10), 0, 0)},
+    120: {"foot.L": (r(-15), 0, 0), "foot.R": (r(-15), 0, 0), },
 }
 
 L.run(globals())

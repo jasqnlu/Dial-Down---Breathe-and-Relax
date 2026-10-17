@@ -1,7 +1,69 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-09-05 (accuracy re-audit of all 137
-`animationIsApproximate` exercises — 3 real no-op bugs found and fixed)
+**Last updated:** 2026-10-17 (ankle joint added to the rig; 26 foot/ankle
+exercises re-authored and un-flagged — 137 -> 111 `animationIsApproximate`)
+
+## Ankle joint (2026-10-17): `foot.{L,R}` bones, 26 exercises un-flagged
+
+Prompted by a user report that a leg exercise's animation was inaccurate. The
+rig had no ankle: each foot was a convex-hull mitt rigidly weighted to the
+shin, so every calf/shin/ankle exercise faked the motion with shin or spine
+wiggles. Because the mitt was already 100% weighted to one bone, adding a
+joint was cheap.
+
+**Rig change (`_lib.py`):**
+- `build_armature` adds `foot.L`/`foot.R` (children of the shins). Head = ankle
+  pivot at `FR["ankle"]` (0.031 h) / `ANKLE_Y` (0.008 h), measured from the
+  mitt: the mitt top sits at y~0, z~0.083 on the 1.916-tall model. Tail toward
+  the toes (`TOE_Y`, `TOE_Z`); the figure faces -Y.
+- Mitts are rigidly weighted to `foot.*` instead of `shin.*`.
+- `MITT_ONLY_BONES` keeps the foot bones OUT of muscle joint-blending and the
+  nearest-bone fallback. Without this, `run_supine`'s wide blend
+  (`blend_top_k=3`) gave shin muscles a foot share, which changed bent-knee
+  deformation in older supine clips.
+- `pin_below_ankle` moves muscle vertices below the ankle pivot onto the foot
+  bone (the long toe tendons + Achilles insertion are tagged as shin muscles
+  and poked out like bristles when the foot rotated). It is opt-in via
+  `pin_feet=uses_feet(cfg)`, so it only runs for scripts that pose `foot.*`.
+  Applying it everywhere dropped a small thigh weight share near the ankle and
+  shifted the posed bounds, and so the camera framing, of older clips by up
+  to 4.6 cm.
+- `run_seated` gains opt-in `CENTER_ON_POSE`: aims the camera at the posed
+  body rather than the world origin. Long-sit poses (legs straight out) had
+  their feet cropped off the frame edge, including in the previously
+  shipped towel calf-stretch clips.
+
+**Regression check:** old vs new `_lib.py` stills for standing, seated,
+supine, supine-figure-4 (wide blend), quadruped and bridge. Standing/seated/
+bridge are pixel-identical; the others differ by <=44 pixels at <=7/255
+(float noise from the extra bone in the chain), with identical posed bounds.
+
+**Sign convention (numerically probed):** `foot.*` local X: **negative =
+dorsiflex (toes up), positive = point**. Leg bones all share world-X as
+their local X, so `foot = -(thigh + shin)` keeps a planted foot flat. Local Z
+swings the toes sideways (`+Z` on `foot.R` = toes toward subject's right).
+
+**The 26 re-authored scripts** (all un-flagged, callouts removed from
+SeedData.json; v10/v12 sync clears them on existing installs, see
+`SeedMigratorTests.v10AndV12ClearFixedAnimationsMessaging`):
+Ankle Alphabet + Shin & Ankle Mobiliser (now seated on a chair with the
+foot lifted, ankle circle), Ankle Circles L/R (long-sit, leg lifted, ankle
+circle), Step-Edge Calf Drop L/R + Stair-Edge Calf Stretch L/R (heel drops),
+Standing Ankle Dorsiflexion L/R (back shin tilts forward over a flat foot,
+both feet kept level), Standing Tibialis Raise (toes lift, shins still),
+Seated Assisted Tibialis L/R + Seated Shin Stretch with Strap L/R (foot
+points), Cross-Legged Shin Pull L/R + Plantar Fascia L/R + Seated Calf
+Stretch with Towel L/R + Seated Toe-to-Shin L/R (foot dorsiflexes), Seated
+Foot Flex-and-Point (shins still, feet alternate), Incline Board (feet held
+dorsiflexed), Downward Dog Calf Pump (bent side heel lifts, straight side
+presses). Two unflagged duplicates ("Seated Calf Stretch with Towel
+(Left/Right)") share the towel clips and get the fix for free.
+
+**Still not fixable on this rig:** toes/fingers (no digit geometry, the mitt is
+a hull), hands touching the body, shoulder-blade motion (no clavicle/scapula).
+A wrist joint looks feasible the same way (probe 2026-10-17: the hand mitt bends
+cleanly, but the finger tendons are tagged "Forearm" and need the same
+below-the-joint pinning); that would cover about 11 more exercises.
 
 ## Accuracy re-audit (2026-09-05)
 
