@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 2": "7 weird sleep habits that feel illegal but actually work".
+  Same structure as slide-show 1; the variable under test is the caption style: TikTok's "Typewriter" text
+  (monospace, plain white, soft shadow) instead of the outlined Classic style.
+  Rendered one slide at a time (slides.html#s1 … #s8) by Tools/branding/build_tiktok_slideshow_1.py.
+  Photos are CC0 (StockSnap / rawpixel); sources in photos/credits.json.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down Sleep Habits</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* TikTok "Typewriter" caption: white monospace, no outline, a soft shadow to lift it off the photo */
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "Courier Prime", monospace; font-weight: 700; color: #fff;
+    text-shadow: 0 0 3px rgba(0,0,0,.85), 0 3px 14px rgba(0,0,0,.65);
+    line-height: 1.22;
+  }
+  .two { top: 880px; font-size: 54px; white-space: nowrap; }
+  .hook { top: 880px; left: 70px; right: 70px; font-size: 56px; line-height: 1.25; }
+
+  /* habit 7: the app */
+  .plug-bg { filter: blur(7px) brightness(0.8); transform: scale(1.06); }
+  .icon { position: absolute; top: 170px; left: 50%; width: 190px; height: 190px; margin-left: -95px;
+          border-radius: 42px; }
+  .num { top: 395px; font-size: 56px; }
+  .para { top: 485px; font-size: 41px; line-height: 1.24; }
+  .ask { top: 900px; font-size: 58px; }
+  .shot { position: absolute; top: 1000px; left: 50%; width: 600px; margin-left: -300px;
+          overflow: hidden; border-radius: 34px; }
+  .shot img { width: 100%; display: block; margin-top: -150px; }  /* opens on the pattern chips and the circle */
+</style>
+</head>
+<body>
+
+<section class="slide" id="s1">
+  <img class="photo" src="photos/hook.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook">7 weird sleep habits<br>that feel illegal<br>but actually work</p>
+</section>
+
+<section class="slide" id="s2">
+  <img class="photo" src="photos/awake.jpg" alt="" style="transform: translateY(330px); -webkit-mask-image: linear-gradient(transparent, #000 260px)"><!-- lamp sits low, caption on the dark above it; top edge fades into the black page -->
+  <p class="cap two" style="top: 560px">try to stay awake<br>on purpose</p>
+</section>
+
+<section class="slide" id="s3">
+  <img class="photo" src="photos/cold.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two">keep your room cool<br>colder than you think</p>
+</section>
+
+<section class="slide" id="s4">
+  <img class="photo" src="photos/todo.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two">write your to-do list<br>before you get in bed</p>
+</section>
+
+<section class="slide" id="s5">
+  <img class="photo" src="photos/tense.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two">tense one muscle group<br>then let it go, head to toe</p>
+</section>
+
+<section class="slide" id="s6">
+  <img class="photo" src="photos/phone.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two">put your phone<br>across the room</p>
+</section>
+
+<section class="slide" id="s7">
+  <img class="photo" src="photos/breathe.jpg" alt="" style="object-position: 20% 50%">
+  <p class="cap two">breathe in for 4<br>hold 7, breathe out 8</p>
+</section>
+
+<section class="slide" id="s8">
+  <img class="photo plug-bg" src="photos/plug.jpg" alt="" style="object-position: 50% 50%">
+  <img class="icon" src="../../../Branding/logo-kit/ios/icon-dark.png" alt="Dial Down app icon">
+  <p class="cap num">7</p>
+  <p class="cap para">Start using the Dial Down app.<br>It has box, 4-7-8 and belly<br>breathing with voice cues,<br>so you can follow along<br>with your eyes closed.<br>It’s free, no subscription.<br>You can get it on the App Store.</p>
+  <p class="cap ask">which one will you try</p>
+  <div class="shot"><img src="../../../AppStoreScreenshots/6.9-inch/Screenshot%20iPhone%2017%20Pro%20Max%2010-01-2026%20at%2010.13.14%E2%80%AFPM.png" alt="Dial Down breathing screen"></div>
+</section>
+
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>
