@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 5": branches off set 3 (desk POV, best day-1 views and likes).
+  Same boxed caption style and numbered-tips structure; the POV moves from the office to working from home.
+  Rendered one slide at a time (slides.html#s1 … #s8) by Tools/branding/build_tiktok_slideshow_1.py.
+  Photos are CC0 (StockSnap / rawpixel); sources in photos/credits.json.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down WFH Tips</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@600;700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* TikTok background-text caption: each line sits on its own white rounded box */
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "TikTok Sans", sans-serif; font-weight: 600; font-size: 54px; line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .cap span {
+    display: inline-block; background: #fff; color: #000; white-space: nowrap;
+    padding: 12px 24px 14px; border-radius: 14px; margin: 0 0 -10px;  /* overlap so stacked lines read as one shape */
+  }
+  .two { top: 870px; }
+  .hook { top: 820px; }
+  .hook .sub { margin-top: 34px; font-weight: 700; }
+
+  /* tip 7: the app */
+  .plug-bg { filter: blur(7px) brightness(0.9); transform: scale(1.06); }
+  .icon { position: absolute; top: 150px; left: 50%; width: 180px; height: 180px; margin-left: -90px;
+          border-radius: 40px; }
+  .para { top: 390px; font-size: 42px; }
+  .para span { padding: 10px 22px 12px; border-radius: 12px; }
+  .ask { top: 820px; font-weight: 700; }
+  .shot { position: absolute; top: 950px; left: 50%; width: 540px; margin-left: -270px;
+          height: 540px; overflow: hidden; border-radius: 34px; }
+  .shot img { width: 100%; display: block; margin-top: -300px; }
+</style>
+</head>
+<body>
+<section class="slide" id="s1">
+  <img class="photo" src="photos/hook.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook"><span>pov: you work from bed</span><br><span>and it’s already 3pm</span><br><span class="sub">do these every hour</span></p>
+</section>
+
+<section class="slide" id="s2">
+  <img class="photo" src="photos/calls.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two"><span>1. take every call</span><br><span>standing up</span></p>
+</section>
+
+<section class="slide" id="s3">
+  <img class="photo" src="photos/doorway.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two"><span>2. doorway chest stretch</span><br><span>forearms on the frame</span></p>
+</section>
+
+<section class="slide" id="s4">
+  <img class="photo" src="photos/neck.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two" style="top: 1100px"><span>3. ear to shoulder</span><br><span>hold 30 sec each side</span></p>
+</section>
+
+<section class="slide" id="s5">
+  <img class="photo" src="photos/twist.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two"><span>4. twist in your chair</span><br><span>hold the backrest 5 breaths</span></p>
+</section>
+
+<section class="slide" id="s6">
+  <img class="photo" src="photos/calves.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two"><span>5. calf raises while</span><br><span>the kettle boils</span></p>
+</section>
+
+<section class="slide" id="s7">
+  <img class="photo" src="photos/reach.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap two"><span>6. reach behind your head</span><br><span>and pull your elbow</span></p>
+</section>
+
+<section class="slide" id="s8">
+  <img class="photo plug-bg" src="photos/plug.jpg" alt="" style="object-position: 50% 50%">
+  <img class="icon" src="../../../Branding/logo-kit/ios/icon-dark.png" alt="Dial Down app icon">
+  <p class="cap para"><span>7. or let an app do it</span><br><span>Dial Down sorts its</span><br><span>stretches by body part</span><br><span>neck, back, hips, legs</span><br><span>it’s free, no subscription</span><br><span>it’s on the app store</span></p>
+  <p class="cap ask"><span>save this for tomorrow</span></p>
+  <div class="shot"><img src="../../../AppStoreScreenshots/6.9-inch/Screenshot%20iPhone%2017%20Pro%20Max%2010-01-2026%20at%2010.13.10%E2%80%AFPM.png" alt="Dial Down exercise library"></div>
+</section>
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 4": a body-check hook ("your jaw is clenched right now isn't it").
+  Each slide asks about one place people hold stress, then gives the release. The variable under test is the
+  caption style: TikTok's "Serif" text (white serif, soft shadow), the release in a lighter weight.
+  Slides 2–7 run head to toe, like a body scan.
+  Rendered one slide at a time (slides.html#s1 … #s8) by Tools/branding/build_tiktok_slideshow_1.py.
+  Photos are CC0 (StockSnap / rawpixel / WordPress Photo Directory); sources in photos/credits.json.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down Body Check</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* TikTok "Serif" caption: white serif, no outline, a soft shadow to lift it off the photo */
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "Playfair Display", serif; font-weight: 600; color: #fff;
+    text-shadow: 0 0 2px rgba(0,0,0,.9), 0 2px 8px rgba(0,0,0,.8), 0 4px 24px rgba(0,0,0,.6);
+    line-height: 1.2;
+  }
+  .check { top: 850px; font-size: 62px; white-space: nowrap; }
+  .fix { display: block; margin-top: 30px; font-weight: 500; font-size: 54px; }
+  .hook { top: 860px; font-size: 76px; line-height: 1.15; }
+
+  /* the app */
+  .plug-bg { filter: blur(7px) brightness(0.8); transform: scale(1.06); }
+  .icon { position: absolute; top: 170px; left: 50%; width: 190px; height: 190px; margin-left: -95px;
+          border-radius: 42px; }
+  .para { top: 420px; font-size: 46px; line-height: 1.24; }
+  .ask { top: 885px; font-size: 62px; font-weight: 500; }
+  .shot { position: absolute; top: 1000px; left: 50%; width: 600px; margin-left: -300px;
+          height: 440px; overflow: hidden; border-radius: 34px; }
+  .shot img { width: 100%; display: block; margin-top: -482px; }  /* opens on the hotspots and chips */
+</style>
+</head>
+<body>
+
+<section class="slide" id="s1">
+  <img class="photo" src="photos/hook.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook">your jaw is clenched<br>right now isn’t it</p>
+</section>
+
+<section class="slide" id="s2">
+  <img class="photo" src="photos/forehead.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check">is your forehead<br>scrunched up?<span class="fix">smooth it out</span></p>
+</section>
+
+<section class="slide" id="s3">
+  <img class="photo" src="photos/jaw.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check">are your teeth<br>touching right now?<span class="fix">lips together, teeth apart</span></p>
+</section>
+
+<section class="slide" id="s4">
+  <img class="photo" src="photos/shoulders.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check" style="top: 960px">are your shoulders<br>up by your ears?<span class="fix">drop them</span></p>
+</section>
+
+<section class="slide" id="s5">
+  <img class="photo" src="photos/scroll.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check" style="top: 330px">holding your breath<br>while you scroll?<span class="fix">let it out slowly</span></p>
+</section>
+
+<section class="slide" id="s6">
+  <img class="photo" src="photos/hips.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check">are your hips tight<br>from sitting all day?<span class="fix">ankle over knee, lean in</span></p>
+</section>
+
+<section class="slide" id="s7">
+  <img class="photo" src="photos/toes.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap check" style="top: 760px">are your toes curled<br>or your fists balled?<span class="fix">let them go</span></p>
+</section>
+
+<section class="slide" id="s8">
+  <img class="photo plug-bg" src="photos/plug.jpg" alt="" style="object-position: 50% 50%">
+  <img class="icon" src="../../../Branding/logo-kit/ios/icon-dark.png" alt="Dial Down app icon">
+  <p class="cap para">If something still feels tight,<br>try the Dial Down app.<br>You tap the spot on a 3D body<br>and it shows you stretches<br>for that exact spot.<br>It’s free, no subscription.</p>
+  <p class="cap ask">what was tight for you</p>
+  <div class="shot"><img src="../../../AppStoreScreenshots/6.9-inch/Screenshot%20iPhone%2017%20Pro%20Max%2010-01-2026%20at%2010.12.09%E2%80%AFPM.png" alt="Dial Down body map"></div>
+</section>
+
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>

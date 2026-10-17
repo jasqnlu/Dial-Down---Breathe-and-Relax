@@ -1,0 +1,397 @@
+{
+ "version": 1,
+ "at": "2026-10-15T23:04:51.715Z",
+ "seed": 71941600,
+ "redraws": 0,
+ "input": {
+  "brief": "iOS app: tap the body spot that's tight, get a guided stretch, then breathe it out (box, 4-7-8). TikTok photo carousel.",
+  "sector": "consumer-app",
+  "tone": null,
+  "have": [
+   "product-ui"
+  ],
+  "keep": [
+   "palette",
+   "type"
+  ],
+  "avoid": [],
+  "sections": [
+   "showcase",
+   "how-it-works",
+   "features",
+   "cta"
+  ],
+  "direction": "sentence-as-layout"
+ },
+ "imagery": "interface",
+ "allow": [],
+ "direction": {
+  "id": "sentence-as-layout",
+  "name": "The sentence is the layout",
+  "sectors": [
+   "agency",
+   "saas",
+   "ai-product",
+   "dev-tool",
+   "nonprofit",
+   "culture",
+   "education",
+   "physical-product",
+   "consumer-app",
+   "finance",
+   "health",
+   "event",
+   "other"
+  ],
+  "tones": [
+   "bold",
+   "editorial"
+  ],
+  "needs": [],
+  "idea": "One short sentence, set at poster scale, is the composition. The trick that makes it an idea rather than a big headline: something from the subject sits inside the sentence where a word would be. A strip of photograph fills the gap between two words; a small live fragment of the product replaces the noun; the object the sentence names is pictured at the size of a letter. Write the sentence first, find the word that can be shown instead of said, and put the showing in its place. The reader completes the sentence with their eyes.",
+  "composition": "The sentence is four to seven words and runs as one or two full-width lines at 9–13vw. Inline with the type, on the baseline, sits one media slot: a rounded-rectangle or square frame exactly one line-height tall and two to three ems wide, holding a photograph or a looping crop. Above and below the sentence the screen is empty except for a small navigation line and one supporting sentence set small, both on the same left margin. Later sections repeat the grammar at smaller scale: each is a short statement on the left six columns with its proof (image, figure, list) on the right, so the page reads as a series of sentences with evidence. Generous vertical space (160px or more) between sections.",
+  "typography": "Display weight with real presence (medium to bold), tracking -0.03 to -0.05em, leading 0.95–1.0 so two lines sit close. The inline frame aligns to cap height and baseline exactly; set it with em units so it scales with the type.",
+  "typeClasses": [
+   "grotesk-tight",
+   "serif-display",
+   "condensed-heavy",
+   "serif-light-large"
+  ],
+  "colour": "A calm ground with ink at full contrast. The only colour comes from the photograph inside the sentence; if the palette has an accent, use it once, on the action.",
+  "paletteTags": [
+   "two-tone",
+   "light-neutral",
+   "single-field",
+   "mono-accent"
+  ],
+  "imagery": "One strong, simple photograph that reads at small size (a face, an object, a texture, a horizon), cropped to a wide strip inside the sentence. The same image may open to full width in the next section, so the small slot feels like a window onto something larger.",
+  "sectionTags": [
+   "type-led",
+   "poster",
+   "quiet"
+  ],
+  "motion": "masked-headline",
+  "richness": "The collision of big type and one live image inside it. Because there is only one image on the first screen, choose it with care and give it perfect alignment to the letters.",
+  "pitfalls": "The sentence must be short enough for two lines on a phone, where the inline frame drops to its own line between the two halves. Do not style one word differently to fake the device. Do not use more than one slot per sentence.",
+  "seenIn": [
+   "aww-colonia-zacamil",
+   "aww-bleibtgleich26",
+   "opl-spatial",
+   "aww-coffeetech-r",
+   "opl-midnight-2"
+  ],
+  "allow": []
+ },
+ "hero": {
+  "id": "photograph-for-a-letter",
+  "name": "Photograph for a letter",
+  "archetype": "giant-wordmark",
+  "directions": [
+   "name-as-monument",
+   "sentence-as-layout"
+  ],
+  "needs": [],
+  "blueprint": "A flat white or pale ground, about 85% empty. The name sits on one line at the exact vertical centre, bold, at clamp(96px, 10.5vw, 168px), tracking -0.04em, spanning 78–88% of the width with equal side margins. One photograph is set into the line as if it were a glyph. Either it fills the word space between first and last name (a landscape frame one x-height tall and about 1.6em wide, resting on the baseline), or it replaces one round letter of a short name (a square frame exactly one cap-height tall). Build the line as an inline-flex row with `align-items: baseline` and size the frame in em so it scales with the type; square corners, `object-fit: cover`. Navigation is small and pushed to the edges: a 15px wordmark or monogram top-left at a 24px margin and up to five text links at 14px spread evenly across the right half of the top edge. Along the bottom edge, on the same margin: one supporting sentence at 16px starting at column 6, and the single action as an underlined text link flush right.",
+  "mobile": "The name stacks on two centred lines at 19vw with line-height 0.9. The photograph leaves the line and becomes a 3:2 frame at full width minus 16px margins between the two lines, so the screen reads word, picture, word. A single short name keeps the square frame inline at cap height instead. The supporting sentence and action sit under the block at 16px; the links collapse to one word top-right.",
+  "headline": "The name on one line with a photograph in its word space or in place of one letter, up to about 16 characters at 10.5vw, splitting into two lines on a phone.",
+  "motion": "shutter-image",
+  "seenIn": [
+   "aww-paul-kalkbrenner",
+   "opl-nia-creative"
+  ]
+ },
+ "type": null,
+ "palette": null,
+ "photos": {
+  "set": "fog-and-quiet",
+  "title": "Fog and quiet",
+  "note": "misty, muted, minimal landscapes and empty horizons; calm areas for text",
+  "treatment": null,
+  "others": [],
+  "photos": [
+   {
+    "id": 172,
+    "alt": "Stone jetty stretching into still water and dense grey fog",
+    "tone": "mid",
+    "colours": [
+     "grey",
+     "warm grey"
+    ],
+    "mono": false,
+    "calm": "top",
+    "quality": 5,
+    "ratio": 1.51,
+    "by": "Aleksi Tappura",
+    "page": "https://unsplash.com/photos/TQeX8khR54I"
+   },
+   {
+    "id": 385,
+    "alt": "Calm sea stretching to a thin glowing horizon at dusk",
+    "tone": "mid",
+    "colours": [
+     "slate blue",
+     "teal",
+     "soft orange"
+    ],
+    "mono": false,
+    "calm": "all",
+    "quality": 4,
+    "ratio": 1.5,
+    "by": "Griffin Keller",
+    "page": "https://unsplash.com/photos/7oS_26cb1Wo"
+   },
+   {
+    "id": 266,
+    "alt": "Three ships on a distant horizon across a calm blue sea",
+    "tone": "mid",
+    "colours": [
+     "pale blue",
+     "deep blue"
+    ],
+    "mono": false,
+    "calm": "all",
+    "quality": 5,
+    "ratio": 1.78,
+    "by": "John Maravelakis",
+    "page": "https://unsplash.com/photos/Vosp2wlY3Bs"
+   },
+   {
+    "id": 194,
+    "alt": "Wooden deck and a single rock disappearing into thick fog",
+    "tone": "mid",
+    "colours": [
+     "cool grey",
+     "weathered brown"
+    ],
+    "mono": false,
+    "calm": "top",
+    "quality": 5,
+    "ratio": 1.51,
+    "by": "Aleksi Tappura",
+    "page": "https://unsplash.com/photos/hVOv8me9ue8"
+   }
+  ]
+ },
+ "motion": {
+  "id": "shutter-image",
+  "name": "Shutter image",
+  "description": "The one hero or showcase image opens from an edge with a clip-path over about 1.1 seconds while the picture inside settles from 1.12 scale to rest. Use it once, on the image that matters most; later images simply are there. Recipe: 'Image shutter' in references/motion.md."
+ },
+ "sections": [
+  {
+   "id": "showcase-headline-you-can-type",
+   "role": "showcase",
+   "name": "Headline you can type",
+   "shape": "statement",
+   "tags": [
+    "ui-led",
+    "type-led",
+    "poster"
+   ],
+   "directions": [
+    "sentence-as-layout",
+    "type-only-statement",
+    "product-performs",
+    "loud-flat-poster",
+    "dark-room",
+    "colour-chapters"
+   ],
+   "needs": [],
+   "blueprint": "The section's headline is an input. One line at clamp(48px, 8vw, 132px), tight tracking, flush left across columns 1–12, is a real `<input>` (root marked data-ui) with no border and no fill, prefilled with a believable two-to-five-word example of what a user gives the product: a search, a question, a date in words, a colour name. A solid caret block 0.08em wide blinks after the last character. 48px beneath, on the same left edge, the product's answer appears at true interface size, at most 560px wide: three result rows, one parsed value, or a swatch, updating as the visitor types. Bottom-left, three more examples at 17px act as plain text buttons that refill the line. The rest of the 88svh field is empty. If the text outgrows the line it scrolls inside the input; it never wraps.",
+   "mobile": "The input is set at 11vw on one line and scrolls sideways inside itself when the text runs long. The answer follows 28px below at full width and true size. The three examples become a wrapping row of filled blocks 44px tall beneath the answer; tapping one refills the line.",
+   "seenIn": [
+    "opl-shelf",
+    "opl-tiny-computer-co"
+   ]
+  },
+  {
+   "id": "how-it-works-stages-as-one-bar",
+   "role": "how-it-works",
+   "name": "Stages as one bar",
+   "shape": "band",
+   "tags": [
+    "ui-led",
+    "poster",
+    "type-led"
+   ],
+   "directions": [
+    "loud-flat-poster",
+    "type-only-statement",
+    "colour-chapters",
+    "one-motif",
+    "editorial-report",
+    "dense-tiles",
+    "sentence-as-layout"
+   ],
+   "needs": [],
+   "blueprint": "The product's progress bar, enlarged until it spans the page, is the diagram. One bar runs across columns 1–12, 22vh tall, built as a flex row of three or four solid segments with 6px gaps, root marked data-ui. Each segment's width follows how long that stage really takes (flex-grow from the true durations, 12% minimum), and each is a different flat palette colour, so the reader sees at once that signing up is a sliver and the rest is the product working. Inside every segment, top-left with 20px padding, its duration in words at clamp(20px, 2vw, 30px): 'Two minutes', 'About a day'. Under each segment, on its left edge, one clause at 17px, 22ch wide, beginning with its order word. Above the bar, 64px clear of it, the heading: two to five words at clamp(48px, 6.4vw, 104px), flush left. Nothing else.",
+   "mobile": "The bar turns vertical: segments stack as full-width blocks whose heights keep the proportions, 72px minimum, 6px gaps, about 70svh in total. Each holds its duration at 22px top-left and its clause at 16px beneath. The heading sits above at 11vw on two lines.",
+   "seenIn": [
+    "opl-wild-as"
+   ]
+  },
+  {
+   "id": "features-paragraph-with-picture-words",
+   "role": "features",
+   "name": "Paragraph with picture words",
+   "shape": "statement",
+   "tags": [
+    "type-led",
+    "poster"
+   ],
+   "directions": [
+    "sentence-as-layout",
+    "one-motif",
+    "product-performs",
+    "editorial-report",
+    "borrowed-category"
+   ],
+   "needs": [],
+   "blueprint": "One paragraph does the work of a feature grid. Three or four sentences, 35–50 words in total, set at clamp(30px, 3.6vw, 60px), leading 1.18, medium weight, across columns 1–11, left-aligned. Each sentence names one capability, and directly after that capability's key noun sits an inline slot: an inline-block frame 1em tall and 1.9em wide, radius 0.18em, dropped 0.12em below the baseline, holding a tight photograph crop (object-fit: cover) or a real interface control at readable size. Four slots at most, never two on one line. The nouns keep the weight and colour of the rest; the slots are the only emphasis. Mark it up as a paragraph and give the section a visually hidden heading of two or three words; nothing visible sits above. 72px lower, starting at column 7, one supporting sentence at 18px and the action.",
+   "mobile": "The paragraph drops to 7vw with leading 1.22 and fills the width. Slots stay inline at 1em tall but narrow to 1.5em wide. If a slot lands alone at the start of a line, let it; do not shrink the type. The supporting sentence and the action follow at full width.",
+   "seenIn": [
+    "aww-monolog",
+    "opl-uncle-rudy",
+    "aww-cominvi",
+    "opl-midnight-2"
+   ]
+  },
+  {
+   "id": "cta-blank-in-the-sentence",
+   "role": "cta",
+   "name": "A sentence with a blank",
+   "shape": "statement",
+   "tags": [
+    "type-led",
+    "ui-led"
+   ],
+   "directions": [
+    "sentence-as-layout",
+    "product-performs",
+    "type-only-statement",
+    "one-motif",
+    "colour-chapters"
+   ],
+   "needs": [],
+   "blueprint": "The closing sentence has a gap in it, and the gap is the form. A sentence of five to eight words is set at about 6vw on two lines, flush left across columns 1–11; there is no separate heading. Where the reader's email (or name, or city) belongs, an `<input>` sits inline on the baseline: a filled block of the one-step tone, exactly one line-height tall and about 7em wide, with the placeholder in the same face and size in the softer ink, no border, and the page's radius or motif corner. The sentence's last word is the submit `<button>`, set in the same type on a block of the accent colour of the same height. Field and button use `em` units so they scale with the sentence. One line at 16px under the sentence, in the softer ink, says what happens after sending. Nothing else is in the section.",
+   "mobile": "The sentence is set at 10vw on two lines; the input drops to a line of its own between them at full width and one line-height tall, and the final word, as the button, ends the second line. The explaining line follows at 15px.",
+   "seenIn": [
+    "opl-shelf"
+   ]
+  }
+ ],
+ "references": [
+  {
+   "id": "opl-midnight-2",
+   "name": "Midnight",
+   "url": "https://www.askmidnight.com",
+   "source": "One Page Love",
+   "kind": "ai-product",
+   "score": 7.1,
+   "idea": "The headline's circles are literally pictured: one blurred dark ring, sliced into horizontal bands, becomes the hero, the demo panel, the session cards and the footer.",
+   "mood": [
+    "calm",
+    "nocturnal",
+    "soft",
+    "thoughtful",
+    "minimal"
+   ],
+   "archetype": "fullbleed-media-overlay",
+   "hero": "No navigation at all. A canvas fills the full width and the top 90% of the viewport: a huge out-of-focus dark navy ring on drifting taupe, sage and terracotta, cut into horizontal bands about 78px tall that are slightly offset like blinds. On the vertical centre line, starting 58px from the left, sit a small rounded-square line icon and a one-line headline at 48px in cream. On the same baseline, starting 59% across, a two-line 17px statement whose first sentence is white and bold while the rest drops to half opacity. The cream page background shows as a 90px strip at the bottom. No button.",
+   "type": "Public Sans only, weight 500, tracking −0.04em. Headline 48px, mid-page statement about 38px on five centred lines, body 13–17px. Signature device: within one paragraph the first sentence is full strength and the remainder faded, replacing the usual heading-plus-subhead pair.",
+   "colour": "#f4efe6 #07172a #867768 #687674 #a8735c #faf7f1 — Warm cream pages against midnight navy; the gradient mixes muted taupe, sage and terracotta around the dark ring. A peach-cream fills the small pill button. No bright accent anywhere.",
+   "imagery": "An animated blurred ring gradient with band displacement and fine grain, used full-bleed in hero and footer, inset with 8px corners as the demo panel, and miniaturised onto three portrait session cards. No photos or UI screenshots.",
+   "layout": "30px side margins. Sections alternate between full-bleed gradient and cream type-only screens. Section headers split into left title and right small paragraph. Text blocks are short and often occupy one half of the width, leaving the other empty (the FAQ sits entirely in the right half).",
+   "sections": [
+    {
+     "role": "intro",
+     "description": "A full cream viewport with one centred paragraph of five lines at roughly 38px, about 820px wide. Only the opening sentence is dark; the remaining words are pale and darken progressively with scroll. Later, three small portrait cards, each about 115×180px with a mini gradient, a date at the top and a two-line label bottom-left, fan across the right side of the text, overlapping it with a soft shadow."
+    },
+    {
+     "role": "showcase",
+     "description": "Header row: a two-line title at 34px on the left, a three-line 12px grey paragraph in the last fifth on the right. Below, a gradient panel spans the full content width, about 650px tall with 8px corners, holding a centred question at 34px in cream, a one-line caption, and an email capsule with an inline peach button; a small play capsule sits centred near its bottom edge."
+    },
+    {
+     "role": "features",
+     "description": "A left-aligned two-line lead uses the dark-then-faded sentence device. Under it a two-by-two arrangement with no cards or borders, columns starting at 0 and 50%: each item is a 24px pale rounded-square icon, a quoted question as a 13px semibold title, then three or four lines of grey 12px text about 300px wide. A waitlist capsule floats fixed at bottom centre."
+    },
+    {
+     "role": "footer",
+     "description": "FAQ rows with hairlines and chevrons occupy only the right half of the screen above. The footer is the gradient again, full-bleed and about 190px tall: a two-line cream statement at left, an email capsule with inline button at right on the same line, and a row of tiny grey legal links along the bottom."
+    }
+   ],
+   "steal": [
+    "Slice a soft blurred gradient into horizontal bands with small offsets so a familiar glow becomes a recognisable, ownable texture.",
+    "Replace heading-plus-subhead with one paragraph whose first sentence is full contrast and the rest half opacity.",
+    "Remove the nav from the hero entirely and put headline left and supporting line right on one shared baseline at mid-height."
+   ]
+  },
+  {
+   "id": "aww-colonia-zacamil",
+   "name": "Colonia Zacamil",
+   "url": "https://coloniazacamil.com/",
+   "source": "Awwwards Site of the Day",
+   "kind": "culture",
+   "score": 7.2,
+   "idea": "The sentence is the layout: 'FLY TO ___ ZACAMIL' runs as one full-width line, with a strip of drone video filling the gap where a word would sit.",
+   "mood": [
+    "cinematic",
+    "stark",
+    "editorial",
+    "inviting"
+   ],
+   "archetype": "type-poster",
+   "hero": "Warm off-white field with no navigation at all. One line of black ultra-condensed capitals about 13vw tall sits on the vertical centre and runs edge to edge with 28px side margins: 'FLY', a wide gap, 'TO', then a rounded-corner strip of aerial video exactly as tall as the letters and half the viewport wide, then 'ZACAMIL'. A tiny mono bracket label sits above the last word. About 150px lower, a small black pill button with a white dot-in-circle at its right end is centred. Two centred lines of 24px serif sit near the bottom edge. The top third is empty.",
+   "type": "Heathergreen, an ultra-condensed regular-weight sans, in capitals at 187px; Reckless Neue serif at 24px for the caption; Roboto Mono for the button and bracket label. Three faces, each used once, with roughly an 8:1 jump and no tracking adjustments.",
+   "colour": "#ebe6e0 #000000 #3d4633 #8d8a84 #4d8fa3 — Warm putty paper with pure black type and button. The only colour on the page is inside the video strip: tree greens, roof greys and one patch of teal.",
+   "imagery": "Top-down drone footage of housing blocks and trees, cropped to an extreme letterbox near 5:1 with 14px rounded corners and used as a word inside the headline; on mobile it becomes a 2:1 block between two headline lines.",
+   "layout": "Single viewport, no scroll captured. Everything hangs on the central axis: full-width headline line mid-screen, button below, caption at the foot. About 80% of the screen is bare paper. On mobile the sentence stacks into three bands: words, video, word.",
+   "sections": [],
+   "steal": [
+    "Replace a word in the headline with a media strip cut to the cap height, so the picture is read as part of the sentence.",
+    "Use three type voices once each (ultra-condensed display, soft serif caption, mono button) instead of one family in many sizes.",
+    "On mobile, restack the same sentence as word / image / word at full width rather than shrinking the single line."
+   ]
+  },
+  {
+   "id": "opl-proooof",
+   "name": "PROOOOF",
+   "url": "https://proooof.app",
+   "source": "One Page Love",
+   "kind": "consumer-app",
+   "score": 7.4,
+   "idea": "The product's output is the page: a wall of photos each wearing its coloured EXIF strip, with all the copy folded into one small floating card.",
+   "mood": [
+    "playful",
+    "photographic",
+    "compact",
+    "nerdy"
+   ],
+   "archetype": "other: floating-card-over-image-wall",
+   "hero": "The whole viewport is a six-column masonry of photographs on a warm off-white ground with about 15px gutters, columns offset vertically so rows never line up. Each photo has a flat strip fused to its bottom edge carrying tiny monospaced capture data, every strip a different solid colour (black, red, orange, yellow, violet, green). Dead centre floats a white card about 380px wide and 410px tall with roughly 28px corner radius and a soft shadow. It contains an extended wordmark with chained O's, a two-row accordion with the first row open, an App Store badge and a monospaced line of links. There is no navigation.",
+   "type": "An extended, heavy wordmark with interlocked O's is the only display type. Card text is Wintyr VF at about 14-16px, medium weight for accordion headings. EXIF strips and footer links are monospace at roughly 8-13px. No headline anywhere.",
+   "colour": "#f3eee9 #fafafa #191818 #ff6a2b #f7c531 #5a4fcf — Colour comes from the photographs and the saturated caption strips, one hue per photo. Card and gutters stay off-white; a final panel flips to near-black with grey characters.",
+   "imagery": "Casual travel, food, pet and concert photos in mixed portrait and landscape crops, square corners, ungraded, tiled edge to edge. The page ends on an ASCII-art rendering of a hand holding a camera.",
+   "layout": "Effectively a single screen: the photo wall sits behind a centred card that carries every word. Six columns on desktop, two on mobile where the card widens to nearly full width. The only second scene is a dark, inset ASCII panel.",
+   "sections": [
+    {
+     "role": "features",
+     "description": "All product copy lives in the centred card as an accordion: a row with heading left and chevron right, a hairline divider, the open panel's four-line paragraph, a centred store badge, another divider, a collapsed second row, then a small monospaced line with a version number and underlined links. The card stays put while the wall remains visible on all four sides."
+    },
+    {
+     "role": "gallery",
+     "description": "Each tile is a photo with a data strip attached below: two or three rows of monospaced text, four values spread evenly across the first row, date and time at opposite ends of the second, maker and model on the third. Strip and text colours change per tile, for example yellow on black, black on yellow, white on violet, so a uniform grid looks varied."
+    },
+    {
+     "role": "cta",
+     "description": "The closing panel is a near-black rectangle inset with wide margins and filled edge to edge with rows of grey ASCII characters that resolve into a picture of a hand gripping a camera. One line of tiny monospaced uppercase text sits at the exact centre as the call to action. No button and no logo."
+    }
+   ],
+   "steal": [
+    "Show the product's output at wall scale as the background and confine all copy to one small card on top of it.",
+    "Give every repeated tile its own flat accent colour for the caption strip so a strict grid reads as lively.",
+    "Hold the explanatory copy in an accordion inside the hero card so the page needs no scrolling."
+   ]
+  }
+ ]
+}
