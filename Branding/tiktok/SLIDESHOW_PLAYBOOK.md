@@ -33,6 +33,21 @@ re-check after a week.
 | 6 | studying · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | |
 | 7 | work stress · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
 | 8 | posture · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
+| 9 | work stress · bad-email reset, 3 actions + app (5 slides) | Classic outline | TikTok Sans 600 | |
+| 10 | desk/posture · "pick the one you need", 3 labelled options + app (5 slides) | Classic outline + bold label line | TikTok Sans 600/700 | |
+| 11 | after-work reset · timestamped routine, 4 steps + app (6 slides) | Background boxes + bold timestamp box | TikTok Sans 600/700 | |
+| 12 | box breathing · one-technique tutorial, one phase per slide + app (7 slides) | Classic outline + giant outlined count ("4", 440px) | TikTok Sans 600/700 | |
+| 13 | work stress · "before the reply", 5 slides, no app slide | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 14 | desk/movement · wall-check follow-up, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 15 | work stress · after the meeting, shoulders, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 16 | desk job · three numbered desk checks, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
+
+Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/outputs/four-carousel-tests.md`
+(copy and captions verbatim from there). Log results at 4 h, 24 h and 7 days, per platform, as that file describes.
+
+Sets 9–10 are the carousel half of a 4-post batch (the other two, a wall-check attempt and a post-meeting shoulder
+reset, are 10–15 s videos filmed by hand). For this batch, record 4 h and 24 h views, average watch time,
+completion and saves per post. It tests concepts and formats together, so it won't isolate which change caused a result.
 
 Shadow-only styles (2, 4) need dark or evenly toned photos behind the text. The boxed style (3) works on anything,
 including bright office shots.
@@ -73,6 +88,7 @@ lowers swipe-through. Keep it native.
 | "Navy SEALs use box breathing" | `Models/BodyTrivia.swift` |
 | Session player counts down every hold for you | `Views/Session/SessionPlayerView.swift` (`secondsRemaining`) |
 | "Office Stretches After Work" premade routine, 17 exercises | Routines screenshot `10.14.05 PM` |
+| Exercise library sorted into 8 body parts (neck, shoulders, chest, back, core, arms, hips & glutes, legs) | `Models/ExerciseCategory.swift`, exercises screenshot `10.13.10 PM` |
 
 - Run the slide-8 paragraph through the `humanizer` skill so it sounds like a creator. Current version:
   > Start using the Dial Down app. / You tap the spot that's tight / on a 3D body and it pulls up / stretches for
