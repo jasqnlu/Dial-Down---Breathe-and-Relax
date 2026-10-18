@@ -1,0 +1,68 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 13": batch post 1, “Before the reply” (four-carousel-tests.md, 2026-10-17).
+  Five slides, no app slide. Classic outline captions (set 1/7/9 style), copy from the spec in lowercase, no full stops.
+  Rendered one slide at a time (slides.html#s1 … #s5) by Tools/branding/build_tiktok_slideshow_1.py.
+  Photos are CC0 (StockSnap / rawpixel); sources in photos/credits.json.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down Before Reply</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@600;700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "TikTok Sans", sans-serif; font-weight: 600; color: #fff;
+    -webkit-text-stroke: 7px #000; paint-order: stroke fill;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .l1, .l2, .l3 { font-size: 60px; white-space: nowrap; }
+  .l1 { top: 868px; }
+  .l2 { top: 993px; }
+  .l3 { top: 1118px; }
+  .hook { top: 905px; left: 70px; right: 70px; font-size: 58px; line-height: 1.16; }
+</style>
+</head>
+<body>
+<section class="slide" id="s1">
+  <img class="photo" src="photos/s1.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook">things i do before replying<br>‘per my last email’</p>
+</section>
+
+<section class="slide" id="s2">
+  <img class="photo" src="photos/s2.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">hands off the keyboard</p>
+  <p class="cap l2">the draft can wait</p>
+</section>
+
+<section class="slide" id="s3">
+  <img class="photo" src="photos/s3.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">unclench my jaw</p>
+  <p class="cap l2">drop my shoulders</p>
+</section>
+
+<section class="slide" id="s4">
+  <img class="photo" src="photos/s4.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">read it again</p>
+  <p class="cap l2">when i’m ready to answer</p>
+  <p class="cap l3">the actual question</p>
+</section>
+
+<section class="slide" id="s5">
+  <img class="photo" src="photos/s5.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">professional reply</p>
+  <p class="cap l2">very unprofessional</p>
+  <p class="cap l3">first draft</p>
+</section>
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>
