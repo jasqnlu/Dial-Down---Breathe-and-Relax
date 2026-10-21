@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 20": branch of set 13 (first-person work-stress story) with the app slide from set 14.
+  Six slides: five story slides, then the app. Classic outline captions, 2–3 lines.
+  Photos are CC0 (StockSnap / rawpixel / WordPress Photo Directory); sources in photos/credits.json.
+  Rendered one slide at a time (slides.html#s1 …) by Tools/branding/build_tiktok_slideshow_1.py.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down Inbox Reset</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@600;700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "TikTok Sans", sans-serif; font-weight: 600; color: #fff;
+    -webkit-text-stroke: 7px #000; paint-order: stroke fill;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .l1, .l2, .l3 { font-size: 60px; white-space: nowrap; }
+  .l1 { top: 868px; }
+  .l2 { top: 993px; }
+  .l3 { top: 1118px; }
+  .hook { top: 905px; left: 70px; right: 70px; font-size: 58px; line-height: 1.16; }
+
+  /* slide 6: the app plug (same spec as sets 7, 9, 10) */
+  .plug-bg { filter: blur(7px) brightness(0.92); transform: scale(1.06); }
+  .icon { position: absolute; top: 170px; left: 50%; width: 190px; height: 190px; margin-left: -95px;
+          border-radius: 42px; }
+  .num { top: 400px; font-size: 56px; }
+  .para { top: 488px; font-size: 45px; line-height: 1.19; }
+  .ask { top: 900px; font-size: 62px; font-weight: 700; -webkit-text-stroke-width: 8px; }
+  .shot { position: absolute; top: 1000px; left: 50%; width: 600px; margin-left: -300px;
+          overflow: hidden; border-radius: 34px; }
+  .shot img { width: 100%; display: block; }
+</style>
+</head>
+<body>
+<section class="slide" id="s1">
+  <img class="photo" src="photos/s1.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook">what i do before i<br>open my inbox now</p>
+</section>
+
+<section class="slide" id="s2">
+  <img class="photo" src="photos/s2.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">phone on silent</p>
+  <p class="cap l2">and one slow breath</p>
+  <p class="cap l3">all the way out</p>
+</section>
+
+<section class="slide" id="s3">
+  <img class="photo" src="photos/s3.jpg" alt="" style="transform: scale(1.12); transform-origin: 50% 0">
+  <p class="cap l1">i write down</p>
+  <p class="cap l2">the one thing that</p>
+  <p class="cap l3">has to get done today</p>
+</section>
+
+<section class="slide" id="s4">
+  <img class="photo" src="photos/s4.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">shoulders down</p>
+  <p class="cap l2">jaw loose</p>
+  <p class="cap l3">then i open it</p>
+</section>
+
+<section class="slide" id="s5">
+  <img class="photo" src="photos/s5.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">the emails are the same</p>
+  <p class="cap l2">i’m just not braced</p>
+  <p class="cap l3">for them anymore</p>
+</section>
+
+<section class="slide" id="s6">
+  <img class="photo plug-bg" src="photos/s1.jpg" alt="" style="object-position: 50% 50%">
+  <img class="icon" src="../../../Branding/logo-kit/ios/icon-dark.png" alt="Dial Down app icon">
+  <p class="cap para" style="top: 470px">Or try the Dial Down app.<br>It has box breathing that<br>says each step out loud,<br>plus 4-7-8 and belly.<br>It’s free, no subscription.<br>You can get it on the App Store.</p>
+  <p class="cap ask">what do you do first?</p>
+  <div class="shot"><img src="../../../AppStoreScreenshots/6.9-inch/Screenshot%20iPhone%2017%20Pro%20Max%2010-01-2026%20at%2010.13.14%E2%80%AFPM.png" alt="Dial Down breathing screen" style="margin-top: -150px"></div>
+</section>
+
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>

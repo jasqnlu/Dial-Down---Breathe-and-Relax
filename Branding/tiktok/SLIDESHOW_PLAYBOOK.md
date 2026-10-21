@@ -25,25 +25,37 @@ re-check after a week.
 
 | Set | Topic / structure | Caption style | Font | Results |
 |---|---|---|---|---|
-| 1 | stress relief · "7 weird habits" listicle | Classic: white, 7px black outline | TikTok Sans 600 | Day 1: 129 views, 5 likes (3.9%) |
-| 2 | sleep · "7 weird habits" listicle | Typewriter: white, soft shadow, no outline | Courier Prime 700 | Day 1: 96 views, 2 likes (2.1%) |
-| 3 | desk worker · POV + numbered tips | Background: black text on white rounded boxes | TikTok Sans 600 | Day 1: **206 views, 7 likes** (3.4%), best |
-| 4 | body check · hook question + release per slide | Serif: white, soft shadow, release in italic | Playfair Display 600 / 500 italic | Day 1: 140 views, 3 likes (2.1%) |
-| 5 | work from home · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | |
-| 6 | studying · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | |
-| 7 | work stress · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
-| 8 | posture · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
-| 9 | work stress · bad-email reset, 3 actions + app (5 slides) | Classic outline | TikTok Sans 600 | |
-| 10 | desk/posture · "pick the one you need", 3 labelled options + app (5 slides) | Classic outline + bold label line | TikTok Sans 600/700 | |
-| 11 | after-work reset · timestamped routine, 4 steps + app (6 slides) | Background boxes + bold timestamp box | TikTok Sans 600/700 | |
-| 12 | box breathing · one-technique tutorial, one phase per slide + app (7 slides) | Classic outline + giant outlined count ("4", 440px) | TikTok Sans 600/700 | |
-| 13 | work stress · "before the reply", 5 slides, no app slide | Classic outline (2–3 lines) | TikTok Sans 600 | |
-| 14 | desk/movement · wall-check follow-up, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
-| 15 | work stress · after the meeting, shoulders, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
-| 16 | desk job · three numbered desk checks, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 1 | stress relief · "7 weird habits" listicle | Classic: white, 7px black outline | TikTok Sans 600 | Day 1: 129 views, 5 likes (3.9%); Oct 20: 129 views, 5 likes |
+| 2 | sleep · "7 weird habits" listicle | Typewriter: white, soft shadow, no outline | Courier Prime 700 | Day 1: 96 views, 2 likes (2.1%); Oct 20: 96 views, 2 likes |
+| 3 | desk worker · POV + numbered tips | Background: black text on white rounded boxes | TikTok Sans 600 | Day 1: **206 views, 7 likes** (3.4%), best; Oct 20: 206 views, **7 likes**, most likes |
+| 4 | body check · hook question + release per slide | Serif: white, soft shadow, release in italic | Playfair Display 600 / 500 italic | Day 1: 140 views, 3 likes (2.1%); Oct 20: 144 views, 3 likes |
+| 5 | work from home · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | Oct 20: 122 views, 0 likes |
+| 6 | studying · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | Oct 20: 117 views, 1 like |
+| 7 | work stress · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | Oct 20: 265 views, 4 likes |
+| 8 | posture · "7 weird habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | Oct 20: 230 views, 2 likes |
+| 9 | work stress · bad-email reset, 3 actions + app (5 slides) | Classic outline | TikTok Sans 600 | Oct 20: 208 views, 1 like |
+| 10 | desk/posture · "pick the one you need", 3 labelled options + app (5 slides) | Classic outline + bold label line | TikTok Sans 600/700 | Oct 20: 91 views, 0 likes |
+| 11 | after-work reset · timestamped routine, 4 steps + app (6 slides) | Background boxes + bold timestamp box | TikTok Sans 600/700 | Oct 20: 9 views, 0 likes |
+| 12 | box breathing · one-technique tutorial, one phase per slide + app (7 slides) | Classic outline + giant outlined count ("4", 440px) | TikTok Sans 600/700 | Oct 20: 0 views, 0 likes |
+| 13 | work stress · "before the reply", 5 slides, no app slide | Classic outline (2–3 lines) | TikTok Sans 600 | Oct 20: 228 views, 1 like |
+| 14 | desk/movement · wall-check follow-up, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | Oct 20: **408 views**, 3 likes, most views |
+| 15 | work stress · after the meeting, shoulders, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | Oct 20: 165 views, 0 likes |
+| 16 | desk job · three numbered desk checks, 5 slides + app as slide 6 | Classic outline (2–3 lines) | TikTok Sans 600 | Oct 20: 133 views, 0 likes |
+| 17 | wall check step by step, 5 slides + app (branch of 14) | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 18 | meetings · "7 weird habits" listicle (branch of 7) | Classic outline | TikTok Sans 600 | |
+| 19 | calls all day · POV + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | |
+| 20 | work stress · "before i open my inbox", 5 slides + app (branch of 13 + 14) | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 21 | neck · "7 weird habits" listicle (branch of 8) | Classic outline | TikTok Sans 600 | |
+| 22 | afternoon slump · "7 weird 3pm habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
 
 Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/outputs/four-carousel-tests.md`
 (copy and captions verbatim from there). Log results at 4 h, 24 h and 7 days, per platform, as that file describes.
+
+**Results check (2026-10-20, all 16 sets):** desk, work-stress and posture topics took the top six by views
+(14, 7, 8, 13, 9, 3). Sleep (2), WFH (5) and studying (6) lagged. Set 3's boxed POV tips still has the most likes;
+the first-person story sets (13–16) pull views but few likes. Sets 11 and 12 (9 and 0 views) went up one minute
+apart, so their result says more about back-to-back posting than about their content: space posts out.
+Sets 17–22 each branch off one of the winners. Post them at least an hour apart.
 
 Sets 9–10 are the carousel half of a 4-post batch (the other two, a wall-check attempt and a post-meeting shoulder
 reset, are 10–15 s videos filmed by hand). For this batch, record 4 h and 24 h views, average watch time,
