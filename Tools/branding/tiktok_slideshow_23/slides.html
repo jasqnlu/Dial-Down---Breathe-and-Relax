@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  Dial Down TikTok carousel, "slide-show 23": branch of set 8 (posture listicle), about the lower back.
+  Classic outlined captions, "7 weird habits" listicle, the app as habit 7.
+  Photos are CC0 (StockSnap / WordPress Photo Directory); sources in photos/credits.json.
+  Rendered one slide at a time (slides.html#s1 …) by Tools/branding/build_tiktok_slideshow_1.py.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dial Down Lower Back Habits</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@600;700&display=block">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+
+  .slide { display: none; position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .slide.on { display: block; }
+  .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* TikTok "Classic" caption: white fill, black outline drawn outside the glyphs */
+  .cap {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-family: "TikTok Sans", sans-serif; font-weight: 600; color: #fff;
+    -webkit-text-stroke: 7px #000; paint-order: stroke fill;
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  /* habit slides: two separate one-line captions, like two taps of the text tool */
+  .l1, .l2 { font-size: 60px; white-space: nowrap; }
+  .l1 { top: 868px; }
+  .l2 { top: 993px; }
+
+  .hook { top: 905px; left: 70px; right: 70px; font-size: 58px; line-height: 1.16; }
+
+  /* habit 7: the app */
+  .plug-bg { filter: blur(7px) brightness(0.92); transform: scale(1.06); }
+  .icon { position: absolute; top: 170px; left: 50%; width: 190px; height: 190px; margin-left: -95px;
+          border-radius: 42px; }
+  .num { top: 400px; font-size: 56px; }
+  .para { top: 488px; font-size: 45px; line-height: 1.19; }
+  .ask { top: 900px; font-size: 70px; font-weight: 700; -webkit-text-stroke-width: 8px; }
+  .shot { position: absolute; top: 1000px; left: 50%; width: 600px; margin-left: -300px;
+          overflow: hidden; border-radius: 34px; }
+  .shot img { width: 100%; display: block; margin-top: -280px; }
+</style>
+</head>
+<body>
+<section class="slide" id="s1">
+  <img class="photo" src="photos/hook.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap hook">7 weird lower back habits that<br>feel illegal but actually work</p>
+</section>
+<section class="slide" id="s2">
+  <img class="photo" src="photos/floor.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">lie on the floor</p>
+  <p class="cap l2">calves up on a chair</p>
+</section>
+<section class="slide" id="s3">
+  <img class="photo" src="photos/knees.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">hug your knees</p>
+  <p class="cap l2">and rock side to side</p>
+</section>
+<section class="slide" id="s4">
+  <img class="photo" src="photos/catcow.jpg" alt="" style="transform: scale(1.3); transform-origin: 50% 100%">
+  <p class="cap l1">cat cow on the bed</p>
+  <p class="cap l2">before you get up</p>
+</section>
+<section class="slide" id="s5">
+  <img class="photo" src="photos/stand.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">stand up every half hour</p>
+  <p class="cap l2">then sit right back down</p>
+</section>
+<section class="slide" id="s6">
+  <img class="photo" src="photos/kettle.jpg" alt="" style="object-position: 50% 50%">
+  <p class="cap l1">squeeze your glutes</p>
+  <p class="cap l2">while the kettle boils</p>
+</section>
+<section class="slide" id="s7">
+  <img class="photo" src="photos/pillow.jpg" alt="" style="transform: scale(1.35); transform-origin: 50% 100%">
+  <p class="cap l1">sleep with a pillow</p>
+  <p class="cap l2">between your knees</p>
+</section>
+<section class="slide" id="s8">
+  <img class="photo plug-bg" src="photos/hook.jpg" alt="" style="object-position: 50% 50%">
+  <img class="icon" src="../../../Branding/logo-kit/ios/icon-dark.png" alt="Dial Down app icon">
+  <p class="cap num">7</p>
+  <p class="cap para">Start using the Dial Down app.<br>It has stretches sorted<br>by body part, back included,<br>and it counts down every hold.<br>It’s free, no subscription.<br>You can get it on the App Store.</p>
+  <p class="cap ask">which one will you try</p>
+  <div class="shot" style="height: 440px"><img src="../../../AppStoreScreenshots/6.9-inch/Screenshot%20iPhone%2017%20Pro%20Max%2010-01-2026%20at%2010.13.10%E2%80%AFPM.png" alt="Dial Down exercise library" style="margin-top: -560px"></div>
+</section>
+<script>
+  const id = (location.hash || "#s1").slice(1);
+  (document.getElementById(id) || document.getElementById("s1")).classList.add("on");
+</script>
+</body>
+</html>
