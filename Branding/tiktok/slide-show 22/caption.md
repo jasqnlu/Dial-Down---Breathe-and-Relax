@@ -6,7 +6,13 @@ weird things i do at 3pm instead of another coffee
 
 **Caption**
 
-the bathroom one floor up sounds so dumb but it's my whole afternoon reset 😮‍💨 save this for your next 3pm slump
+3pm used to mean a second coffee and then being wide awake at midnight
+
+so i started trying other stuff. a full glass of cold water, marching in place for one whole song, stepping outside for a minute without my phone
+
+the bathroom one floor up sounds so dumb but it's my whole afternoon reset 😮‍💨 the stairs and the walk there do more than the coffee did
+
+save this for your next 3pm slump
 
 #afternoonslump #3pmslump #breathwork #deskbreak #stretching
 
@@ -23,3 +29,7 @@ the bathroom one floor up sounds so dumb but it's my whole afternoon reset 😮�
 
 Why 1: the coffee swap gives a relatable reason to open without repeating slide 1 word for word, and the
 bathroom-one-floor-up habit is the oddest and easiest to picture, so it's the one most likely to get comments.
+
+## Short version
+
+the bathroom one floor up sounds so dumb but it's my whole afternoon reset 😮‍💨 save this for your next 3pm slump

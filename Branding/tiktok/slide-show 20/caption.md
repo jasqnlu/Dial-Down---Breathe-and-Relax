@@ -6,7 +6,15 @@ i used to brace myself every time i opened my inbox
 
 **Caption**
 
-shoulders down, jaw loose is the one i never skip now 😮‍💨 save this for your next monday morning
+monday mornings i used to open my inbox already tense, like i was waiting to get hit with something
+
+now i do this first. phone on silent, one slow breath all the way out, then i write down the one thing that actually has to get done today
+
+shoulders down, jaw loose is the one i never skip now 😮‍💨 i didn't even notice i was clenching until i started checking
+
+the emails didn't change. i just stopped bracing for them
+
+save this for your next monday morning
 
 #workstress #officelife #corporatelife #morningroutine #stressrelief
 
@@ -34,3 +42,7 @@ slide-1 hook, and it keeps the first-person work-stress voice of the parent set 
 points at the shoulders-and-jaw step, the one viewers can do on the spot while reading. The breath step (option A)
 would overlap with the breathing plug on the last slide, and the one-thing list (option B) is a productivity tip,
 not a calming one.
+
+## Short version
+
+shoulders down, jaw loose is the one i never skip now 😮‍💨 save this for your next monday morning

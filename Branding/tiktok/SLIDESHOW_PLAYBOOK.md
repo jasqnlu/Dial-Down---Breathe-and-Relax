@@ -47,6 +47,14 @@ re-check after a week.
 | 20 | work stress · "before i open my inbox", 5 slides + app (branch of 13 + 14) | Classic outline (2–3 lines) | TikTok Sans 600 | |
 | 21 | neck · "7 weird habits" listicle (branch of 8) | Classic outline | TikTok Sans 600 | |
 | 22 | afternoon slump · "7 weird 3pm habits" listicle (branch of 1) | Classic outline | TikTok Sans 600 | |
+| 23 | lower back · "7 weird habits" listicle (branch of 8) | Classic outline | TikTok Sans 600 | |
+| 24 | hips from sitting · POV + numbered tips (branch of 3/19) | Background boxes | TikTok Sans 600 | |
+| 25 | after work · "what i do in the car", 5 slides + app (branch of 13/20) | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 26 | shoulders · "7 weird habits" listicle (branch of 8/15) | Classic outline | TikTok Sans 600 | |
+| 27 | work stress · POV "quick chat" + numbered tips (branch of 3) | Background boxes | TikTok Sans 600 | |
+| 28 | wrists/typing · "7 weird keyboard habits" listicle (branch of 16) | Classic outline | TikTok Sans 600 | |
+| 29 | calls · 2 minute reset between calls, 5 slides + app (branch of 14/19) | Classic outline (2–3 lines) | TikTok Sans 600 | |
+| 30 | sunday night · "7 weird sunday night habits that make monday easier" (hook wording test) | Classic outline | TikTok Sans 600 | |
 
 Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/outputs/four-carousel-tests.md`
 (copy and captions verbatim from there). Log results at 4 h, 24 h and 7 days, per platform, as that file describes.
