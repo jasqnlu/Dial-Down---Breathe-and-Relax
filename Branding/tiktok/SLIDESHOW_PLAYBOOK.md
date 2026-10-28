@@ -55,6 +55,12 @@ re-check after a week.
 | 28 | wrists/typing · "7 weird keyboard habits" listicle (branch of 16) | Classic outline | TikTok Sans 600 | |
 | 29 | calls · 2 minute reset between calls, 5 slides + app (branch of 14/19) | Classic outline (2–3 lines) | TikTok Sans 600 | |
 | 30 | sunday night · "7 weird sunday night habits that make monday easier" (hook wording test) | Classic outline | TikTok Sans 600 | |
+| 31 | mobility · "7 weird things physios do" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | |
+| 32 | morning · "7 weird morning habits" listicle, new noun (branch of 1/8) | Classic outline | TikTok Sans 600 | |
+| 33 | sleep · "7 weird sleep habits" listicle (branch of 1/8); redo of set 2 in the classic style | Classic outline | TikTok Sans 600 | |
+| 34 | tight hips · "7 weird hip habits" listicle (branch of 1/8); classic version of set 24 | Classic outline | TikTok Sans 600 | |
+| 35 | legs/hamstrings · "7 weird leg habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | |
+| 36 | upper back · "7 weird back habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | |
 
 Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/outputs/four-carousel-tests.md`
 (copy and captions verbatim from there). Log results at 4 h, 24 h and 7 days, per platform, as that file describes.
