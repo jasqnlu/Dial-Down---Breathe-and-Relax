@@ -48,7 +48,7 @@ struct BackendSyncBanner: View {
     private var failureBanner: some View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(Color.luminaOrange)
+                .foregroundStyle(Color.pastelPeach)
             Text("Signed in, but sync isn't connected")
                 .font(.luminaLabel)
                 .foregroundStyle(Color.luminaOnSurface)
@@ -96,7 +96,7 @@ struct BackendSyncBanner: View {
     private var connectedBanner: some View {
         HStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.pastelMint)
             Text("Connected")
                 .font(.luminaLabel)
                 .foregroundStyle(Color.luminaOnSurface)

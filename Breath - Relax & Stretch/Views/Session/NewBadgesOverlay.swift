@@ -43,10 +43,7 @@ struct NewBadgesOverlay: View {
 
     private func badgeCard(_ badge: BadgesView.BadgeDefinition) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: badge.icon)
-                .font(.title2)
-                .foregroundStyle(.yellow)
-                .frame(width: 36)
+            LuminaIconBadge(systemName: badge.icon, tint: .pastelYellow, size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Badge Earned!")

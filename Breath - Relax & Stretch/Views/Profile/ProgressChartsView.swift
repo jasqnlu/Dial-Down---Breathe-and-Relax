@@ -150,10 +150,10 @@ struct ProgressChartsView: View {
     // distinguishability under color-vision deficiency. Identity never rides
     // on color alone: every series also carries its SF Symbol + name.
     private static let testColors: [FlexibilityTest: Color] = [
-        .toeTouch:      .blue,
-        .shoulderReach: .orange,
-        .neckRotation:  .green,
-        .butterfly:     .purple
+        .toeTouch:      .pastelBlue,
+        .shoulderReach: .pastelPeach,
+        .neckRotation:  .pastelMint,
+        .butterfly:     .pastelLavender
     ]
 
     private var flexibilitySection: some View {
@@ -194,9 +194,8 @@ struct ProgressChartsView: View {
                     ForEach(FlexibilityTest.allCases) { test in
                         if let latest = FlexibilityStats.latest(checkIns, for: test) {
                             HStack(spacing: 10) {
-                                Image(systemName: test.icon)
-                                    .foregroundStyle(Self.testColors[test] ?? Color.luminaPrimary)
-                                    .frame(width: 26)
+                                LuminaIconBadge(systemName: test.icon,
+                                                tint: Self.testColors[test] ?? .pastelBlue, size: 30)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(test.name)
                                         .font(.luminaCardTitle)
@@ -320,13 +319,13 @@ struct ProgressChartsView: View {
                     ) {
                         ForEach(grid) { cell in
                             RoundedRectangle(cornerRadius: 6)
-                                .fill(cell.hasSession ? Color.luminaPrimary : Color.luminaContainer)
+                                .fill(cell.hasSession ? Color.pastelMint : Color.luminaContainer)
                                 .frame(width: 32, height: 32)
                                 .overlay {
                                     if let day = cell.day {
                                         Text("\(day)")
                                             .font(.luminaCaption)
-                                            .foregroundStyle(cell.hasSession ? Color.luminaOnPrimary : Color.luminaOnSurfaceVariant)
+                                            .foregroundStyle(cell.hasSession ? Color.onPastel : Color.luminaOnSurfaceVariant)
                                     }
                                 }
                                 .onTapGesture {
@@ -405,9 +404,9 @@ struct ProgressChartsView: View {
         if isFuture { return Color.clear }
         switch count {
         case 0:  return Color.luminaContainer
-        case 1:  return Color.luminaPrimary.opacity(0.35)
-        case 2:  return Color.luminaPrimary.opacity(0.65)
-        default: return Color.luminaPrimary
+        case 1:  return Color.pastelMint.opacity(0.4)
+        case 2:  return Color.pastelMint.opacity(0.7)
+        default: return Color.pastelMint
         }
     }
 
@@ -606,9 +605,7 @@ struct ProgressChartsView: View {
 
     private func statCard(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(Color.luminaPrimary)
+            LuminaIconBadge(systemName: icon, size: 36)
             Text(value)
                 .font(.luminaHeadline)
                 .foregroundStyle(Color.luminaOnSurface)

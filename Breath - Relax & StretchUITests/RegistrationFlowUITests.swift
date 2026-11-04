@@ -90,6 +90,8 @@ final class RegistrationFlowUITests: XCTestCase {
                                 "-auth.anonymousID", UUID().uuidString]
         app.launch()
         XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 15))
+        app.buttons["Next"].tap()                       // language -> welcome
+        XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 5))
         app.buttons["Next"].tap()                       // -> showcase 1
         XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 5))
         attach(app, "4-showcase-1")

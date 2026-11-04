@@ -13,9 +13,7 @@ struct ChallengeInviteView: View {
             VStack(spacing: 20) {
                 Spacer(minLength: 0)
 
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(Color.luminaOrange)
+                LuminaIconBadge(systemName: "flame.fill", tint: .pastelYellow, size: 96)
 
                 Text("\(payload.fromName.isEmpty ? "A friend" : payload.fromName) challenges you!")
                     .font(.luminaTitle)

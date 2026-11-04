@@ -322,11 +322,7 @@ struct TodayView: View {
             showingCustomize = true
         }
         .sheet(item: $selectedPremadeRoutine) { routine in
-            RoutineBuilderView(
-                initialExerciseIDs: routine.resolvedExercises(in: exercises).map(\.uuid),
-                initialName: routine.title,
-                pickingOriginTab: 0
-            )
+            PremadeRoutineCustomizeSheet(routine: routine, exercises: exercises)
         }
         .alert(
             "Streak Lost",
@@ -555,8 +551,8 @@ struct TodayView: View {
                             .frame(height: 0.5)
                             .padding(.leading, 46)
                     }
-                    heroRow(index: index, exercise: exercise,
-                            seconds: overrides[exercise.uuid] ?? exercise.durationSeconds)
+                    NumberedExerciseRow(index: index, exercise: exercise,
+                                        seconds: overrides[exercise.uuid] ?? exercise.durationSeconds)
                 }
                 if hidden > 0 {
                     Text("+\(hidden) more")
@@ -600,31 +596,6 @@ struct TodayView: View {
     }
 
     // MARK: - Hero pieces
-
-    /// One exercise in the hero list: pastel number circle, name, type, and
-    /// its (possibly customized) duration on the right.
-    private func heroRow(index: Int, exercise: Exercise, seconds: Int) -> some View {
-        HStack(spacing: 12) {
-            Text("\(index + 1)")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.onPastel)
-                .frame(width: 34, height: 34)
-                .background(Color.pastels[index % Color.pastels.count], in: Circle())
-            VStack(alignment: .leading, spacing: 1) {
-                Text(exercise.name)
-                    .font(.luminaSubheadline.weight(.semibold))
-                    .lineLimit(1)
-                Text(exercise.type.rawValue)
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            }
-            Spacer(minLength: 8)
-            Text(Self.shortDuration(seconds))
-                .font(.system(.footnote, weight: .semibold).monospacedDigit())
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
-        }
-        .padding(.vertical, 8)
-    }
 
     static func shortDuration(_ seconds: Int) -> String {
         seconds < 60 ? "\(seconds)s" : (seconds % 60 == 0 ? "\(seconds / 60)m" : "\(seconds / 60)m \(seconds % 60)s")
@@ -763,4 +734,37 @@ struct TodayView: View {
     TodayView()
         .modelContainer(container)
         .environmentObject(AuthManager.shared)
+}
+
+// MARK: - Numbered exercise row
+
+/// One exercise in a numbered list: pastel number circle, name, type, and
+/// duration on the right. Today's hero card and Review Picks share it.
+struct NumberedExerciseRow: View {
+    let index: Int
+    let exercise: Exercise
+    let seconds: Int
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("\(index + 1)")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.onPastel)
+                .frame(width: 34, height: 34)
+                .background(Color.pastels[index % Color.pastels.count], in: Circle())
+            VStack(alignment: .leading, spacing: 1) {
+                Text(exercise.name)
+                    .font(.luminaSubheadline.weight(.semibold))
+                    .lineLimit(1)
+                Text(exercise.type.rawValue)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            Spacer(minLength: 8)
+            Text(TodayView.shortDuration(seconds))
+                .font(.system(.footnote, weight: .semibold).monospacedDigit())
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+        .padding(.vertical, 8)
+    }
 }

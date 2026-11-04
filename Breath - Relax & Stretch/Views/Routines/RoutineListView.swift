@@ -54,13 +54,13 @@ struct RoutineListView: View {
                         } label: {
                             Label("Edit", systemImage: "pencil")
                         }
-                        .tint(.orange)
+                        .tint(Color.luminaContainer)
 
                         if let url = shareURL(for: routine) {
                             ShareLink(item: url) {
                                 Label("Share", systemImage: "square.and.arrow.up")
                             }
-                            .tint(.blue)
+                            .tint(Color(red: 0.36, green: 0.45, blue: 0.62))
                         }
                     }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -231,11 +231,7 @@ struct RoutineListView: View {
 
     private func entryRow(title: String, systemImage: String) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Color.luminaPrimary)
-                .frame(width: 44, height: 44)
-                .background(Color.luminaMintTint, in: Circle())
+            LuminaIconBadge(systemName: systemImage, tint: .pastelYellow, size: 44)
 
             Text(title)
                 .font(.luminaCardTitle)
@@ -288,9 +284,12 @@ struct RoutineRow: View {
             Spacer()
 
             Button(action: onPlay) {
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(resolvedCount == 0 ? Color.secondary : Color.accentColor)
+                Image(systemName: "play.fill")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.luminaOnPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Color.luminaPrimary, in: Circle())
+                    .opacity(resolvedCount == 0 ? 0.35 : 1)
             }
             .buttonStyle(.plain)
             .disabled(resolvedCount == 0)

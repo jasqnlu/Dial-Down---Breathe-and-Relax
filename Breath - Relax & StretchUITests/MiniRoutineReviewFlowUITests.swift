@@ -76,7 +76,11 @@ final class MiniRoutineReviewFlowUITests: XCTestCase {
         attach(app, "02-review-screen")
 
         // 6. Start it — a one-off SessionPlayerView, nothing saved.
+        // That row opens Customize first; its own "Start" button plays it.
         startMiniRoutine.tap()
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 10), "Customize should offer Start")
+        startButton.tap()
         let pauseButton = app.buttons["Pause session"]
         XCTAssertTrue(pauseButton.waitForExistence(timeout: 10), "Start Mini-Routine should launch the session player")
         attach(app, "03-mini-routine-session-playing")

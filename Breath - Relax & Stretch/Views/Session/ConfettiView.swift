@@ -22,7 +22,7 @@ struct ConfettiView: View {
     @State private var startDate = Date()
 
     private static let colors: [Color] = [
-        .luminaPrimary, .luminaOrange, .yellow, .green, .pink, .blue,
+        .luminaPrimary, .pastelYellow, .pastelPink, .pastelBlue, .pastelMint, .pastelLavender, .pastelPeach,
     ]
     private static let duration: TimeInterval = 2.2
     private static let fadeStart: TimeInterval = 1.6

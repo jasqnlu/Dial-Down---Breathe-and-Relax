@@ -46,30 +46,31 @@ struct MiniRoutineReviewView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("\(pickedExercises.count) EXERCISE\(pickedExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                VStack(alignment: .leading, spacing: 22) {
+                    picksCard
 
-                    RoadmapWave(exercises: pickedExercises, numbered: true)
+                    VStack(alignment: .leading, spacing: 12) {
+                        LuminaSectionTitle("What next?")
 
-                    VStack(spacing: 10) {
                         destinationRow(
                             title: "Create New Routine",
                             subtitle: "Name it and save these as a routine",
-                            systemImage: "plus.circle.fill"
+                            systemImage: "plus",
+                            tint: .pastelMint
                         ) { showingCustomizeForNewRoutine = true }
 
                         destinationRow(
                             title: "Add to Existing Routine",
                             subtitle: "Append these to one you already have",
-                            systemImage: "text.badge.plus"
+                            systemImage: "text.badge.plus",
+                            tint: .pastelBlue
                         ) { showingRoutineChooser = true }
 
                         destinationRow(
                             title: "Start Mini-Routine",
                             subtitle: "Play these now — nothing is saved",
-                            systemImage: "play.fill"
+                            systemImage: "play.fill",
+                            tint: .pastelYellow
                         ) { showingCustomizeForMiniSession = true }
                     }
                 }
@@ -151,15 +152,51 @@ struct MiniRoutineReviewView: View {
         }
     }
 
+    /// The picks as Today's hero card shows its session: bold title,
+    /// count · minutes, then numbered pastel rows.
+    private var picksCard: some View {
+        let shown = Array(pickedExercises.prefix(8))
+        let hidden = pickedExercises.count - shown.count
+        return VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Your picks")
+                    .font(.luminaHeadline)
+                    .tracking(-0.4)
+                Text("\(pickedExercises.count) exercise\(pickedExercises.count == 1 ? "" : "s") · \(totalMinutes) min")
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            VStack(spacing: 0) {
+                ForEach(Array(shown.enumerated()), id: \.element.uuid) { index, exercise in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(Color.luminaOutline)
+                            .frame(height: 0.5)
+                            .padding(.leading, 46)
+                    }
+                    NumberedExerciseRow(index: index, exercise: exercise,
+                                        seconds: exercise.durationSeconds)
+                }
+                if hidden > 0 {
+                    Text("+\(hidden) more")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 46)
+                        .padding(.top, 8)
+                }
+            }
+        }
+        .foregroundStyle(Color.luminaOnSurface)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .luminaCard(padding: 20)
+    }
+
     private func destinationRow(title: String, subtitle: String, systemImage: String,
-                                 action: @escaping () -> Void) -> some View {
+                                 tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(Color.luminaPrimary)
-                    .frame(width: 44, height: 44)
-                    .background(Color.luminaMintTint, in: Circle())
+                LuminaIconBadge(systemName: systemImage, tint: tint, size: 44)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -173,8 +210,10 @@ struct MiniRoutineReviewView: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .frame(width: 28, height: 28)
+                    .background(Color.luminaContainer, in: Circle())
             }
             .luminaCard(padding: 14)
         }

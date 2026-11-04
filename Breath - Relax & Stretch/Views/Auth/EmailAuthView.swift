@@ -21,9 +21,7 @@ struct EmailAuthView: View {
 
                     // Header
                     VStack(spacing: 6) {
-                        Image(systemName: "envelope.circle.fill")
-                            .font(.system(size: 52))
-                            .foregroundStyle(Color.luminaPrimary)
+                        LuminaIconBadge(systemName: "envelope.fill", tint: .pastelBlue, size: 64)
                         Text(isSignUp ? "Create Account" : "Welcome Back")
                             .font(.luminaTitle)
                             .foregroundStyle(Color.luminaOnSurface)
@@ -68,9 +66,9 @@ struct EmailAuthView: View {
                             Text(err)
                         }
                         .font(.luminaLabel)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.pastelCoral)
                         .padding(10)
-                        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
+                        .background(Color.pastelCoral.opacity(0.12), in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
                     }
 
                     // Primary action
@@ -181,10 +179,10 @@ private struct PasswordStrengthBar: View {
 
     private var color: Color {
         switch score {
-        case 0, 1: return .red
-        case 2:    return .orange
-        case 3:    return .yellow
-        default:   return .green
+        case 0, 1: return .pastelCoral
+        case 2:    return .pastelPeach
+        case 3:    return .pastelYellow
+        default:   return .pastelMint
         }
     }
 
@@ -193,7 +191,7 @@ private struct PasswordStrengthBar: View {
             HStack(spacing: 4) {
                 ForEach(1...4, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(i <= score ? color : Color(.systemFill))
+                        .fill(i <= score ? color : Color.luminaContainer)
                         .frame(height: 4)
                         .animation(.easeInOut(duration: 0.25), value: score)
                 }

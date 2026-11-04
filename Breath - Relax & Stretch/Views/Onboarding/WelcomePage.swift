@@ -77,12 +77,7 @@ struct FeatureRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(Color.luminaPrimary)
-                .frame(width: 44, height: 44)
-                .background(Color.luminaMintTint)
-                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.badge))
+            LuminaIconBadge(systemName: icon, size: 44)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

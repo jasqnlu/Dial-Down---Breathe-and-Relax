@@ -645,11 +645,14 @@ struct MarkCandidate: Equatable, Identifiable {
 /// highlight boxes (SceneKit) and the side-rail labels (SwiftUI) so a colour
 /// dot on a label matches its region on the body.
 enum CandidatePalette {
+    // Mid-tone versions of the app's pastels (seperate-main): soft enough to
+    // sit with the black + pastel look, strong enough to still tint the
+    // grey muscle layer visibly (full pastels wash out against it).
     static let colors: [Color] = [
-        Color(red: 0.23, green: 0.51, blue: 0.84),   // blue
-        Color(red: 0.36, green: 0.68, blue: 0.44),   // green (was cyan)
-        Color(red: 0.48, green: 0.42, blue: 0.94),   // indigo
-        Color(red: 0.88, green: 0.54, blue: 0.29),   // amber (neighbour muscle)
+        Color(red: 0.56, green: 0.69, blue: 0.92),   // pastel blue
+        Color(red: 0.55, green: 0.80, blue: 0.62),   // pastel mint
+        Color(red: 0.71, green: 0.63, blue: 0.93),   // pastel lavender
+        Color(red: 0.94, green: 0.66, blue: 0.47),   // pastel peach (neighbour muscle)
     ]
     static func color(_ i: Int) -> Color { colors[((i % colors.count) + colors.count) % colors.count] }
     static func uiColor(_ i: Int) -> UIColor { UIColor(color(i)) }
@@ -771,9 +774,11 @@ struct BodySceneView: View {
                     .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
                     .overlay(alignment: .top) {
                         Text("Tap a sore spot for muscles · drag to rotate")
-                            .font(.caption2.weight(.medium))
-                            .padding(.horizontal, 10).padding(.vertical, 5)
-                            .background(.regularMaterial, in: Capsule())
+                            .font(.luminaCaption.weight(.medium))
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                            .padding(.horizontal, 12).padding(.vertical, 6)
+                            .background(Color.luminaCardFill, in: Capsule())
+                            .overlay(Capsule().strokeBorder(Color.luminaHairline, lineWidth: 0.5))
                             .padding(.top, 6)
                             .opacity(dragActive || isFocused ? 0 : 0.85)
                             .animation(.easeInOut(duration: 0.2), value: dragActive)
@@ -1047,7 +1052,7 @@ private struct CandidateRailOverlay: View {
     let focusedRegion: String?
     let onTap: (String) -> Void
 
-    private let labelWidth: CGFloat = 156
+    private let labelWidth: CGFloat = 164
     private let rowGap: CGFloat = 54
     private let edgeInset: CGFloat = 86
 
@@ -1089,26 +1094,38 @@ private struct CandidateRailOverlay: View {
         }
     }
 
+    /// Graphite chip with the candidate's color dot; the focused one fills
+    /// with its color (ink text) and shows an arrow — tap again to open.
     private func label(for p: Placement) -> some View {
         let focused = p.name == focusedRegion
         let color = CandidatePalette.color(p.index)
+        let shape = RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
         return Button { onTap(p.name) } label: {
-            HStack(spacing: 7) {
-                Circle().fill(color).frame(width: 10, height: 10)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(focused ? Color.onPastel.opacity(0.85) : color)
+                    .frame(width: 9, height: 9)
                 Text(p.name)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.luminaSubheadline.weight(.semibold))
+                    .foregroundStyle(focused ? Color.onPastel : Color.luminaOnSurface)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
+                if focused {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.onPastel)
+                        .frame(width: 22, height: 22)
+                        .background(Color.white.opacity(0.45), in: Circle())
+                        .transition(.scale.combined(with: .opacity))
+                }
             }
-            .padding(.horizontal, 12).padding(.vertical, 9)
+            .padding(.leading, 12).padding(.trailing, focused ? 7 : 12).padding(.vertical, 9)
             .frame(width: labelWidth, alignment: .leading)
-            .background(focused ? AnyShapeStyle(color.opacity(0.18))
-                                : AnyShapeStyle(.regularMaterial),
-                        in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(focused ? color : Color.clear, lineWidth: 1.5))
-            .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+            .background(focused ? color : Color.luminaCardFill, in: shape)
+            .overlay(shape.strokeBorder(focused ? Color.clear : Color.luminaHairline, lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.35), radius: 8, y: 4)
+            .animation(.easeInOut(duration: 0.15), value: focused)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(focused ? "\(p.name) — view exercises"

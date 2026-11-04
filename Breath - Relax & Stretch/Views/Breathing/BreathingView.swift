@@ -57,12 +57,12 @@ struct BreathingView: View {
             ZStack {
                 // Main content
                 ScrollView {
-                    VStack(spacing: 28) {
+                    VStack(spacing: 14) {
                         patternPicker
                         circleSection
-                        controlsSection
+                        sessionCard
                     }
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 24)
                 }
 
                 // Completion overlay
@@ -121,12 +121,14 @@ struct BreathingView: View {
                     patternCard(pattern)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
             .padding(.vertical, 4)
         }
         .tourAnchor("breathe.patternPicker")
     }
 
+    /// Graphite tile with the pattern's pastel icon circle; the selected
+    /// tile gets a white ring (same "selected" cue as Today's week strip).
     @ViewBuilder
     private func patternCard(_ pattern: BreathingPattern) -> some View {
         let isSelected = selectedPattern == pattern
@@ -137,29 +139,23 @@ struct BreathingView: View {
                 selectedPattern = pattern
             }
         } label: {
-            VStack(spacing: 6) {
-                Image(systemName: pattern.icon)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaPrimary)
-
+            VStack(alignment: .leading, spacing: 10) {
+                LuminaIconBadge(systemName: pattern.icon, tint: pattern.pastel, size: 34)
                 Text(pattern.rawValue)
-                    .font(.luminaCaption)
-                    .fontWeight(isSelected ? .semibold : .regular)
-                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaOnSurface)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.luminaCaption.weight(.semibold))
+                    .foregroundStyle(isSelected ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
+                    .lineLimit(2, reservesSpace: true)
+                    .multilineTextAlignment(.leading)
             }
-            .frame(width: 90, height: 72)
-            .background(
-                RoundedRectangle(cornerRadius: LuminaRadius.control)
-                    .fill(isSelected ? Color.luminaPrimary : Color.luminaContainer)
-            )
+            .padding(12)
+            .frame(width: 104, alignment: .leading)
+            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: LuminaRadius.control)
-                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.clear, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaOnSurface : Color.luminaHairline,
+                                  lineWidth: isSelected ? 1.5 : 0.5)
             )
-            .shadow(color: isSelected ? Color.luminaPrimary.opacity(0.3) : .clear, radius: 6, y: 3)
+            .opacity(isRunning && !isSelected ? 0.4 : 1)
         }
         .buttonStyle(.plain)
         .disabled(isRunning)
@@ -170,113 +166,60 @@ struct BreathingView: View {
 
     // MARK: - Circle section
 
+    /// A graphite disc ringed in the current phase's pastel, with a soft
+    /// pastel halo that breathes in and out — no saturated fills.
     private var circleSection: some View {
-        VStack(spacing: 20) {
-            // Concentric ring circle
-            ZStack {
-                // Outer ring
-                Circle()
-                    .fill(circleColor.opacity(0.08))
-                    .frame(width: 200, height: 200)
-                    .scaleEffect(circleScale * 1.4)
-                    .animation(circleAnimation, value: circleScale)
+        let base: CGFloat = 148
+        return ZStack {
+            // Halo
+            Circle()
+                .fill(circleColor.opacity(0.10))
+                .frame(width: base, height: base)
+                .scaleEffect(circleScale * 1.32)
+                .animation(circleAnimation, value: circleScale)
 
-                // Middle ring
-                Circle()
-                    .fill(circleColor.opacity(0.16))
-                    .frame(width: 200, height: 200)
-                    .scaleEffect(circleScale * 1.2)
-                    .animation(circleAnimation, value: circleScale)
+            // Disc
+            Circle()
+                .fill(Color.luminaCardFill)
+                .overlay(Circle().strokeBorder(circleColor, lineWidth: 3))
+                .frame(width: base, height: base)
+                .scaleEffect(circleScale)
+                .animation(circleAnimation, value: circleScale)
 
-                // Inner filled circle
-                Circle()
-                    .fill(circleColor.opacity(0.35))
-                    .frame(width: 200, height: 200)
-                    .scaleEffect(circleScale)
-                    .animation(circleAnimation, value: circleScale)
-
-                // Center content
-                VStack(spacing: 4) {
-                    if isRunning {
-                        Text("\(phaseSecondsLeft)")
-                            .font(.system(size: 48, weight: .thin, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundStyle(.white)
-                            .contentTransition(.numericText())
-                            .animation(.easeInOut(duration: 0.3), value: phaseSecondsLeft)
-                    } else {
-                        Image(systemName: selectedPattern.icon)
-                            .font(.system(size: 36, weight: .light))
-                            .foregroundStyle(circleColor)
-                    }
-                }
-            }
-            .frame(height: 200 * 1.4 * 1.1)   // reserve space for outermost ring at full scale
-            .contentShape(Rectangle())
-            .onTapGesture {
-                startCirclePreview()
-            }
-            .animation(.easeInOut(duration: 0.4), value: circleColor)
-            .accessibilityAddTraits(.isButton)
-            .accessibilityHint("Plays one round of the selected breathing pattern")
-
-            // Phase label
-            if isRunning {
-                Text(currentPhase.displayLabel)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(circleColor)
-                    .id(currentPhase)          // forces crossfade on phase change
-                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
-                    .animation(.easeInOut(duration: 0.4), value: currentPhase)
-            } else {
-                Text(selectedPattern.description)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                    .transition(.opacity)
-                    .animation(.easeInOut(duration: 0.3), value: selectedPattern)
-
-                if selectedPattern == .custom {
-                    Button {
-                        showingCustomEditor = true
-                    } label: {
-                        Label("Edit Pattern", systemImage: "pencil")
-                            .font(.caption.weight(.semibold))
-                    }
-                    .padding(.top, 4)
-                }
-            }
-
-            // Round counter
-            if isRunning {
-                Text("Round \(round) / \(activeRunPlan.totalRounds)")
-                    .font(.luminaSubheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .animation(.easeInOut(duration: 0.3), value: round)
-            } else {
-                // Round selector when idle
-                HStack(spacing: 12) {
-                    Text("Rounds:")
-                        .font(.luminaSubheadline)
-                        .foregroundStyle(.secondary)
-
-                    Stepper("\(totalRounds)", value: $totalRounds, in: 1...20)
-                        .labelsHidden()
-
-                    Text("\(totalRounds)")
-                        .font(.luminaCardTitle)
+            // Center content
+            VStack(spacing: 2) {
+                if isRunning {
+                    Text("\(phaseSecondsLeft)")
+                        .font(.system(size: 52, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .frame(minWidth: 24)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .contentTransition(.numericText())
+                        .animation(.easeInOut(duration: 0.3), value: phaseSecondsLeft)
+                    Text(currentPhase.displayLabel.replacingOccurrences(of: "...", with: ""))
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(circleColor)
+                        .id(currentPhase)          // forces crossfade on phase change
+                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
+                        .animation(.easeInOut(duration: 0.4), value: currentPhase)
+                } else {
+                    LuminaIconBadge(systemName: selectedPattern.icon,
+                                    tint: selectedPattern.pastel, size: 56)
+                    Text("Tap to preview")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .padding(.top, 8)
                 }
-                .padding(.horizontal, 28)
-                .padding(.vertical, 10)
-                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
             }
         }
-        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        .frame(height: base * 1.4 * 1.02)   // room for the disc at full inhale scale
+        .contentShape(Rectangle())
+        .onTapGesture {
+            startCirclePreview()
+        }
+        .animation(.easeInOut(duration: 0.4), value: circleColor)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Plays one round of the selected breathing pattern")
         .tourAnchor("breathe.previewCircle")
     }
 
@@ -296,40 +239,168 @@ struct BreathingView: View {
         return .easeInOut(duration: max(0.3, duration))
     }
 
-    // MARK: - Controls
+    // MARK: - Session card
+    //
+    // Same build as Today's hero card: bold title + subtitle, a content row
+    // (here the pattern's timing), then one full-width white button.
 
-    private var controlsSection: some View {
-        VStack(spacing: 14) {
-            // Start / Pause pill button
-            Button {
-                handleStartPause()
-            } label: {
-                Label(
-                    isRunning ? (isPaused ? "Resume" : "Pause") : "Start",
-                    systemImage: isRunning ? (isPaused ? "play.fill" : "pause.fill") : "play.fill"
-                )
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(LuminaPillButtonStyle())
+    private var sessionMinutes: Int {
+        max(1, Int((Double(selectedPattern.roundDuration * totalRounds) / 60).rounded()))
+    }
 
-            // Stop button (shown only while running)
-            if isRunning {
-                Button(role: .destructive) {
-                    stopSession()
-                } label: {
-                    Text("Stop")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.luminaContainer)
-                        .clipShape(Capsule())
+    private var sessionCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(selectedPattern.rawValue)
+                        .font(.luminaHeadline)
+                        .tracking(-0.4)
+                    Group {
+                        if isRunning {
+                            Text("Round \(round) of \(activeRunPlan.totalRounds)")
+                                .monospacedDigit()
+                                .animation(.easeInOut(duration: 0.3), value: round)
+                        } else {
+                            Text(selectedPattern.description)
+                        }
+                    }
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                Spacer(minLength: 0)
+                if selectedPattern == .custom && !isRunning {
+                    Button {
+                        showingCustomEditor = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.luminaOnSurface)
+                            .frame(width: 36, height: 36)
+                            .background(Color.luminaContainer, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Edit Pattern")
+                }
+            }
+
+            phaseChips
+
+            if isRunning {
+                HStack(spacing: 10) {
+                    Button {
+                        stopSession()
+                    } label: {
+                        Text("Stop")
+                            .font(.luminaCardTitle)
+                            .foregroundStyle(Color.luminaOnSurface)
+                            .frame(width: 96, height: 52)
+                            .background(Color.luminaContainer, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    primaryButton
+                }
+                .transition(.opacity)
+            } else {
+                HStack(spacing: 10) {
+                    roundsStepper
+                    primaryButton
+                }
+                .transition(.opacity)
             }
         }
-        .padding(.horizontal, 24)
+        .foregroundStyle(Color.luminaOnSurface)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .luminaCard(padding: 20)
+        .padding(.horizontal, 16)
         .animation(.easeInOut(duration: 0.3), value: isRunning)
+    }
+
+    /// One chip per non-zero phase. While running, the current phase's chip
+    /// fills with its pastel so the card tracks where you are in the round.
+    private var phaseChips: some View {
+        let p = selectedPattern.phases
+        let steps: [(BreathPhase, String, Int)] = [
+            (.inhale, "In", p.inhale), (.hold, "Hold", p.hold),
+            (.exhale, "Out", p.exhale), (.hold2, "Hold", p.hold2),
+        ].filter { $0.2 > 0 }
+        return HStack(spacing: 8) {
+            ForEach(steps, id: \.0) { phase, label, secs in
+                let active = isRunning && currentPhase == phase
+                HStack(spacing: 6) {
+                    Circle().fill(phase.color).frame(width: 8, height: 8)
+                    Text("\(label) \(secs)s")
+                        .font(.luminaCaption.weight(.semibold))
+                        .monospacedDigit()
+                }
+                .foregroundStyle(active ? Color.onPastel : Color.luminaOnSurface)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(active ? phase.color : Color.luminaContainer, in: Capsule())
+                .animation(.easeInOut(duration: 0.3), value: active)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Pill "− 5 rounds +" stepper — same shape as Customize's time stepper.
+    private var roundsStepper: some View {
+        HStack(spacing: 0) {
+            Button {
+                totalRounds = max(1, totalRounds - 1)
+            } label: {
+                Image(systemName: "minus").frame(width: 34, height: 52)
+            }
+            .disabled(totalRounds <= 1)
+            .accessibilityLabel("Fewer rounds")
+
+            VStack(spacing: 0) {
+                Text("\(totalRounds)")
+                    .font(.luminaCardTitle)
+                    .monospacedDigit()
+                Text("rounds")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            .frame(minWidth: 36)
+            .accessibilityElement(children: .combine)
+
+            Button {
+                totalRounds = min(20, totalRounds + 1)
+            } label: {
+                Image(systemName: "plus").frame(width: 34, height: 52)
+            }
+            .disabled(totalRounds >= 20)
+            .accessibilityLabel("More rounds")
+        }
+        .font(.system(size: 13, weight: .bold))
+        .foregroundStyle(Color.luminaOnSurface)
+        .buttonStyle(.plain)
+        .background(Color.luminaContainer, in: Capsule())
+    }
+
+    /// Full-width white Start / Pause / Resume button, like Today's Begin.
+    private var primaryButton: some View {
+        Button {
+            handleStartPause()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: isRunning ? (isPaused ? "play.fill" : "pause.fill") : "play.fill")
+                Text(isRunning ? (isPaused ? "Resume" : "Pause") : "Start")
+                if !isRunning {
+                    Text("· \(sessionMinutes) min")
+                        .foregroundStyle(Color.luminaOnPrimary.opacity(0.55))
+                }
+            }
+            .font(.luminaCardTitle)
+            .foregroundStyle(Color.luminaOnPrimary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(Color.luminaPrimary, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isRunning ? (isPaused ? "Resume" : "Pause") : "Start")
     }
 
     // MARK: - Completion overlay
@@ -343,14 +414,15 @@ struct BreathingView: View {
             VStack(spacing: 32) {
                 Spacer()
 
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.green)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 40, weight: .bold))
+                    .foregroundStyle(Color.onPastel)
+                    .frame(width: 96, height: 96)
+                    .background(Color.pastelMint, in: Circle())
 
                 VStack(spacing: 8) {
                     Text("Session Complete")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.luminaDisplay)
 
                     Text("Nice work!")
                         .font(.title3)
@@ -360,27 +432,25 @@ struct BreathingView: View {
                 // Stats card
                 VStack(spacing: 12) {
                     statRow(icon: "arrow.triangle.2.circlepath",
-                            color: .blue,
+                            color: .pastelBlue,
                             label: "Rounds completed",
                             value: "\(activeRunPlan.totalRounds)")
 
                     Divider()
 
                     statRow(icon: "star.fill",
-                            color: .yellow,
+                            color: .pastelYellow,
                             label: "Points earned",
                             value: "+\(totalRounds * 5)")
 
                     Divider()
 
                     statRow(icon: selectedPattern.icon,
-                            color: .accentColor,
+                            color: selectedPattern.pastel,
                             label: "Pattern",
                             value: selectedPattern.rawValue)
                 }
-                .padding(20)
-                .background(Color.luminaContainer)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .luminaCard(padding: 20)
                 .padding(.horizontal, 24)
 
                 Spacer()
@@ -411,9 +481,7 @@ struct BreathingView: View {
 
     private func statRow(icon: String, color: Color, label: String, value: String) -> some View {
         HStack {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-                .frame(width: 26)
+            LuminaIconBadge(systemName: icon, tint: color, size: 30)
             Text(label)
                 .foregroundStyle(.secondary)
             Spacer()

@@ -48,10 +48,16 @@ struct BadgesView: View {
         List(Self.allBadges, id: \.name) { badge in
             let earned = earnedBadges.contains(badge.name)
             HStack(spacing: 16) {
-                Image(systemName: badge.icon)
-                    .font(.title2)
-                    .frame(width: 36)
-                    .foregroundStyle(earned ? Color.yellow : Color.luminaOnSurfaceVariant.opacity(0.4))
+                // Earned: pastel circle (stable per badge). Locked: dim graphite.
+                if earned {
+                    LuminaIconBadge(systemName: badge.icon, tint: Color.pastel(for: badge.name), size: 40)
+                } else {
+                    Image(systemName: badge.icon)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(width: 40, height: 40)
+                        .background(Color.luminaContainer, in: Circle())
+                }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(badge.name)
@@ -65,8 +71,11 @@ struct BadgesView: View {
                 Spacer()
 
                 if earned {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.luminaOnPrimary)
+                        .frame(width: 22, height: 22)
+                        .background(Color.luminaPrimary, in: Circle())
                 }
             }
             .padding(.vertical, 6)

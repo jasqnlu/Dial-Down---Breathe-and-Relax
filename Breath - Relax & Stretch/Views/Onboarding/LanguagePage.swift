@@ -13,9 +13,7 @@ struct LanguagePage: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 60)
 
-                Image(systemName: "globe")
-                    .font(.system(size: 64))
-                    .foregroundStyle(Color.luminaPrimary)
+                LuminaIconBadge(systemName: "globe", tint: .pastelBlue, size: 88)
                     .padding(.bottom, 24)
 
                 Text("Choose your language")

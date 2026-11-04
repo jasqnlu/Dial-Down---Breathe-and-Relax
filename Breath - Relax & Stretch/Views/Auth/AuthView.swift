@@ -20,27 +20,26 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.luminaGradientStart, Color.luminaGradientEnd],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Modern black (seperate-main): plain surface, no gradient.
+            Color.luminaSurface.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
-                // MARK: Hero — a circle that breathes
-                VStack(spacing: 20) {
+                // MARK: Hero — the mark in a softly breathing pastel halo
+                VStack(spacing: 18) {
                     breathingHalo
 
-                    Text("Breath")
-                        .font(.custom("ManropeExtraLight-ExtraBold", size: 42, relativeTo: .largeTitle))
-                        .foregroundStyle(.white)
+                    Text("Dial Down")
+                        .font(.luminaDisplay)
+                        .foregroundStyle(Color.luminaOnSurface)
 
                     Text("Relax. Stretch. Breathe.")
                         .font(.luminaSubheadline)
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+
+                    featureRow
+                        .padding(.top, 6)
                 }
 
                 Spacer()
@@ -53,20 +52,25 @@ struct AuthView: View {
                         Button {
                             auth.continueAsGuest()
                         } label: {
-                            Text("Start breathing")
-                                .font(.custom("ManropeExtraLight-SemiBold", size: 18, relativeTo: .headline))
-                                .foregroundStyle(Color.luminaBlue)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(.white, in: Capsule())
+                            HStack(spacing: 8) {
+                                Image(systemName: "wind")
+                                Text("Start breathing")
+                            }
+                            .font(.luminaCardTitle)
+                            .foregroundStyle(Color.luminaOnPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.luminaPrimary, in: Capsule())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Start breathing")
 
                         // MARK: Divider
                         HStack(spacing: 12) {
                             line
                             Text("or save your progress")
                                 .font(.luminaCaption)
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
                                 .fixedSize()
                             line
                         }
@@ -91,9 +95,12 @@ struct AuthView: View {
                             }
                         }
                     }
-                    .signInWithAppleButtonStyle(.white)
+                    // Black button + hairline so it sits one step below the
+                    // white primary, like Google/Email beside it.
+                    .signInWithAppleButtonStyle(.black)
                     .frame(height: 48)
-                    .cornerRadius(24)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().strokeBorder(Color.luminaOutline, lineWidth: 1))
 
                     HStack(spacing: 12) {
                         secondaryButton(
@@ -112,25 +119,27 @@ struct AuthView: View {
                     if let err = authError {
                         Text(err)
                             .font(.luminaCaption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.pastelCoral)
                             .multilineTextAlignment(.center)
                     }
                 }
-                .padding(.horizontal, 28)
+                .padding(.horizontal, 24)
 
                 // MARK: Legal
                 HStack(spacing: 4) {
                     Text("By continuing you agree to our")
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                     Button("Terms of Use") { legalDocument = .termsOfUse }
                         .underline()
                     Text("and")
-                        .foregroundStyle(.white.opacity(0.55))
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                     Button("Privacy Policy") { legalDocument = .privacyPolicy }
                         .underline()
                 }
                 .font(.luminaCaption)
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .padding(.horizontal, 20)
                 .padding(.top, 18)
                 .padding(.bottom, 40)
@@ -157,32 +166,50 @@ struct AuthView: View {
 
     // MARK: - Pieces
 
-    /// Concentric circles that swell and settle at a calm breath cadence.
-    /// The animation is scoped via .animation(value:) — a global
-    /// withAnimation(.repeatForever) would leak into every concurrent
-    /// layout change on screen, forever.
+    /// The Dial Down mark inside two pastel rings that swell and settle at a
+    /// calm breath cadence. The animation is scoped via .animation(value:) —
+    /// a global withAnimation(.repeatForever) would leak into every
+    /// concurrent layout change on screen, forever.
     private var breathingHalo: some View {
         ZStack {
             Circle()
-                .fill(.white.opacity(0.12))
-                .frame(width: 150, height: 150)
-                .scaleEffect(isBreathingIn ? 1.18 : 0.92)
+                .fill(Color.pastelLavender.opacity(0.08))
+                .frame(width: 170, height: 170)
+                .scaleEffect(isBreathingIn ? 1.14 : 0.94)
             Circle()
-                .fill(.white.opacity(0.18))
-                .frame(width: 112, height: 112)
-                .scaleEffect(isBreathingIn ? 1.1 : 0.94)
-            Image(systemName: "figure.mind.and.body")
-                .font(.system(size: 52, weight: .thin))
-                .foregroundStyle(.white)
+                .fill(Color.luminaCardFill)
+                .overlay(Circle().strokeBorder(Color.pastelBlue.opacity(0.55), lineWidth: 2))
+                .frame(width: 128, height: 128)
+                .scaleEffect(isBreathingIn ? 1.06 : 0.97)
+            DialDownMark(motion: .still)
+                .frame(height: 64)
         }
         .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isBreathingIn)
-        .frame(width: 180, height: 180)
+        .frame(width: 200, height: 200)
         .accessibilityHidden(true)
+    }
+
+    /// Three pastel icon circles naming what the app does.
+    private var featureRow: some View {
+        HStack(spacing: 18) {
+            feature("wind", "Breathe", .pastelBlue)
+            feature("figure.flexibility", "Stretch", .pastelMint)
+            feature("flame.fill", "Streaks", .pastelYellow)
+        }
+    }
+
+    private func feature(_ icon: String, _ title: String, _ tint: Color) -> some View {
+        VStack(spacing: 6) {
+            LuminaIconBadge(systemName: icon, tint: tint, size: 40)
+            Text(title)
+                .font(.luminaCaption.weight(.semibold))
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
     }
 
     private var line: some View {
         Rectangle()
-            .fill(.white.opacity(0.3))
+            .fill(Color.luminaOutline)
             .frame(height: 1)
     }
 
@@ -195,15 +222,13 @@ struct AuthView: View {
                 Text(title)
                     .font(.luminaCardTitle)
             }
-            .foregroundStyle(.white.opacity(enabled ? 1 : 0.45))
+            .foregroundStyle(Color.luminaOnSurface.opacity(enabled ? 1 : 0.45))
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(.white.opacity(0.16), in: Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(.white.opacity(0.35), lineWidth: 1)
-            )
+            .background(Color.luminaCardFill, in: Capsule())
+            .overlay(Capsule().strokeBorder(Color.luminaOutline, lineWidth: 1))
         }
+        .buttonStyle(.plain)
         .disabled(!enabled)
     }
 

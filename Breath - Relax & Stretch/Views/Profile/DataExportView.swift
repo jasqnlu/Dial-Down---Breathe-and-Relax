@@ -131,7 +131,7 @@ struct DataExportView: View {
                         "Share \(exportFormat.rawValue) File",
                         systemImage: "square.and.arrow.up"
                     )
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaOnSurface)
                 }
             }
         } footer: {

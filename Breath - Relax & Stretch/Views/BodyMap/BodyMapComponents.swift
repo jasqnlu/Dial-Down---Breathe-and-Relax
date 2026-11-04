@@ -14,19 +14,23 @@ struct RegionActionBar: View {
 
     var body: some View {
         Button(action: onFind) {
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
+                LuminaIconBadge(systemName: "figure.flexibility", tint: .pastelPeach, size: 44)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Stretches for")
                         .font(.luminaCaption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                     Text(regionName)
                         .font(.luminaTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 8)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.luminaPrimary)
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.luminaOnPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(Color.luminaPrimary, in: Circle())
             }
             .luminaCard(padding: 16)
             .padding(.horizontal, 16)

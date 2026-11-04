@@ -337,7 +337,8 @@ struct PickingBar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial)
+        .background(Color.luminaCardFill)
+        .overlay(alignment: .top) { Rectangle().fill(Color.luminaHairline).frame(height: 0.5) }
         .sheet(isPresented: $showingReview) {
             MiniRoutineReviewView(pickedExercises: pickingSession.picked, originTab: originTab) {
                 pickingSession.cancel()
@@ -414,10 +415,10 @@ struct ExerciseRow: View {
             HStack(spacing: 6) {
                 Text(exercise.type.rawValue)
                     .font(.luminaLabel)
-                    .foregroundStyle(Color.luminaPrimary)
+                    .foregroundStyle(Color.onPastel)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.luminaMintTint, in: Capsule())
+                    .background(Color.pastelBlue, in: Capsule())
 
                 difficultyDots
             }
@@ -447,15 +448,15 @@ struct ExerciseRow: View {
         HStack(alignment: .top, spacing: 5) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(Color.luminaOnOrange)
+                .foregroundStyle(Color.pastelPeach)
             Text(text)
                 .font(.luminaCaption)
-                .foregroundStyle(Color.luminaOnOrange)
+                .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(Color.luminaOrange.opacity(0.16), in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
+        .background(Color.pastelPeach.opacity(0.14), in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
     }
 }
 

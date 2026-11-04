@@ -20,8 +20,10 @@ struct StreakCardView: View {
             Spacer(minLength: 0)
 
             Image(systemName: "flame.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.white)
+                .font(.system(size: 40, weight: .semibold))
+                .foregroundStyle(Color.onPastel)
+                .frame(width: 88, height: 88)
+                .background(Color.pastelYellow, in: Circle())
 
             Text("\(streak)")
                 .font(.system(size: 72, weight: .bold, design: .rounded))
@@ -50,10 +52,9 @@ struct StreakCardView: View {
         .padding(28)
         .frame(width: 320, height: 400)
         .background(
-            LinearGradient(
-                colors: [Color(red: 0.30, green: 0.55, blue: 0.95), Color(red: 0.55, green: 0.30, blue: 0.85)],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
+            // Black card (seperate-main) — the rendered image is shared out,
+            // so it uses fixed colors rather than the dynamic tokens.
+            Color(red: 0.09, green: 0.09, blue: 0.10)
         )
         .clipShape(RoundedRectangle(cornerRadius: 28))
     }
@@ -111,9 +112,9 @@ struct StreakCardShareSheet: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.accentColor)
-                            .foregroundStyle(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.control))
+                            .background(Color.luminaPrimary)
+                            .foregroundStyle(Color.luminaOnPrimary)
+                            .clipShape(Capsule())
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)

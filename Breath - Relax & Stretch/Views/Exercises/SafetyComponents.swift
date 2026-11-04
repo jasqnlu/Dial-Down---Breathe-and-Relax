@@ -17,15 +17,13 @@ struct CautionCard: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.orange)
+            LuminaIconBadge(systemName: "exclamationmark.triangle.fill", tint: .pastelPeach, size: 32)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Caution")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.pastelPeach)
                 Text(text)
                     .font(.callout)
                     .foregroundStyle(.primary)
@@ -34,10 +32,10 @@ struct CautionCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: LuminaRadius.control))
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: LuminaRadius.control)
-                .strokeBorder(Color.orange.opacity(0.35), lineWidth: 1)
+            RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
+                .strokeBorder(Color.pastelPeach.opacity(0.35), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Caution. \(text)")

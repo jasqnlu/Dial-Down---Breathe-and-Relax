@@ -98,7 +98,7 @@ struct ProfileSettingsTab: View {
                               systemImage: "plus.circle.fill")
                             .pastelTint(.pastel(for: "plus.circle.fill"))
                             .labelStyle(LuminaPastelLabelStyle())
-                            .foregroundStyle(GamificationService.canBuySaver(profile) ? Color.accentColor : Color.secondary)
+                            .foregroundStyle(Color.luminaOnSurface)
                             .opacity(GamificationService.canBuySaver(profile) ? 1 : 0.4)
                     }
                     .disabled(!GamificationService.canBuySaver(profile))
@@ -126,30 +126,26 @@ struct ProfileSettingsTab: View {
                         let selected = selectedGoals.contains(goal.id)
                         Button { toggleGoal(goal.id) } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: goal.icon)
-                                    .font(.subheadline)
-                                    .foregroundStyle(selected ? Color.accentColor : .secondary)
+                                LuminaIconBadge(systemName: goal.icon, size: 26)
                                 Text(goal.label)
-                                    .font(.subheadline)
-                                    .foregroundStyle(selected ? Color.accentColor : .primary)
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(Color.luminaOnSurface)
                                 Spacer(minLength: 0)
                                 if selected {
                                     Image(systemName: "checkmark")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(Color.accentColor)
+                                        .font(.caption.weight(.bold))
+                                        .foregroundStyle(Color.luminaOnSurface)
                                 }
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
                             .background(
-                                selected
-                                    ? Color.accentColor.opacity(0.10)
-                                    : Color(.secondarySystemFill),
-                                in: RoundedRectangle(cornerRadius: LuminaRadius.badge)
+                                Color.luminaContainer,
+                                in: RoundedRectangle(cornerRadius: LuminaRadius.badge, style: .continuous)
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: LuminaRadius.badge)
-                                    .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                                RoundedRectangle(cornerRadius: LuminaRadius.badge, style: .continuous)
+                                    .strokeBorder(selected ? Color.luminaOnSurface : Color.clear, lineWidth: 1.5)
                             )
                         }
                         .buttonStyle(.plain)
@@ -284,9 +280,9 @@ struct ProfileSettingsTab: View {
                     Task { await HealthKitService.shared.requestAuthorization() }
                 } label: {
                     Label("Connect Apple Health", systemImage: "heart.fill")
-                        .pastelTint(.pastel(for: "heart.fill"))
+                        .pastelTint(.pastelPink)
                         .labelStyle(LuminaPastelLabelStyle())
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.luminaOnSurface)
                 }
 
                 Toggle(isOn: $calendarSyncEnabled) {

@@ -18,8 +18,8 @@ struct ExerciseDetailView: View {
                         .font(.luminaLabel)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Color.luminaBlue.opacity(0.15))
-                        .foregroundStyle(Color.luminaBlue)
+                        .background(Color.pastelBlue)
+                        .foregroundStyle(Color.onPastel)
                         .clipShape(Capsule())
                         .accessibilityLabel(exercise.type.rawValue)
                 }
@@ -50,8 +50,8 @@ struct ExerciseDetailView: View {
                                     .font(.luminaLabel)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(Color.luminaOrange)
-                                    .foregroundStyle(Color.luminaOnOrange)
+                                    .background(Color.luminaContainer)
+                                    .foregroundStyle(Color.luminaOnSurface)
                                     .clipShape(Capsule())
                             }
                         }
@@ -68,11 +68,12 @@ struct ExerciseDetailView: View {
                         .padding(.horizontal)
                     ForEach(Array(exercise.instructions.enumerated()), id: \.offset) { index, step in
                         HStack(alignment: .top, spacing: 14) {
+                            // Pastel number circle, same as Today's hero list.
                             Text("\(index + 1)")
-                                .font(.luminaLabel)
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .frame(width: 28, height: 28)
-                                .background(Color.luminaPrimary)
-                                .foregroundStyle(Color.luminaOnPrimary)
+                                .background(Color.pastels[index % Color.pastels.count])
+                                .foregroundStyle(Color.onPastel)
                                 .clipShape(Circle())
                             Text(step)
                                 .font(.luminaBody)
@@ -95,14 +96,31 @@ struct ExerciseDetailView: View {
         .background(Color.luminaSurface)
         .navigationTitle(exercise.name)
         .safeAreaInset(edge: .bottom) {
+            // Full-width white bar on a fade, like Customize's bottom button.
             Button {
                 showingPlayer = true
             } label: {
-                Label("Start Exercise", systemImage: "play.fill")
-                    .frame(maxWidth: .infinity)
+                HStack(spacing: 8) {
+                    Image(systemName: "play.fill")
+                    Text("Start Exercise")
+                    Text("· \(exercise.durationFormatted)")
+                        .foregroundStyle(Color.luminaOnPrimary.opacity(0.55))
+                }
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(Color.luminaPrimary, in: Capsule())
             }
-            .buttonStyle(LuminaPillButtonStyle())
-            .padding()
+            .buttonStyle(.plain)
+            .accessibilityLabel("Start Exercise")
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 8)
+            .background(
+                LinearGradient(colors: [Color.luminaSurface.opacity(0), Color.luminaSurface],
+                               startPoint: .top, endPoint: .init(x: 0.5, y: 0.4))
+            )
         }
         // After the CTA inset so the clearance band sits below it: the
         // docked button then rests above the floating tab bar, not behind it.

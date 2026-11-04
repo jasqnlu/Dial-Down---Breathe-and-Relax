@@ -471,10 +471,10 @@ struct SessionPlayerView: View {
         Text(cueStyle == .hold ? "Hold" : "Keep Going")
             .font(.luminaLabel)
             .textCase(.uppercase)
-            .foregroundStyle(Color.luminaPrimary)
+            .foregroundStyle(Color.onPastel)
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
-            .background(Color.luminaMintTint, in: Capsule())
+            .background(cueStyle == .hold ? Color.pastelLavender : Color.pastelMint, in: Capsule())
             .scaleEffect(cueStyle == .repeatMotion && cueBadgePulsing ? 1.07 : 1.0)
             .opacity(cueStyle == .repeatMotion && cueBadgePulsing ? 0.82 : 1.0)
             .accessibilityLabel("Exercise cue")
@@ -565,7 +565,7 @@ struct SessionPlayerView: View {
                 )
             }
             Text("\(getReadyCount)")
-                .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
+                .font(.system(size: getReadyCountSize, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(Color.luminaPrimary)
             // Surface the exercise's safety caution here — this is the only
@@ -870,17 +870,18 @@ struct BreathingCircle: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.luminaGradientStart.opacity(0.10))
+                .fill(Color.pastelBlue.opacity(0.08))
                 .frame(width: diameter, height: diameter)
                 .scaleEffect(scale * 1.2)
 
             Circle()
-                .fill(Color.luminaPrimary.opacity(0.15))
+                .fill(Color.luminaCardFill)
+                .overlay(Circle().strokeBorder(Color.pastelBlue.opacity(0.7), lineWidth: 2.5))
                 .frame(width: diameter, height: diameter)
                 .scaleEffect(scale)
 
             Circle()
-                .fill(Color.luminaPrimary.opacity(0.25))
+                .fill(Color.pastelBlue.opacity(0.22))
                 .frame(width: diameter * 0.625, height: diameter * 0.625)
         }
         .onAppear { animate() }

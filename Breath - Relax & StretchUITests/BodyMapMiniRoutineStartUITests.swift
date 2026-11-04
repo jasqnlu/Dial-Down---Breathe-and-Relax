@@ -38,7 +38,8 @@ final class BodyMapMiniRoutineStartUITests: XCTestCase {
         sleep(6) // async OBJ parse — mirrors BodyMapMusclePickerUITests
 
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        // A single tap opens the picker now (gestures swapped — see BodyMapView).
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).tap()
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
         attach(app, "01-muscle-picker")
 

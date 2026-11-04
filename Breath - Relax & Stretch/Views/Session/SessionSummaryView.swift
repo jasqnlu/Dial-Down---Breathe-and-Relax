@@ -30,16 +30,15 @@ struct SessionSummaryView: View {
 
             Spacer()
 
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 44))
-                .foregroundStyle(Color.luminaPrimary)
+            Image(systemName: "checkmark")
+                .font(.system(size: 36, weight: .bold))
+                .foregroundStyle(Color.onPastel)
                 .frame(width: 88, height: 88)
-                .background(Color.luminaCardFill, in: Circle())
-                .shadow(color: Color.black.opacity(0.1), radius: 16, y: 8)
+                .background(Color.pastelMint, in: Circle())
 
             VStack(spacing: 8) {
                 Text("Session Complete!")
-                    .font(.luminaHeadline)
+                    .font(.luminaDisplay)
                     .foregroundStyle(Color.luminaPrimary)
 
                 Text("Great work. Keep the streak going!")
@@ -56,7 +55,7 @@ struct SessionSummaryView: View {
                 VStack(spacing: 4) {
                     Image(systemName: "flame.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(flameIsLit ? Color.luminaOrange : Color.luminaOnSurfaceVariant.opacity(0.5))
+                        .foregroundStyle(flameIsLit ? Color.luminaFlameLit : Color.luminaOnSurfaceVariant.opacity(0.5))
                         .scaleEffect(flameIsLit ? 1 : 0.82)
                         .animation(.spring(response: 0.45, dampingFraction: 0.55), value: flameIsLit)
                     Text("\(displayedStreak)")
@@ -74,7 +73,7 @@ struct SessionSummaryView: View {
                 VStack(spacing: 4) {
                     Image(systemName: "medal.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(Color.luminaOrange)
+                        .foregroundStyle(Color.pastelYellow)
                     Text("+\(pointsEarned)")
                         .font(.luminaHeadline)
                         .foregroundStyle(Color.luminaPrimary)
@@ -111,9 +110,7 @@ struct SessionSummaryView: View {
             .padding(.bottom, 40)
         }
         .background(
-            LinearGradient(colors: [Color.luminaMintTint, Color.luminaSurface],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            Color.luminaSurface.ignoresSafeArea()
         )
 
             NewBadgesOverlay(newlyEarnedBadges: newlyEarnedBadges)

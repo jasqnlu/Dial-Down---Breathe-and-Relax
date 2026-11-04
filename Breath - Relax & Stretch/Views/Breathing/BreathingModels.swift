@@ -54,6 +54,17 @@ enum BreathingPattern: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Icon-circle pastel for this pattern's tile.
+    var pastel: Color {
+        switch self {
+        case .box:            return .pastelBlue
+        case .fourSevenEight: return .pastelLavender
+        case .belly:          return .pastelMint
+        case .energising:     return .pastelYellow
+        case .custom:         return .pastelPeach
+        }
+    }
+
     /// Total seconds for one full round.
     var roundDuration: Int {
         let p = phases
@@ -78,11 +89,13 @@ enum BreathPhase: String {
         }
     }
 
+    /// Pastel family (seperate-main restyle): soft blue in, lavender hold,
+    /// mint out — calmer on the black page than saturated colors.
     var color: Color {
         switch self {
-        case .inhale:       return Color(red: 0.25, green: 0.55, blue: 0.95)   // blue
-        case .hold, .hold2: return Color(red: 0.60, green: 0.35, blue: 0.90)   // purple
-        case .exhale:       return Color(red: 0.25, green: 0.78, blue: 0.55)   // green
+        case .inhale:       return .pastelBlue
+        case .hold, .hold2: return .pastelLavender
+        case .exhale:       return .pastelMint
         }
     }
 }

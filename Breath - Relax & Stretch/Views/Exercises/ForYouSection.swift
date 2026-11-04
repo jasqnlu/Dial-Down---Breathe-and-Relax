@@ -23,26 +23,47 @@ struct ForYouCard: View {
 
 // MARK: - Premade routine card
 
+extension PremadeRoutine {
+    /// This routine's icon-circle pastel. Picked by position in
+    /// `PremadeRoutine.all` (not a title hash) so neighbouring routines never
+    /// share a color; falls back to the title hash for routines not in `all`.
+    var pastel: Color {
+        guard let index = PremadeRoutine.all.firstIndex(where: { $0.id == id }) else {
+            return Color.pastel(for: title)
+        }
+        let order: [Color] = [.pastelMint, .pastelPeach, .pastelLavender, .pastelYellow,
+                              .pastelBlue, .pastelPink, .pastelOlive]
+        return order[index % order.count]
+    }
+}
+
 struct PremadeRoutineCard: View {
     let routine: PremadeRoutine
     let meta: (count: Int, minutes: Int)?
 
-    // A pastel tile (the "Self-care" grid look): ink text on a soft color
-    // picked stably from the routine's title, glyph in a light circle.
+    // A graphite tile matching Today's hero card: pastel only in the icon
+    // circle (stable per routine title), white title, muted meta line, and
+    // a small arrow button echoing the hero's Customize circle.
     var body: some View {
-        let tint = Color.pastel(for: routine.title)
         VStack(alignment: .leading, spacing: 0) {
-            Image(systemName: routine.icon)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(Color.onPastel)
-                .frame(width: 44, height: 44)
-                .background(.white.opacity(0.55), in: Circle())
+            HStack(alignment: .top) {
+                LuminaIconBadge(systemName: routine.icon,
+                                tint: routine.pastel,
+                                size: 44)
+                Spacer(minLength: 0)
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .frame(width: 26, height: 26)
+                    .background(Color.luminaContainer, in: Circle())
+                    .accessibilityHidden(true)
+            }
 
             Spacer(minLength: 14)
 
             Text(routine.title)
                 .font(.luminaCardTitle)
-                .foregroundStyle(Color.onPastel)
+                .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -55,12 +76,11 @@ struct PremadeRoutineCard: View {
                 }
             }
             .font(.luminaCaption)
-            .foregroundStyle(Color.onPastel.opacity(0.6))
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
             .padding(.top, 4)
         }
-        .padding(14)
-        .frame(width: 150, height: 158, alignment: .topLeading)
-        .background(tint, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .frame(width: 122, height: 130, alignment: .topLeading)
+        .luminaCard(padding: 14)
     }
 }
 

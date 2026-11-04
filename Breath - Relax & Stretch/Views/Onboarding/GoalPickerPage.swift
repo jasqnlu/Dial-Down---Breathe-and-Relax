@@ -78,25 +78,35 @@ struct GoalCard: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.system(size: 36))
-                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                // Pastel icon circle (stable per icon); selected tiles get
+                // a white ring and a check, like the Breathe pattern tiles.
+                LuminaIconBadge(systemName: icon, size: 56)
+                    .overlay(alignment: .topTrailing) {
+                        if isSelected {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(Color.luminaOnPrimary)
+                                .frame(width: 20, height: 20)
+                                .background(Color.luminaPrimary, in: Circle())
+                                .offset(x: 4, y: -4)
+                        }
+                    }
 
                 Text(label)
                     .font(.luminaCardTitle)
-                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 28)
+            .padding(.vertical, 24)
             .background(
                 RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                    .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
+                    .fill(Color.luminaCardFill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
-                                  lineWidth: isSelected ? 2 : 1)
+                    .strokeBorder(isSelected ? Color.luminaOnSurface : Color.luminaHairline,
+                                  lineWidth: isSelected ? 1.5 : 0.5)
             )
         }
         .buttonStyle(.plain)
@@ -151,7 +161,7 @@ struct FocusAreaPickerPage: View {
                         FocusAreaCard(
                             title: LocalizedStringKey(area.rawValue),
                             icon: Self.icons[area] ?? "figure.mind.and.body",
-                            accent: area.accentColor,
+                            accent: area.pastel,
                             isSelected: selectedAreas.contains(area.rawValue)
                         ) {
                             toggle(area.rawValue)
@@ -188,33 +198,36 @@ struct FocusAreaCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundStyle(isSelected ? Color.white : accent)
-                    .frame(width: 42, height: 42)
-                    .background(
-                        Circle().fill(isSelected ? accent : accent.opacity(0.16))
-                    )
+                LuminaIconBadge(systemName: icon, tint: accent, size: 42)
+                    .opacity(isSelected ? 1 : 0.85)
 
                 Text(title)
                     .font(.luminaCardTitle)
-                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
 
                 Spacer(minLength: 0)
+
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color.luminaOnPrimary)
+                        .frame(width: 20, height: 20)
+                        .background(Color.luminaPrimary, in: Circle())
+                }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
-                    .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
+                    .fill(Color.luminaCardFill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
-                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
-                                  lineWidth: isSelected ? 2 : 1)
+                    .strokeBorder(isSelected ? Color.luminaOnSurface : Color.luminaHairline,
+                                  lineWidth: isSelected ? 1.5 : 0.5)
             )
         }
         .buttonStyle(.plain)

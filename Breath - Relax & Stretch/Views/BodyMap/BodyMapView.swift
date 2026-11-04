@@ -58,12 +58,24 @@ struct BodyMapView: View {
                 // ── Top bar ──────────────────────────────────────────────────
                 HStack(spacing: 8) {
                     if isDisambiguating {
-                        Text("Which area did you mean?")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Which area did you mean?")
+                                .font(.luminaCardTitle)
+                                .foregroundStyle(Color.luminaOnSurface)
+                            Text("Tap a muscle, then tap it again for stretches")
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        }
                         Spacer(minLength: 0)
-                        Button("Cancel", role: .cancel) { cancelDisambiguation() }
-                            .font(.caption.weight(.medium))
+                        Button(role: .cancel) { cancelDisambiguation() } label: {
+                            Text("Cancel")
+                                .font(.luminaLabel)
+                                .foregroundStyle(Color.luminaOnSurface)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 9)
+                                .background(Color.luminaContainer, in: Capsule())
+                        }
+                        .buttonStyle(.plain)
                     } else {
                         Spacer(minLength: 0)
                         facingToggleButton
