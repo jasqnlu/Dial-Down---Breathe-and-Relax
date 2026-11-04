@@ -57,24 +57,20 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // ── Profile header ────────────────────────────────────────────
-                profileHeader
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .background(Color.luminaSurface)
-
-                Divider()
-
-                // ── 3-segment tab bar ─────────────────────────────────────────
-                tabBar
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.luminaSurface)
-
-                Divider()
-
                 // ── Tab content ───────────────────────────────────────────────
+                // The header and segment selector scroll with the list (as
+                // the reference's profile card does) instead of being pinned.
                 List {
+                    Section {
+                        VStack(alignment: .leading, spacing: 18) {
+                            profileHeader
+                            if let profile { saverBanner(profile) }
+                            tabBar
+                        }
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
                     switch selectedTab {
                     case .account:
                         ProfileAccountTab(profile: profile,
@@ -86,12 +82,15 @@ struct ProfileView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .labelStyle(LuminaPastelLabelStyle())
+                .headerProminence(.increased)
+                .listSectionSpacing(22)
+                .environment(\.defaultMinListRowHeight, 54)
                 .scrollContentBackground(.hidden)
                 .background(Color.luminaSurface)
                 .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .floatingTabBarClearance()
             .onAppear { profileImage = loadProfilePhoto() }
             .onChange(of: tourCoordinator.currentStep?.id) { _, stepID in
@@ -139,95 +138,134 @@ struct ProfileView: View {
     // MARK: - Header
 
     private var profileHeader: some View {
-        HStack(spacing: 16) {
+        HStack(alignment: .top, spacing: 18) {
             PhotosPicker(selection: $photoPickerItem, matching: .images) {
-                ZStack(alignment: .bottomTrailing) {
-                    avatarCircle
-                        .frame(width: 64, height: 64)
+                ZStack(alignment: .topTrailing) {
+                    avatarSquare
+                        .frame(width: 108, height: 108)
 
-                    // Camera badge
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(5)
-                        .background(accentColor, in: Circle())
-                        .offset(x: 2, y: 2)
+                    // Edit badge: a pastel star-burst-ish circle, as in the
+                    // reference's pencil badge.
+                    Image(systemName: "pencil")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color.onPastel)
+                        .frame(width: 30, height: 30)
+                        .background(Color.pastelPink, in: Circle())
+                        .overlay(Circle().strokeBorder(Color.luminaSurface, lineWidth: 3))
+                        .offset(x: 10, y: -10)
                 }
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Change profile photo")
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(profile?.displayName ?? auth.displayName)
-                    .font(.luminaTitle)
-                if !auth.userEmail.isEmpty {
+                    .font(.luminaDisplay)
+                    .tracking(-0.8)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+                    .foregroundStyle(Color.luminaOnSurface)
+
+                if let profile {
+                    HStack(alignment: .top, spacing: 18) {
+                        headerStat(value: "\(profile.streak)", caption: "STREAK")
+                        headerStat(value: "\(profile.totalMinutes)", caption: "MINUTES")
+                        headerStat(value: "\(profile.totalPoints)", caption: "POINTS")
+                    }
+                } else if !auth.userEmail.isEmpty {
                     Text(auth.userEmail)
                         .font(.luminaCaption)
-                        .foregroundStyle(.secondary)
-                }
-                if let profile {
-                    HStack(spacing: 4) {
-                        if showStreakEmoji { Text("🔥") }
-                        Text("\(profile.streak) day streak · \(profile.totalPoints) pts")
-                            .font(.luminaCaption)
-                            .foregroundStyle(.secondary)
-                    }
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
             }
+            .padding(.top, 4)
 
-            Spacer()
+            Spacer(minLength: 0)
         }
+        .padding(.top, 8)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "Profile: \(profile?.displayName ?? auth.displayName). \(profile?.streak ?? 0) day streak."
         )
     }
 
+    private func headerStat(value: String, caption: LocalizedStringKey) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value)
+                .font(.system(.subheadline, weight: .bold).monospacedDigit())
+                .foregroundStyle(Color.luminaOnSurface)
+            Text(caption)
+                .font(.system(size: 9, weight: .semibold))
+                .tracking(0.6)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+    }
+
+    /// The olive pill under the header (the reference's ID/expiry banner),
+    /// here carrying real data: streak savers on hand and badges earned.
+    private func saverBanner(_ profile: UserProfile) -> some View {
+        HStack {
+            Label {
+                Text("\(profile.streakFreezeTokens) streak savers")
+            } icon: {
+                Image(systemName: "shield.lefthalf.filled")
+            }
+            .labelStyle(.titleAndIcon)
+            Spacer()
+            Text("\(profile.badges.count) badges")
+                .monospacedDigit()
+        }
+        .font(.system(.footnote, weight: .semibold))
+        .foregroundStyle(Color.onPastel)
+        .padding(.horizontal, 18)
+        .frame(height: 42)
+        .background(Color.pastelOlive, in: Capsule())
+    }
+
     @ViewBuilder
-    private var avatarCircle: some View {
+    private var avatarSquare: some View {
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         if let img = profileImage {
-            img.resizable().scaledToFill().clipShape(Circle())
+            img.resizable().scaledToFill().clipShape(shape)
         } else {
             ZStack {
-                Circle().fill(accentColor.opacity(0.15))
+                shape.fill(Color.pastelBlue)
                 Text((profile?.displayName ?? auth.displayName).prefix(1).uppercased())
-                    .font(.title.bold())
-                    .foregroundStyle(accentColor)
+                    .font(.custom("ManropeExtraLight-ExtraBold", size: 48, relativeTo: .largeTitle))
+                    .foregroundStyle(Color.onPastel)
             }
         }
     }
 
-    // MARK: - 3-segment tab bar
+    // MARK: - 3-segment selector
+    //
+    // Ink capsule on a beige track — icon + label, like a segmented control.
 
     private var tabBar: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             ForEach(ProfileTab.allCases, id: \.self) { tab in
+                let isOn = selectedTab == tab
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
                 } label: {
-                    VStack(spacing: 4) {
+                    HStack(spacing: 6) {
                         Image(systemName: tab.icon)
-                            .font(.system(size: tabBarIconSize,
-                                          weight: selectedTab == tab ? .semibold : .regular))
-                        Text(tab.rawValue)
-                            .font(.system(size: tabBarLabelSize,
-                                          weight: selectedTab == tab ? .semibold : .regular))
+                            .font(.system(size: tabBarIconSize * 0.8, weight: .semibold))
+                        Text(LocalizedStringKey(tab.rawValue))
+                            .font(.system(size: tabBarLabelSize + 2, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .foregroundStyle(selectedTab == tab ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
-                    .background(
-                        RoundedRectangle(cornerRadius: LuminaRadius.chip)
-                            .fill(selectedTab == tab ? Color.luminaCardFill : Color.clear)
-                    )
+                    .frame(height: 38)
+                    .foregroundStyle(isOn ? Color.luminaOnPrimary : Color.luminaOnSurfaceVariant)
+                    .background(isOn ? Color.luminaPrimary : Color.clear, in: Capsule())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(tab.rawValue)
-                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
+                .accessibilityAddTraits(isOn ? .isSelected : [])
             }
         }
         .padding(4)
-        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.panel))
+        .background(Color.luminaCardFill, in: Capsule())
     }
 
     // MARK: - Profile photo helpers

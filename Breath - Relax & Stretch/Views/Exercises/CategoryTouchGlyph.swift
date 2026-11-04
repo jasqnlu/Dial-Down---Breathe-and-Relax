@@ -7,6 +7,12 @@ import SwiftUI
 struct CategoryTouchGlyph: View {
     let category: ExerciseCategory
     var size: CGFloat = 84
+    /// Overrides the figure color (e.g. ink on a pastel bubble). When set,
+    /// the glyph's own tinted backing circle is dropped — the caller's
+    /// surface is the background.
+    var tint: Color? = nil
+
+    private var color: Color { tint ?? category.accentColor }
 
     /// TouchGlyphArchetype's coordinate space already spans ~0.07–0.95
     /// top-to-bottom (head to feet), so drawing it edge-to-edge across the
@@ -24,30 +30,30 @@ struct CategoryTouchGlyph: View {
 
     var body: some View {
         ZStack {
-            Circle().fill(category.accentColor.opacity(0.16))
+            Circle().fill(tint == nil ? category.accentColor.opacity(0.16) : .clear)
 
             TouchGlyphPath(chains: [
                 inset(archetype.spine), inset(archetype.legLeft), inset(archetype.legRight),
             ])
-            .stroke(category.accentColor, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
+            .stroke(color, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
 
             // Resting arm drawn dimmer than the pointing arm so the
             // category-specific gesture — the whole point of this glyph
             // family — reads as the salient shape instead of getting lost
             // in a second, identical-looking limb.
             TouchGlyphPath(chains: [inset(archetype.restingArm)])
-                .stroke(category.accentColor.opacity(0.55), style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
+                .stroke(color.opacity(0.55), style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
 
             TouchGlyphPath(chains: [inset(archetype.pointingArm)])
-                .stroke(category.accentColor, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
+                .stroke(color, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
 
             Circle()
-                .fill(category.accentColor)
+                .fill(color)
                 .frame(width: archetype.headRadius * 2 * size * contentScale, height: archetype.headRadius * 2 * size * contentScale)
                 .position(insetPosition(archetype.headCenter))
 
             Circle()
-                .fill(category.accentColor)
+                .fill(color)
                 .frame(width: size * 0.092 * contentScale, height: size * 0.092 * contentScale)
                 .overlay(Circle().strokeBorder(.white, lineWidth: size * 0.017 * contentScale))
                 .position(insetPosition(archetype.contactPoint))

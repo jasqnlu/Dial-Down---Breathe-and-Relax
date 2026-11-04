@@ -49,12 +49,17 @@ struct ProfileAppearanceTab: View {
             Section("Layout") {
                 Toggle(isOn: $compactListMode) {
                     Label("Compact Exercise List", systemImage: "list.bullet.indent")
+                        .pastelTint(.pastel(for: "list.bullet.indent"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 Toggle(isOn: $showStreakEmoji) {
                     Label("Show Streak Emoji 🔥", systemImage: "flame")
+                        .pastelTint(.pastel(for: "flame"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             }
         }
         .listRowBackground(Color.luminaCardFill)
+        .tint(Color.luminaPrimary)
     }
 }

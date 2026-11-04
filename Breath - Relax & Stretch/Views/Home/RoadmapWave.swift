@@ -193,7 +193,7 @@ struct RoadmapWaveCurve: View {
             // Color now lives on the nodes (see nodeView), not the
             // connecting line — a neutral gradient here keeps the curve
             // from competing with each node's category color.
-            let gradient = Gradient(colors: [Color.white.opacity(0.45), Color.white.opacity(0.2)])
+            let gradient = Gradient(colors: [Color.luminaOnSurface.opacity(0.35), Color.luminaOnSurface.opacity(0.15)])
 
             for segment in 0..<(count - 1) {
                 var path = Path()
@@ -375,10 +375,10 @@ struct RoadmapWave: View {
             Text(durationFormatted(for: exercise))
                 .font(.luminaCaption)
                 .fontWeight(.semibold)
-                .foregroundStyle(.white)
+                .foregroundStyle(Color.luminaOnSurface)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 1)
-                .background(Color.black.opacity(0.22), in: Capsule())
+                .background(Color.luminaSurface.opacity(0.85), in: Capsule())
         }
         // Pivoting near the bottom of the stack (by the duration label)
         // rather than dead-center means scaling up pushes the glyph
@@ -448,7 +448,7 @@ struct RoadmapWave: View {
             gradient: Gradient(colors: [
                 Color.clear,
                 Color.clear,
-                Color.black.opacity(0.34),
+                Color.black.opacity(0.10),
             ]),
             center: .center,
             startRadius: 10,

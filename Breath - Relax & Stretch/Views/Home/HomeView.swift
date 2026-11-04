@@ -51,7 +51,6 @@ struct HomeView: View {
             // content (the UINavigationController bridge owns those insets).
 
             CustomTabBar(selectedTab: $selectedTab)
-                .padding(.bottom, 10)
                 .tourAnchor("chrome.tabBar")
         }
         .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in

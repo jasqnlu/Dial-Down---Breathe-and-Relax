@@ -89,7 +89,7 @@ struct RoutineListView: View {
             // Left unset before, which defaults to a large title at the root
             // of a NavigationStack — made explicit and aligned to .inline to
             // match the other tab roots (see page-title convention audit).
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

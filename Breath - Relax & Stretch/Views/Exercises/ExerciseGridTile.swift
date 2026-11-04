@@ -22,33 +22,9 @@ struct ExerciseGridTile: View {
     var onTap: () -> Void
     var onBadgeTap: (() -> Void)? = nil
 
-    private var category: ExerciseCategory {
-        ExerciseCategory.primary(for: exercise.targetBodyParts)
-    }
-
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 4) {
-                ZStack(alignment: .bottomTrailing) {
-                    ExerciseArt(exercise: exercise, category: category, size: 112)
-                        .frame(maxWidth: .infinity)
-
-                    badgeView
-                }
-
-                Text(exercise.name)
-                    .font(.luminaCardTitle)
-                    .foregroundStyle(Color.luminaOnSurface)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-
-                Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .luminaCard(padding: 0)
+            ExerciseTileCard(exercise: exercise) { badgeView }
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
@@ -69,12 +45,63 @@ struct ExerciseGridTile: View {
             } label: {
                 Image(systemName: isSelected ? "checkmark" : "plus")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(isSelected ? .white : Color.luminaOnSurfaceVariant)
+                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaOnSurfaceVariant)
                     .frame(width: 26, height: 26)
                     .background(isSelected ? Color.luminaPrimary : Color.luminaContainer, in: Circle())
             }
             .padding(8)
             .accessibilityLabel(isSelected ? "Remove \(exercise.name)" : "Add \(exercise.name)")
         }
+    }
+}
+
+// MARK: - Shared tile card
+
+/// The one exercise tile look, used by every exercise list in the app
+/// (search results, category groups, Body Map's region list, Today's "For
+/// You" row) so tiles are the same size everywhere: fixed-size artwork, a
+/// title that always reserves two lines, and a one-line meta row. Without
+/// the reserved lines, a one-line name ("Bridge Pose") made a shorter tile
+/// than its two-line neighbor.
+struct ExerciseTileCard<Corner: View>: View {
+    let exercise: Exercise
+    @ViewBuilder var corner: () -> Corner
+
+    /// Artwork edge length (square).
+    static var artSize: CGFloat { 112 }
+    /// Tile width where tiles sit in a horizontal row instead of a 2-column
+    /// grid — matches a grid column on a standard-width iPhone.
+    static var rowWidth: CGFloat { 172 }
+
+    var body: some View {
+        let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+        VStack(alignment: .leading, spacing: 4) {
+            ZStack(alignment: .bottomTrailing) {
+                ExerciseArt(exercise: exercise, category: category, size: Self.artSize)
+                    .frame(maxWidth: .infinity)
+                corner()
+            }
+            .padding(.bottom, 4)
+
+            Text(exercise.name)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(2, reservesSpace: true)
+                .multilineTextAlignment(.leading)
+
+            Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .lineLimit(1)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .luminaCard(padding: 0)
+    }
+}
+
+extension ExerciseTileCard where Corner == EmptyView {
+    init(exercise: Exercise) {
+        self.init(exercise: exercise) { EmptyView() }
     }
 }

@@ -152,7 +152,7 @@ struct ExerciseGraphView: View {
                 } label: {
                     ExerciseGroupNode(
                         group: group,
-                        color: category.accentColor,
+                        color: category.pastel,
                         isFocused: isFocused,
                         labelOpacity: labelOpacity
                     )
@@ -271,10 +271,10 @@ struct ExerciseGraphView: View {
         .buttonStyle(.plain)
         .foregroundStyle(Color.luminaOnSurface)
         .padding(6)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous)
-                .strokeBorder(Color.luminaOnSurface.opacity(0.08), lineWidth: 1)
+                .strokeBorder(Color.luminaHairline, lineWidth: 0.5)
         )
         .padding(.top, 12)
         .padding(.trailing, 12)
@@ -355,26 +355,27 @@ private struct CategoryNode: View {
 
     var body: some View {
         ZStack {
+            // Solid pastel bubble with ink content (seperate-main restyle) —
+            // no translucency, white rim or colored glow.
             Circle()
-                .fill(category.accentColor.opacity(isFocused ? 0.74 : 0.60))
+                .fill(category.pastel)
                 .frame(width: diameter, height: diameter)
-                .overlay(Circle().strokeBorder(.white.opacity(0.50), lineWidth: 1.5))
-                .shadow(color: category.accentColor.opacity(isFocused ? 0.28 : 0.14), radius: isFocused ? 14 : 8)
+                .shadow(color: category.pastel.opacity(isFocused ? 0.35 : 0), radius: 18)
             VStack(spacing: 3) {
-                CategoryTouchGlyph(category: category, size: diameter * 0.5)
+                CategoryTouchGlyph(category: category, size: diameter * 0.46, tint: .onPastel)
                 Text(category.rawValue)
-                    .font(.luminaLabel)
-                    .foregroundStyle(Color.luminaOnSurface)
+                    .font(.system(.footnote, weight: .bold))
+                    .foregroundStyle(Color.onPastel)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.70)
                     .frame(width: diameter - 16)
                 Text("\(count)")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    .padding(.horizontal, 6)
+                    .font(.system(size: 11, weight: .bold).monospacedDigit())
+                    .foregroundStyle(Color.white)
+                    .padding(.horizontal, 7)
                     .padding(.vertical, 2)
-                    .background(Color.luminaCardFill.opacity(0.58), in: Capsule())
+                    .background(Color.onPastel, in: Capsule())
             }
         }
         .contentShape(Circle())
@@ -420,7 +421,7 @@ private struct ExerciseGroupCorpusSheet: View {
         .safeAreaInset(edge: .top) {
             HStack(spacing: 8) {
                 Circle()
-                    .fill(selected.category.accentColor.opacity(0.66))
+                    .fill(selected.category.pastel)
                     .frame(width: 10, height: 10)
                 Text("\(selected.group.exercises.count) exercise\(selected.group.exercises.count == 1 ? "" : "s")")
                     .font(.luminaCaption)
@@ -429,7 +430,7 @@ private struct ExerciseGroupCorpusSheet: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
-            .background(.regularMaterial)
+            .background(Color.luminaSurface)
         }
         // This sheet is a PUSHED destination, so the picking bar
         // `ExerciseListView` attaches to the NavigationStack root never
@@ -460,21 +461,21 @@ private struct ExerciseGroupNode: View {
 
     var body: some View {
         ZStack {
+            // Muted pastel at rest, full pastel with ink text once its
+            // category is focused.
             Circle()
-                .fill(color.opacity(isFocused ? 0.48 : 0.34))
+                .fill(color.opacity(isFocused ? 0.92 : 0.38))
                 .frame(width: diameter, height: diameter)
-                .overlay(Circle().strokeBorder(.white.opacity(isFocused ? 0.55 : 0.34), lineWidth: isFocused ? 1 : 0.7))
-                .shadow(color: color.opacity(isFocused ? 0.16 : 0.08), radius: isFocused ? 9 : 3)
             VStack(spacing: isFocused ? 2 : 0) {
                 Text(group.title)
                     .font(.system(size: isFocused ? 9.5 : 5.2, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.luminaOnSurface)
+                    .foregroundStyle(isFocused ? Color.onPastel : Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .lineLimit(isFocused ? 3 : 1)
                     .minimumScaleFactor(isFocused ? 0.46 : 0.35)
                 Text("\(group.exercises.count)")
                     .font(.system(size: isFocused ? 8 : 4.5, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .foregroundStyle(isFocused ? Color.onPastel.opacity(0.6) : Color.luminaOnSurfaceVariant)
             }
             .frame(width: diameter - 8, height: diameter - 8)
             .padding(4)

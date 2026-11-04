@@ -1,68 +1,65 @@
 import SwiftUI
 
-// MARK: - Custom Floating Tab Bar
+// MARK: - Custom Tab Bar
 //
-// A floating pill-shaped nav bar that replaces Apple's default tab bar chrome.
-// The active tab expands to show its label; inactive tabs show only the icon.
-// A matched-geometry capsule slides behind the active item.
+// Modern black restyle (seperate-main): a floating graphite bar with
+// icon-only tabs. Whichever tab is active "pops out": it rises above the
+// bar's top edge as a pastel circle, ringed in the page color so it reads
+// as cut out of the bar. A matched-geometry circle slides between tabs.
 
 struct CustomTabBar: View {
     @Binding var selectedTab: Int
     @Namespace private var ns
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// Scales with the label's `.caption`-relative text so the icon and
-    /// label grow together, while the bar-level `.dynamicTypeSize` cap below
-    /// keeps the whole pill from outgrowing its fixed content clearance.
-    @ScaledMetric(relativeTo: .caption) private var tabIconSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .body) private var tabIconSize: CGFloat = 19
 
     /// Vertical space a page must keep clear at the bottom so its content
-    /// isn't covered by the floating bar (bar ≈ 52pt tall + 10pt bottom
-    /// padding above the safe area, plus breathing room).
-    static let contentClearance: CGFloat = 80
+    /// isn't covered by the bar (≈ 60pt bar + 6pt bottom padding + room).
+    static let contentClearance: CGFloat = 76
+
+    private static let barHeight: CGFloat = 60
+    private static let bubbleSize: CGFloat = 48
+    /// How far the active bubble rises above the bar's centerline.
+    private static let popOffset: CGFloat = -20
 
     private struct TabItem {
         let icon: String
         let activeIcon: String
         let label: String
         let anchorID: String
+        let tint: Color
     }
 
     private let tabs: [TabItem] = [
-        TabItem(icon: "sun.max",                activeIcon: "sun.max.fill",            label: "Today",     anchorID: "tabbar.today"),
-        TabItem(icon: "figure.stand",          activeIcon: "figure.stand",           label: "Body",       anchorID: "tabbar.body"),
-        TabItem(icon: "list.bullet",            activeIcon: "list.bullet",             label: "Exercises",  anchorID: "tabbar.exercises"),
-        TabItem(icon: "wind",                   activeIcon: "wind",                    label: "Breathe",    anchorID: "tabbar.breathe"),
-        TabItem(icon: "rectangle.stack",        activeIcon: "rectangle.stack.fill",    label: "Routines",   anchorID: "tabbar.routines"),
-        TabItem(icon: "person.circle",          activeIcon: "person.circle.fill",      label: "Profile",    anchorID: "tabbar.profile"),
+        TabItem(icon: "sun.max",         activeIcon: "sun.max.fill",         label: "Today",     anchorID: "tabbar.today",     tint: .pastelYellow),
+        TabItem(icon: "figure.stand",    activeIcon: "figure.stand",         label: "Body",      anchorID: "tabbar.body",      tint: .pastelPeach),
+        TabItem(icon: "square.grid.2x2", activeIcon: "square.grid.2x2.fill", label: "Exercises", anchorID: "tabbar.exercises", tint: .pastelBlue),
+        TabItem(icon: "wind",            activeIcon: "wind",                 label: "Breathe",   anchorID: "tabbar.breathe",   tint: .pastelMint),
+        TabItem(icon: "rectangle.stack", activeIcon: "rectangle.stack.fill", label: "Routines",  anchorID: "tabbar.routines",  tint: .pastelLavender),
+        TabItem(icon: "person",          activeIcon: "person.fill",          label: "Profile",   anchorID: "tabbar.profile",   tint: .pastelPink),
     ]
 
     var body: some View {
-        // Deliberately NOT wrapped in a GlassEffectContainer: that groups
-        // every descendant — icons and labels included, not just the glass
-        // shapes — into the same blurred rendering pass, which read as the
-        // tab labels themselves going soft-focus rather than just sitting
-        // on translucent glass. Two independent .glassEffect() calls (here
-        // and on the active pill below) don't visually merge/morph into
-        // each other, but that's a small cosmetic loss next to blurred text.
         HStack(spacing: 0) {
-            ForEach(tabs.indices, id: \.self) { i in
-                tabButton(index: i)
-            }
+            ForEach(tabs.indices, id: \.self) { tabButton(index: $0) }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .frame(height: Self.barHeight)
+        // Wide enough that an edge tab's bubble (plus its ring) stays inside
+        // the bar's rounded corners.
+        .padding(.horizontal, 14)
         .background {
-            RoundedRectangle(cornerRadius: 30)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 30))
-                .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(Color.luminaCardFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.08), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.5), radius: 18, y: 8)
         }
-        .padding(.horizontal, 18)
-        // The floating pill's height is a fixed assumption baked into
-        // `contentClearance` (and every page's bottom inset built on it).
-        // Cap growth to the standard (non-accessibility) range so the bar
-        // still scales a bit with the user's text size but never grows tall
-        // enough to blow past the clearance every page reserves for it.
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
     private func tabButton(index: Int) -> some View {
@@ -70,42 +67,33 @@ struct CustomTabBar: View {
         let tab = tabs[index]
 
         return Button {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.74)) {
+            withAnimation(reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.72)) {
                 selectedTab = index
             }
         } label: {
-            HStack(spacing: isActive ? 5 : 0) {
-                Image(systemName: isActive ? tab.activeIcon : tab.icon)
-                    .font(.system(size: tabIconSize, weight: isActive ? .semibold : .regular))
+            ZStack {
+                if isActive {
+                    Circle()
+                        .fill(tab.tint)
+                        // Page-colored ring: the bubble looks cut out of the bar.
+                        .overlay(Circle().strokeBorder(Color.luminaSurface, lineWidth: 5).padding(-5))
+                        .shadow(color: tab.tint.opacity(0.35), radius: 10, y: 4)
+                        .frame(width: Self.bubbleSize, height: Self.bubbleSize)
+                        .matchedGeometryEffect(id: "activeBubble", in: ns)
+                        .offset(y: Self.popOffset)
+                }
 
-                if isActive {
-                    Text(tab.label)
-                        .font(.custom("ManropeExtraLight-SemiBold", size: 12, relativeTo: .caption))
-                        .lineLimit(1)
-                        .fixedSize()
-                        .transition(.scale(scale: 0.7).combined(with: .opacity))
-                }
+                Image(systemName: isActive ? tab.activeIcon : tab.icon)
+                    .font(.system(size: isActive ? tabIconSize + 2 : tabIconSize,
+                                  weight: isActive ? .semibold : .regular))
+                    .foregroundStyle(isActive ? Color.onPastel : Color.white.opacity(0.5))
+                    .offset(y: isActive ? Self.popOffset : 0)
             }
-            .foregroundStyle(isActive ? Color.luminaPrimary : Color(.systemGray))
-            .padding(.vertical, 10)
-            .padding(.horizontal, isActive ? 14 : 0)
-            // The pill lives in .background so it is sized by the label —
-            // a bare Capsule() as a ZStack sibling is a greedy Shape and
-            // inflates the whole bar when the parent proposes full-screen.
-            .background {
-                if isActive {
-                    Capsule()
-                        .glassEffect(.regular, in: Capsule())
-                        .glassEffectID("activePill", in: ns)
-                        .matchedGeometryEffect(id: "activePill", in: ns)
-                }
-            }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: Self.barHeight)
             .contentShape(Rectangle())
         }
         .tourAnchor(tab.anchorID)
         .buttonStyle(.plain)
-        .animation(.spring(response: 0.32, dampingFraction: 0.74), value: selectedTab)
         .accessibilityLabel(tab.label)
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }

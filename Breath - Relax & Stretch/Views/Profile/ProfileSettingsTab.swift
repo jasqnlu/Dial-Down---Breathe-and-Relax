@@ -73,23 +73,31 @@ struct ProfileSettingsTab: View {
                         Text("\(profile.streak)")
                     } label: {
                         Label("Current Streak", systemImage: "flame.fill")
+                            .pastelTint(.pastel(for: "flame.fill"))
+                            .labelStyle(LuminaPastelLabelStyle())
                     }
                     LabeledContent {
                         Text("\(profile.streakFreezeTokens) / \(GamificationService.maxSavers)")
                     } label: {
                         Label("Streak Savers", systemImage: "shield.lefthalf.filled")
+                            .pastelTint(.pastel(for: "shield.lefthalf.filled"))
+                            .labelStyle(LuminaPastelLabelStyle())
                     }
                     LabeledContent {
                         Text("\(profile.spendablePoints)")
                             .accessibilityIdentifier("settings.spendablePoints")
                     } label: {
                         Label("Points to Spend", systemImage: "star.circle.fill")
+                            .pastelTint(.pastel(for: "star.circle.fill"))
+                            .labelStyle(LuminaPastelLabelStyle())
                     }
                     Button {
                         confirmingSaverPurchase = true
                     } label: {
                         Label("Buy Streak Saver — \(GamificationService.saverCost) pts",
                               systemImage: "plus.circle.fill")
+                            .pastelTint(.pastel(for: "plus.circle.fill"))
+                            .labelStyle(LuminaPastelLabelStyle())
                             .foregroundStyle(GamificationService.canBuySaver(profile) ? Color.accentColor : Color.secondary)
                             .opacity(GamificationService.canBuySaver(profile) ? 1 : 0.4)
                     }
@@ -169,6 +177,8 @@ struct ProfileSettingsTab: View {
                     }
                 } label: {
                     Label("Language", systemImage: "globe")
+                        .pastelTint(.pastel(for: "globe"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 .accessibilityIdentifier("settings.language")
             } header: {
@@ -181,9 +191,13 @@ struct ProfileSettingsTab: View {
             Section {
                 Toggle(isOn: $voiceCuesEnabled) {
                     Label("Voice Cues", systemImage: "waveform")
+                        .pastelTint(.pastel(for: "waveform"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 Toggle(isOn: $autoSkipGetReadyCountdown) {
                     Label("Auto-Skip Get-Ready Countdown", systemImage: "forward.end")
+                        .pastelTint(.pastel(for: "forward.end"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             } header: {
                 Text("Session")
@@ -197,6 +211,8 @@ struct ProfileSettingsTab: View {
             Section("Reminders") {
                 Toggle(isOn: $notificationsEnabled) {
                     Label("Daily Reminders", systemImage: "bell.badge")
+                        .pastelTint(.pastel(for: "bell.badge"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 .onChange(of: notificationsEnabled) { _, enabled in
                     Task {
@@ -247,10 +263,10 @@ struct ProfileSettingsTab: View {
                                         .font(.caption.weight(.semibold))
                                         .frame(width: 34, height: 34)
                                         .background(
-                                            selected ? Color.accentColor : Color(.secondarySystemFill),
+                                            selected ? Color.luminaPrimary : Color.luminaContainer,
                                             in: Circle()
                                         )
-                                        .foregroundStyle(selected ? .white : .primary)
+                                        .foregroundStyle(selected ? Color.luminaOnPrimary : Color.luminaOnSurface)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(fullDayName(day))
@@ -268,11 +284,15 @@ struct ProfileSettingsTab: View {
                     Task { await HealthKitService.shared.requestAuthorization() }
                 } label: {
                     Label("Connect Apple Health", systemImage: "heart.fill")
+                        .pastelTint(.pastel(for: "heart.fill"))
+                        .labelStyle(LuminaPastelLabelStyle())
                         .foregroundStyle(.red)
                 }
 
                 Toggle(isOn: $calendarSyncEnabled) {
                     Label("Add Sessions to Calendar", systemImage: "calendar")
+                        .pastelTint(.pastel(for: "calendar"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 .onChange(of: calendarSyncEnabled) { _, enabled in
                     if enabled {
@@ -294,6 +314,8 @@ struct ProfileSettingsTab: View {
             Section("Data") {
                 NavigationLink(destination: DataExportView()) {
                     Label("Export Data", systemImage: "square.and.arrow.up")
+                        .pastelTint(.pastel(for: "square.and.arrow.up"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 NavigationLink {
                     ContentUnavailableView(
@@ -304,6 +326,8 @@ struct ProfileSettingsTab: View {
                     .navigationTitle("Privacy & Data")
                 } label: {
                     Label("Privacy & Data", systemImage: "hand.raised")
+                        .pastelTint(.pastel(for: "hand.raised"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             }
 
@@ -313,6 +337,8 @@ struct ProfileSettingsTab: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
                             Label("Move safely", systemImage: "heart.text.square")
+                                .pastelTint(.pastel(for: "heart.text.square"))
+                                .labelStyle(LuminaPastelLabelStyle())
                                 .font(.headline)
                             Text(Safety.disclaimer)
                                 .font(.callout)
@@ -333,6 +359,8 @@ struct ProfileSettingsTab: View {
                     .navigationBarTitleDisplayMode(.inline)
                 } label: {
                     Label("Health & Safety", systemImage: "cross.case")
+                        .pastelTint(.pastel(for: "cross.case"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             }
 
@@ -342,6 +370,8 @@ struct ProfileSettingsTab: View {
                     tourCoordinator.restart()
                 } label: {
                     Label("Restart App Tutorial", systemImage: "questionmark.circle")
+                        .pastelTint(.pastel(for: "questionmark.circle"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             }
             .tourAnchor("profile.restartTour")
@@ -354,15 +384,20 @@ struct ProfileSettingsTab: View {
                 }
                 Link(destination: URL(string: "https://github.com/jasqnlu/Breath-Relax-Stretch")!) {
                     Label("View on GitHub", systemImage: "curlybraces")
+                        .pastelTint(.pastel(for: "curlybraces"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
                 Button {
                     legalDocument = .credits
                 } label: {
                     Label("Credits", systemImage: "text.book.closed")
+                        .pastelTint(.pastel(for: "text.book.closed"))
+                        .labelStyle(LuminaPastelLabelStyle())
                 }
             }
         }
         .listRowBackground(Color.luminaCardFill)
+        .tint(Color.luminaPrimary)
         .sheet(item: $legalDocument) { document in
             LegalDocumentView(document: document)
         }

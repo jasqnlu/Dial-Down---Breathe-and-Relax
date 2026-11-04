@@ -115,6 +115,9 @@ struct ExerciseListView: View {
                 ExerciseGraphView(exercises: difficultyAndDurationFilteredExercises, typeFilter: selectedType) { exercise in
                     selectedExercise = exercise
                 }
+                // Panned/zoomed bubbles stay inside the map's own area
+                // instead of sliding over the header.
+                .clipped()
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -164,14 +167,20 @@ struct ExerciseListView: View {
         visibleSearchCount = ExerciseSearchResults.pageSize
     }
 
-    /// The whole header row lives inside one `GlassEffectContainer` so the
-    /// search bar, filter button, and select button read as one continuous
-    /// glass surface (per Apple's intended Liquid Glass compositing) rather
-    /// than three separately-lit panes — the same convention the Today hero
-    /// buttons and `CustomTabBar` already established
-    /// (docs/superpowers/specs/2026-09-05-liquid-glass-today-redesign-design.md).
+    /// Large title + count, the search row, and quick type chips — the
+    /// seperate-main restyle's header (no Liquid Glass container anymore).
     private var header: some View {
-        GlassEffectContainer(spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Exercises")
+                    .font(.luminaDisplay)
+                    .tracking(-0.6)
+                Spacer()
+                Text("\(exercises.count) total")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+
             HStack(spacing: 10) {
                 searchBar
                     .tourAnchor("exercises.search")
@@ -184,10 +193,10 @@ struct ExerciseListView: View {
                           : "line.3.horizontal.decrease.circle")
                         .labelStyle(.iconOnly)
                         .font(.title3)
-                        .foregroundStyle(hasActiveFilters ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                        .foregroundStyle(hasActiveFilters ? Color.onPastel : Color.luminaOnSurfaceVariant)
                         .frame(width: 36, height: 36)
                 }
-                .glassEffect(hasActiveFilters ? .regular.tint(Color.luminaPrimary.opacity(0.16)) : .regular, in: Circle())
+                .background(hasActiveFilters ? Color.pastelMint : Color.luminaContainer, in: Circle())
                 .accessibilityIdentifier("exerciseFilterButton")
 
                 // Standalone entry into picking mode — no Customize context, so
@@ -206,29 +215,45 @@ struct ExerciseListView: View {
                           systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
                         .labelStyle(.iconOnly)
                         .font(.title3)
-                        .foregroundStyle(pickingSession.isActive ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                        .foregroundStyle(pickingSession.isActive ? Color.onPastel : Color.luminaOnSurfaceVariant)
                         .frame(width: 36, height: 36)
                 }
-                .glassEffect(pickingSession.isActive ? .regular.tint(Color.luminaPrimary.opacity(0.16)) : .regular, in: Circle())
+                .background(pickingSession.isActive ? Color.pastelMint : Color.luminaContainer, in: Circle())
                 .accessibilityIdentifier("exerciseSelectToggle")
             }
+
+            typeChips
         }
         .padding(.horizontal)
         .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.bottom, 6)
     }
 
-    /// Real Liquid Glass (`.glassEffect`), replacing the previous hand-rolled
-    /// approximation (an opaque capsule fill + a gradient `strokeBorder` +
-    /// two colored shadows). The deployment target is iOS 26, so the actual
-    /// API is available — no need to keep faking the look.
+    /// Quick type filter, mirroring the filter sheet's Type section (both
+    /// bind `selectedType`, so they stay in sync).
+    private var typeChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                LuminaChip(title: "All", isSelected: selectedType == nil) { selectedType = nil }
+                ForEach(ExerciseType.allCases, id: \.self) { type in
+                    LuminaChip(title: type.rawValue, isSelected: selectedType == type) {
+                        selectedType = selectedType == type ? nil : type
+                    }
+                }
+            }
+        }
+        .scrollClipDisabled()
+    }
+
+    /// A flat iOS-style search field (neutral gray rounded rect, gray
+    /// glyph) — the seperate-main restyle replaced the amber-tinted glass.
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(Color.luminaPrimary.opacity(0.95))
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
 
             TextField("Search exercises", text: $searchText)
-                .font(.luminaLabel)
+                .font(.luminaSubheadline)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
@@ -248,7 +273,7 @@ struct ExerciseListView: View {
         .frame(maxWidth: .infinity)
         .frame(height: 36)
         .padding(.horizontal, 12)
-        .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.12)), in: Capsule())
+        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.badge, style: .continuous))
         .accessibilityElement(children: .contain)
     }
 }

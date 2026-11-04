@@ -6,27 +6,11 @@ import Combine
 struct ForYouCard: View {
     let exercise: Exercise
 
+    // Same tile as every exercise grid (ExerciseTileCard), at a fixed row
+    // width, so "For You" cards match tiles elsewhere in the app.
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
-            PoseGlyphIcon(exercise: exercise, category: category, size: 96)
-                .frame(maxWidth: .infinity)
-                .frame(height: 110)
-
-            Text(exercise.name)
-                .font(.luminaLabel)
-                .foregroundStyle(Color.luminaOnSurface)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                .font(.luminaCaption)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
-        }
-        .frame(width: 128)
-        .padding(8)
-        .luminaCard(padding: 0)
+        ExerciseTileCard(exercise: exercise)
+            .frame(width: ExerciseTileCard<EmptyView>.rowWidth)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel(for: exercise))
     }
@@ -43,34 +27,40 @@ struct PremadeRoutineCard: View {
     let routine: PremadeRoutine
     let meta: (count: Int, minutes: Int)?
 
+    // A pastel tile (the "Self-care" grid look): ink text on a soft color
+    // picked stably from the routine's title, glyph in a light circle.
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let tint = Color.pastel(for: routine.title)
+        VStack(alignment: .leading, spacing: 0) {
             Image(systemName: routine.icon)
-                .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(Color.luminaPrimary)
-                .frame(width: 40, height: 40)
-                .background(Color.luminaMintTint, in: Circle())
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(Color.onPastel)
+                .frame(width: 44, height: 44)
+                .background(.white.opacity(0.55), in: Circle())
+
+            Spacer(minLength: 14)
 
             Text(routine.title)
                 .font(.luminaCardTitle)
-                .foregroundStyle(Color.luminaOnSurface)
+                .foregroundStyle(Color.onPastel)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if let meta {
-                Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            } else {
-                Text("Unavailable")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            Group {
+                if let meta {
+                    Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                } else {
+                    Text("Unavailable")
+                }
             }
+            .font(.luminaCaption)
+            .foregroundStyle(Color.onPastel.opacity(0.6))
+            .padding(.top, 4)
         }
-        .padding(12)
-        .frame(width: 132, alignment: .leading)
-        .luminaCard(padding: 0)
+        .padding(14)
+        .frame(width: 150, height: 158, alignment: .topLeading)
+        .background(tint, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
     }
 }
 

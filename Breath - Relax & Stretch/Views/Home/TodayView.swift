@@ -8,9 +8,8 @@ import SwiftData
 // streak/minutes/points tile row and the starter-program promo card were
 // both removed as clutter competing with that one job (their content is
 // still reachable from Profile → Progress & Charts).
-// Visually it continues the AuthView motif — same teal→indigo gradient,
-// same breathing halo, same white pill button — so sign-in and home read
-// as one flow.
+// Visually (seperate-main): a solid graphite hero card with a week strip
+// and numbered exercise list, on a near-black page.
 
 struct TodayView: View {
     @EnvironmentObject private var auth: AuthManager
@@ -47,7 +46,6 @@ struct TodayView: View {
     @State private var showingCustomize = false
     @State private var pendingShowSessionAfterCustomize = false
     @State private var selectedPremadeRoutine: PremadeRoutine?
-    @State private var isBreathingIn = false
     @State private var brokenStreakValue: Int? = nil
     @EnvironmentObject private var pickingSession: ExercisePickingSession
     @State private var customizeOverride: (title: String, exercises: [Exercise], isPinned: Bool)?
@@ -392,7 +390,6 @@ struct TodayView: View {
                 }
                 didMigrateToPriorityModel = true
             }
-            if !reduceMotion { isBreathingIn = true }
             if let profile {
                 let broken = GamificationService.checkForBrokenStreak(for: profile)
                 brokenStreakValue = broken
@@ -421,7 +418,8 @@ struct TodayView: View {
                 Text(auth.greetingName.isEmpty
                      ? greeting
                      : "\(greeting), \(auth.greetingName)")
-                    .font(.luminaHeadline)
+                    .font(.luminaDisplay)
+                    .tracking(-0.6)
                 Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()))
                     .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
@@ -457,7 +455,7 @@ struct TodayView: View {
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .frame(width: 34, height: 34)
-                .background(Color.luminaCardFill, in: Circle())
+                .background(Color.luminaContainer, in: Circle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Arrange pinned routine order")
@@ -482,12 +480,12 @@ struct TodayView: View {
                         .foregroundStyle(isLit ? Color.luminaFlameLit : Color.luminaOnSurfaceVariant.opacity(0.5))
                 }
                 Text("\(streak)")
-                    .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
+                    .font(.system(.subheadline, weight: .bold))
                     .foregroundStyle(isLit ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(Color.luminaCardFill, in: Capsule())
+            .frame(height: 34)
+            .background(Color.luminaContainer, in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLit ? "\(streak) day streak, view progress" : "No streak yet today, view progress")
@@ -507,132 +505,181 @@ struct TodayView: View {
         // of always flooring to "1m" regardless of how much over a minute it is.
         let mins = totalSecs > 0 ? max(1, Int((Double(totalSecs) / 60).rounded())) : 0
 
-        // Deliberately NOT wrapped in a GlassEffectContainer: that groups
-        // every descendant — title, subtitle, and the roadmap wave included,
-        // not just the glass shapes — into the same blurred rendering pass,
-        // which read as the hero's own text and icons going soft-focus
-        // rather than just sitting on translucent glass. Three independent
-        // .glassEffect() calls (here, Begin, and Customize below) don't
-        // visually merge into each other, but that's a small cosmetic loss
-        // next to blurred content.
-        return ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.16)),
-                             in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        // Modern black restyle (seperate-main): a solid graphite card — no
+        // Liquid Glass, blur or lens effects. Modeled on the reference
+        // dashboards: a bold title row, a week strip (the Insights calendar),
+        // a numbered exercise list (the grouped rows with pastel circles),
+        // and one solid full-width Begin button.
+        let shown = Array(sessionExercises.prefix(4))
+        let hidden = sessionExercises.count - shown.count
 
-            // The breathing halo — same cadence as the sign-in screen. The
-            // animation is scoped to these circles via .animation(value:);
-            // a withAnimation(.repeatForever) in onAppear would leak into
-            // every concurrent layout change (tab bar, sheets) forever.
-            ZStack {
-                Circle()
-                    .fill(.white.opacity(0.1))
-                    .frame(width: 170, height: 170)
-                    .scaleEffect(isBreathingIn ? 1.16 : 0.9)
-                Circle()
-                    .fill(.white.opacity(0.14))
-                    .frame(width: 110, height: 110)
-                    .scaleEffect(isBreathingIn ? 1.08 : 0.94)
-            }
-            .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isBreathingIn)
-            .offset(x: 40, y: -30)
-            .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 14) {
+        return VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(timeOfDayFocus.heroTitle)
-                            .font(.luminaTitle)
-                        if isPinnedActive {
-                            Label("Pinned as Today", systemImage: "bookmark.fill")
-                                .font(.luminaCaption)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal, 9)
-                                .padding(.vertical, 3)
-                                .background(.white.opacity(0.22), in: Capsule())
-                        }
-                    }
+                    Text(timeOfDayFocus.heroTitle)
+                        .font(.luminaHeadline)
+                        .tracking(-0.4)
                     Text("\(sessionExercises.count) exercises · \(mins) min")
                         .font(.luminaSubheadline)
-                        .opacity(0.85)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
+                Spacer(minLength: 0)
+                if isPinnedActive {
+                    Image(systemName: "bookmark.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.onPastel)
+                        .frame(width: 36, height: 36)
+                        .background(Color.pastelLavender, in: Circle())
+                        .accessibilityLabel("Pinned as Today")
+                }
+                Button {
+                    showingCustomize = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .frame(width: 36, height: 36)
+                        .background(Color.luminaContainer, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Customize")
+            }
 
-                RoadmapWave(exercises: sessionExercises, durationOverrides: overrides)
+            weekStrip
 
-                HStack {
-                    // A quieter untinted glass pill (vs. Begin's tinted one)
-                    // so it doesn't compete with Begin for the primary
-                    // action. A Spacer (rather than a fixed gap) pins it to
-                    // the leading edge and Begin to the trailing edge, so the
-                    // pair spans the card's full width instead of both
-                    // bunching on the left.
-                    Button {
-                        showingCustomize = true
-                    } label: {
-                        Text("Customize")
-                            .font(.luminaLabel)
-                            .foregroundStyle(.white.opacity(0.85))
-                            .padding(.horizontal, 16)
-                            .frame(height: 40)
-                            .glassEffect(.clear, in: Capsule())
+            VStack(spacing: 0) {
+                ForEach(Array(shown.enumerated()), id: \.element.uuid) { index, exercise in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(Color.luminaOutline)
+                            .frame(height: 0.5)
+                            .padding(.leading, 46)
                     }
-                    .buttonStyle(.plain)
-
-                    Spacer(minLength: 12)
-
-                    Button {
-                        showingSession = true
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "play.fill")
-                            Text("Begin")
-                            if mins > 0 {
-                                Text("\(mins) min")
-                                    .font(.luminaCaption)
-                                    .fontWeight(.semibold)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(.white.opacity(0.14), in: Capsule())
-                            }
-                        }
-                        .font(.luminaCardTitle)
-                        // luminaOnPrimary (not luminaPrimary) — this label
-                        // sits on a luminaPrimary-tinted glass background, so
-                        // it needs the theme's dedicated "text on primary"
-                        // token for contrast. Verified in the simulator:
-                        // amber-on-amber (both luminaPrimary) washed the
-                        // "Begin"/"9 min" text out to a faint luminance-only
-                        // difference from the button's own fill.
-                        .foregroundStyle(Color.luminaOnPrimary)
-                        .padding(.horizontal, 24)
-                        .frame(height: 48)
-                        .glassEffect(.clear.tint(Color.luminaPrimary), in: Capsule())
-                        .shadow(color: .black.opacity(0.35), radius: 10, y: 5)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
+                    heroRow(index: index, exercise: exercise,
+                            seconds: overrides[exercise.uuid] ?? exercise.durationSeconds)
+                }
+                if hidden > 0 {
+                    Text("+\(hidden) more")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 46)
+                        .padding(.top, 8)
                 }
             }
-            .foregroundStyle(.white)
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button {
+                showingSession = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "play.fill")
+                    Text("Begin")
+                    if mins > 0 {
+                        Text("· \(mins) min")
+                            .foregroundStyle(Color.luminaOnPrimary.opacity(0.55))
+                    }
+                }
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(Color.luminaPrimary, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
         }
-        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .foregroundStyle(Color.luminaOnSurface)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                .strokeBorder(Color.luminaHairline, lineWidth: 0.5)
+        )
         .tourAnchor("today.heroCard")
+    }
+
+    // MARK: - Hero pieces
+
+    /// One exercise in the hero list: pastel number circle, name, type, and
+    /// its (possibly customized) duration on the right.
+    private func heroRow(index: Int, exercise: Exercise, seconds: Int) -> some View {
+        HStack(spacing: 12) {
+            Text("\(index + 1)")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.onPastel)
+                .frame(width: 34, height: 34)
+                .background(Color.pastels[index % Color.pastels.count], in: Circle())
+            VStack(alignment: .leading, spacing: 1) {
+                Text(exercise.name)
+                    .font(.luminaSubheadline.weight(.semibold))
+                    .lineLimit(1)
+                Text(exercise.type.rawValue)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            Spacer(minLength: 8)
+            Text(Self.shortDuration(seconds))
+                .font(.system(.footnote, weight: .semibold).monospacedDigit())
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+        .padding(.vertical, 8)
+    }
+
+    static func shortDuration(_ seconds: Int) -> String {
+        seconds < 60 ? "\(seconds)s" : (seconds % 60 == 0 ? "\(seconds / 60)m" : "\(seconds / 60)m \(seconds % 60)s")
+    }
+
+    /// This week at a glance, like the reference's calendar: a filled
+    /// pastel circle with a check on days with a completed session, a white
+    /// ring on today, dim circles otherwise.
+    private var weekStrip: some View {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let start = cal.dateInterval(of: .weekOfYear, for: today)?.start ?? today
+        let days = (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
+        let doneDays = Set(sessions.compactMap { $0.completedAt == nil ? nil : cal.startOfDay(for: $0.startedAt) })
+
+        return HStack(spacing: 0) {
+            ForEach(Array(days.enumerated()), id: \.offset) { i, day in
+                let isToday = day == today
+                let done = doneDays.contains(day)
+                VStack(spacing: 6) {
+                    Text(day.formatted(.dateTime.weekday(.narrow)))
+                        .font(.system(size: 11, weight: isToday ? .bold : .medium))
+                        .foregroundStyle(isToday ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
+                    ZStack {
+                        Circle()
+                            .fill(done ? Color.pastels[i % Color.pastels.count] : Color.luminaContainer)
+                        if done {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Color.onPastel)
+                        } else {
+                            Text(day.formatted(.dateTime.day()))
+                                .font(.system(size: 11, weight: .semibold).monospacedDigit())
+                                .foregroundStyle(isToday ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
+                        }
+                    }
+                    .frame(width: 32, height: 32)
+                    .overlay(Circle().strokeBorder(Color.luminaOnSurface, lineWidth: isToday ? 1.5 : 0).padding(-3))
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(day.formatted(.dateTime.weekday(.wide))): \(done ? "session done" : "no session")")
+            }
+        }
     }
 
     // MARK: - Section headers
     //
-    // A small uppercase label rather than `.luminaTitle` — the size the hero
-    // title uses. These sections are secondary to "Today's session"; giving
-    // their headers the same weight made them compete with the hero for top
-    // billing instead of reading as its supporting content.
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title.uppercased())
-            .font(.luminaCaption)
-            .fontWeight(.bold)
-            .tracking(1.2)
-            .foregroundStyle(Color.luminaOnSurfaceVariant)
+    // Title-case, bold, primary-colored — the "Calendar" / "Monthly Stats" /
+    // "My Goal" headers of the reference designs. The hero still leads
+    // because it is a filled card; these sit on the bare surface.
+    private func sectionHeader(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .font(.luminaTitle)
+            .foregroundStyle(Color.luminaOnSurface)
     }
 
     // MARK: - Recommended (rotating carousel)

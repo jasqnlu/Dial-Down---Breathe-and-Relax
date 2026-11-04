@@ -47,10 +47,9 @@ struct BreathRelaxStretchApp: App {
         }
     }()
 
-    // The app is dark-only (Liquid Glass redesign, 2026-09-05) — there is no
-    // user-facing light mode or system-follow option anymore. This used to
-    // read a Profile > Appearance picker; that picker is gone (see
-    // ProfileAppearanceTab.swift), so this always resolves to dark.
+    // Dark-only. On seperate-main the "modern black" restyle (near-black
+    // surfaces, pastel accents) is designed for dark; main is dark-only too
+    // (Liquid Glass redesign, 2026-09-05).
     private var resolvedColorScheme: ColorScheme? { .dark }
 
     /// Gates the splash (`AppLoadingView`) until the anatomy mesh is warm and
@@ -69,6 +68,7 @@ struct BreathRelaxStretchApp: App {
 
     init() {
         LuminaFonts.registerAll()
+        LuminaFonts.applyNavigationBarAppearance()
     }
 
     var body: some Scene {
@@ -82,6 +82,9 @@ struct BreathRelaxStretchApp: App {
                         RootView()
                     }
                     .preferredColorScheme(resolvedColorScheme)
+                    // The accent is white on this branch; a white switch track
+                    // would hide the white knob, so every toggle gets a pastel.
+                    .toggleStyle(SwitchToggleStyle(tint: .pastelMint))
                     .environmentObject(auth)
                     .environmentObject(deepLinkRouter)
                     .environmentObject(pickingSession)

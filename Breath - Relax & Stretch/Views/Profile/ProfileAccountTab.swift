@@ -19,24 +19,32 @@ struct ProfileAccountTab: View {
             // Stats
             if let profile {
                 Section("Your Stats") {
-                    statsRow(icon: "clock.fill",  color: .blue,
+                    statsRow(icon: "clock", color: .pastelBlue,
                              label: "Total Minutes", value: "\(profile.totalMinutes) min")
-                    statsRow(icon: "star.fill",   color: .yellow,
+                    statsRow(icon: "star", color: .pastelYellow,
                              label: "Total Points",  value: "\(profile.totalPoints) pts")
-                    statsRow(icon: "flame.fill",  color: .orange,
+                    statsRow(icon: "flame", color: .pastelPeach,
                              label: "Current Streak", value: String(localized: "\(profile.streak) days"))
-                    statsRow(icon: "medal.fill",  color: .purple,
+                    statsRow(icon: "medal", color: .pastelLavender,
                              label: "Badges Earned", value: "\(profile.badges.count)")
                 }
                 .tourAnchor("profile.stats")
 
                 Section {
                     NavigationLink(destination: BadgesView(earnedBadges: profile.badges)) {
-                        Label("View All Badges", systemImage: "medal")
+                        HStack {
+                            Label("View All Badges", systemImage: "medal")
+                            Spacer()
+                            if !profile.badges.isEmpty { LuminaCountBadge(count: profile.badges.count) }
+                        }
                     }
+                    .pastelTint(.pastelYellow)
+                    .labelStyle(LuminaPastelLabelStyle())
                     NavigationLink(destination: ProgressChartsView()) {
                         Label("Progress & Charts", systemImage: "chart.bar.xaxis")
                     }
+                    .pastelTint(.pastelOlive)
+                    .labelStyle(LuminaPastelLabelStyle())
                 }
 
                 Section("Community") {
@@ -46,11 +54,16 @@ struct ProfileAccountTab: View {
                         NavigationLink(destination: LeaderboardView()) {
                             Label("Leaderboard", systemImage: "list.number")
                         }
+                        .pastelTint(.pastelBlue)
+                        .labelStyle(LuminaPastelLabelStyle())
                     }
                     if let url = challengeURL(for: profile) {
                         ShareLink(item: url) {
                             Label("Challenge a Friend", systemImage: "figure.2")
+                                .foregroundStyle(Color.luminaOnSurface)
                         }
+                        .pastelTint(.pastelPink)
+                        .labelStyle(LuminaPastelLabelStyle())
                     }
                 }
             }
@@ -59,12 +72,13 @@ struct ProfileAccountTab: View {
             Section {
                 Toggle(isOn: $appLockOn) {
                     Label("App Lock", systemImage: "faceid")
+                        .labelStyle(LuminaPastelLabelStyle())
+                        .pastelTint(.pastelMint)
                 }
+                .tint(Color.luminaPrimary)
                 .onChange(of: appLockOn) { _, val in auth.appLockEnabled = val }
             } header: {
                 Text("Security")
-                    .font(.luminaLabel)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Require Face ID, Touch ID, or your passcode to open the app.")
             }
@@ -76,7 +90,10 @@ struct ProfileAccountTab: View {
                         showingSignIn = true
                     } label: {
                         Label("Sign In or Create Account", systemImage: "person.crop.circle.badge.plus")
+                            .foregroundStyle(Color.luminaOnSurface)
                     }
+                    .pastelTint(.pastelOlive)
+                    .labelStyle(LuminaPastelLabelStyle())
                 } else {
                     LabeledContent("Signed in with") {
                         Text(auth.provider.rawValue.capitalized).foregroundStyle(.secondary)
@@ -89,6 +106,8 @@ struct ProfileAccountTab: View {
                     } label: {
                         Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                     }
+                    .pastelTint(.pastelPeach)
+                    .labelStyle(LuminaPastelLabelStyle())
                 }
 
                 if auth.isSignedIn && !auth.isGuest {
@@ -97,6 +116,8 @@ struct ProfileAccountTab: View {
                     } label: {
                         HStack {
                             Label("Delete Account", systemImage: "trash")
+                                .pastelTint(.pastelPink)
+                                .labelStyle(LuminaPastelLabelStyle())
                             if isDeletingAccount {
                                 Spacer()
                                 ProgressView()
@@ -169,11 +190,13 @@ struct ProfileAccountTab: View {
 
     private func statsRow(icon: String, color: Color,
                           label: LocalizedStringKey, value: String) -> some View {
-        HStack {
-            Image(systemName: icon).foregroundStyle(color).frame(width: 28)
-            Text(label)
+        HStack(spacing: 14) {
+            LuminaIconBadge(systemName: icon, tint: color)
+            Text(label).font(.luminaBody.weight(.medium))
             Spacer()
-            Text(value).foregroundStyle(.secondary).fontWeight(.medium)
+            Text(value)
+                .font(.system(.subheadline, weight: .semibold).monospacedDigit())
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
     }
 }

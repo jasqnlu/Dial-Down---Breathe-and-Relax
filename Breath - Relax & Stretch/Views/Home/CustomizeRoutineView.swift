@@ -123,36 +123,51 @@ struct CustomizeRoutineView: View {
             // free. The summary/roadmap/pin-toggle block above it rides
             // along as a second, non-reorderable section.
             List {
+                // Modern black restyle (seperate-main): summary tiles in
+                // the style of the reference's score cards replace the old
+                // blurred RoadmapWave carousel — the list below already shows
+                // the order, so the top of the screen answers "how long, and
+                // what kind" at a glance instead.
                 Section {
-                    if showsNameField {
-                        TextField("Routine name", text: $routineName)
-                            .font(.luminaBody)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
+                    Group {
+                        if showsNameField {
+                            TextField("Routine name", text: $routineName)
+                                .font(.luminaCardTitle)
+                                .padding(.horizontal, 16)
+                                .frame(height: 52)
+                                .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
+                        }
+
+                        HStack(spacing: 12) {
+                            timeTile
+                            exercisesTile
+                        }
+                        // Both tiles stretch to the taller one's height.
+                        .fixedSize(horizontal: false, vertical: true)
+
+                        if showsPinToggle {
+                            saveToggleRow
+                        }
+
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("Exercises")
+                                .font(.luminaTitle)
+                            Spacer()
+                            Text("Hold a card to reorder")
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        }
+                        .padding(.top, 6)
                     }
-
-                    Text("\(currentExercises.count) EXERCISE\(currentExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-
-                    RoadmapWave(exercises: currentExercises, numbered: true, durationOverrides: durationOverrides)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-
-                    if showsPinToggle {
-                        saveToggleRow
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
 
                 Section {
                     ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
                         exerciseRow(index: index, exercise: exercise)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             // Stable, index-based (not name-based) hook for
@@ -208,6 +223,8 @@ struct CustomizeRoutineView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
+                // Solid full-width action on a fade to the page color — no
+                // material/glass behind it.
                 Button {
                     onDone(routineName, currentExercises, pinnedToggle, durationOverrides)
                     dismiss()
@@ -215,57 +232,164 @@ struct CustomizeRoutineView: View {
                     HStack(spacing: 8) {
                         Image(systemName: primaryActionIcon)
                         Text(primaryActionLabel)
+                        if !currentExercises.isEmpty {
+                            Text("· \(totalMinutes) min")
+                                .foregroundStyle(Color.luminaOnPrimary.opacity(0.55))
+                        }
                     }
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnPrimary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(Color.luminaPrimary, in: Capsule())
+                    .opacity(canSubmit ? 1 : 0.4)
                 }
-                .buttonStyle(LuminaPillButtonStyle(kind: .prominent))
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(.regularMaterial)
+                .buttonStyle(.plain)
+                // Keep the spoken/queryable name to just the action ("Save
+                // Routine", "Start") — the minutes suffix is visual only.
+                .accessibilityLabel(primaryActionLabel)
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                .padding(.bottom, 8)
+                .background(
+                    LinearGradient(colors: [Color.luminaSurface.opacity(0), Color.luminaSurface],
+                                   startPoint: .top, endPoint: .init(x: 0.5, y: 0.35))
+                        .ignoresSafeArea()
+                )
                 .disabled(!canSubmit)
             }
         }
     }
 
+    // MARK: - Summary tiles
+
+    /// Total time as a ring gauge (the reference's score dials). The ring
+    /// fills toward a 15-minute session; past that it simply reads full.
+    private var timeTile: some View {
+        let fraction = min(1, Double(totalSeconds) / 900)
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("Total time")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+            ZStack {
+                Circle()
+                    .stroke(Color.luminaContainer, lineWidth: 9)
+                Circle()
+                    .trim(from: 0, to: fraction)
+                    .stroke(
+                        AngularGradient(colors: [.pastelMint, .pastelBlue, .pastelLavender], center: .center),
+                        style: StrokeStyle(lineWidth: 9, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeOut(duration: 0.3), value: fraction)
+                VStack(spacing: -2) {
+                    Text(currentExercises.isEmpty ? "0" : "\(totalMinutes)")
+                        .font(.luminaHeadline)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text("min")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+            }
+            .frame(width: 96, height: 96)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card - 4, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Total time, \(totalMinutes) minutes")
+    }
+
+    /// Exercise count plus a breakdown by type (Breath, Stretch…), each type
+    /// marked with a stable pastel dot.
+    private var exercisesTile: some View {
+        let byType = Dictionary(grouping: currentExercises, by: { $0.type.rawValue })
+            .map { (name: $0.key, count: $0.value.count) }
+            .sorted { $0.count != $1.count ? $0.count > $1.count : $0.name < $1.name }
+        return VStack(alignment: .leading, spacing: 10) {
+            Text("Exercises")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+            Text("\(currentExercises.count)")
+                .font(.luminaDisplay)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(byType.prefix(3), id: \.name) { entry in
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.pastel(for: entry.name))
+                            .frame(width: 8, height: 8)
+                        Text(entry.name)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        Spacer(minLength: 4)
+                        Text("×\(entry.count)")
+                            .font(.luminaCaption.monospacedDigit())
+                            .foregroundStyle(Color.luminaOnSurface)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card - 4, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
     private var saveToggleRow: some View {
         HStack(spacing: 12) {
-            Image(systemName: "bookmark.fill")
-                .foregroundStyle(Color.luminaPrimary)
-                .frame(width: 34, height: 34)
-                .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous))
-            VStack(alignment: .leading, spacing: 1) {
+            LuminaIconBadge(systemName: "bookmark.fill", tint: .pastelLavender, size: 38)
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Keep as my Today routine")
                     .font(.luminaCardTitle)
-                Text("Starts your day automatically · off = just for today")
+                Text(pinnedToggle ? "Opens every day on Today" : "Just for this session")
                     .font(.luminaCaption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
             Spacer(minLength: 0)
-            Toggle("", isOn: $pinnedToggle)
+            Toggle("Keep as my Today routine", isOn: $pinnedToggle)
                 .labelsHidden()
-                .tint(Color.luminaPrimary)
         }
-        .luminaCard(padding: 14)
+        .padding(14)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card - 4, style: .continuous))
     }
 
+    // MARK: - Exercise card
+
     private func exerciseRow(index: Int, exercise: Exercise) -> some View {
-        HStack(spacing: 12) {
-            Text("\(index + 1)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
-                .frame(width: 22, height: 22)
-                .background(Color.luminaContainer, in: Circle())
-
+        HStack(alignment: .center, spacing: 14) {
+            // Pose glyph with its order number as a pastel badge.
             let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
-            PoseGlyphIcon(exercise: exercise, category: category, size: 46)
+            PoseGlyphIcon(exercise: exercise, category: category, size: 52)
+                .overlay(alignment: .topLeading) {
+                    Text("\(index + 1)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.onPastel)
+                        .frame(width: 22, height: 22)
+                        .background(Color.pastels[index % Color.pastels.count], in: Circle())
+                        .overlay(Circle().strokeBorder(Color.luminaCardFill, lineWidth: 2.5))
+                        .offset(x: -5, y: -5)
+                }
 
-            Text(exercise.name)
-                .font(.luminaCardTitle)
-                .foregroundStyle(Color.luminaOnSurface)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(exercise.name)
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(exercise.type.rawValue)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+                durationStepper(for: exercise)
+            }
 
-            Spacer(minLength: 8)
-
-            durationStepper(for: exercise)
+            Spacer(minLength: 0)
 
             TapAgainToConfirmButton(
                 // Default .top alignment centers the caption over the
@@ -283,12 +407,15 @@ struct CustomizeRoutineView: View {
                     durationOverrides.removeValue(forKey: removedID)
                 }
             ) {
-                Image(systemName: "minus.circle.fill")
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(width: 30, height: 30)
+                    .background(Color.luminaContainer, in: Circle())
             }
             .accessibilityLabel("Remove \(exercise.name)")
             .accessibilityIdentifier("removeExercise-\(exercise.uuid)")
             .buttonStyle(.plain)
-            .foregroundStyle(.red)
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         // Without this, the row's own "customizeExerciseRow-N" identifier
         // (used for drag-reorder testing) swallows this remove button's
@@ -296,36 +423,45 @@ struct CustomizeRoutineView: View {
         // remove button (and the duration stepper's +/- buttons)
         // independently reachable, both for VoiceOver and UI tests.
         .accessibilityElement(children: .contain)
-        .luminaCard(padding: 12)
+        .padding(14)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card - 4, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LuminaRadius.card - 4, style: .continuous)
+                .strokeBorder(Color.luminaHairline, lineWidth: 0.5)
+        )
     }
 
     /// Same stepper as RoutineBuilderView's identically named helper — 5s
-    /// floor, 5s step, outline icons (vs. the row's own filled destructive
-    /// remove button) so the two minus icons in the row read as distinct.
+    /// floor, 5s step — drawn as one compact pill: − time +.
     private func durationStepper(for exercise: Exercise) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             Button {
                 adjustDuration(for: exercise, by: -5)
             } label: {
-                Image(systemName: "minus.circle")
+                Image(systemName: "minus")
+                    .font(.system(size: 11, weight: .bold))
+                    .frame(width: 32, height: 30)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .foregroundStyle(Color.luminaPrimary)
 
             Text(formatted(duration(for: exercise)))
-                .font(.luminaLabel)
-                .monospacedDigit()
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .font(.system(.footnote, weight: .semibold).monospacedDigit())
+                .foregroundStyle(Color.luminaOnSurface)
                 .frame(minWidth: 40)
 
             Button {
                 adjustDuration(for: exercise, by: 5)
             } label: {
-                Image(systemName: "plus.circle")
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .bold))
+                    .frame(width: 32, height: 30)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .foregroundStyle(Color.luminaPrimary)
         }
+        .foregroundStyle(Color.luminaOnSurfaceVariant)
+        .background(Color.luminaContainer, in: Capsule())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(exercise.name) duration, \(formatted(duration(for: exercise)))")
         .accessibilityAdjustableAction { direction in
