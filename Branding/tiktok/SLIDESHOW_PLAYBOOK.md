@@ -58,18 +58,69 @@ re-check after a week.
 | 31 | mobility · "7 weird things physios do" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: 165 views, 2 likes |
 | 32 | morning · "7 weird morning habits" listicle, new noun (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: 89 views, 1 like |
 | 33 | sleep · "7 weird sleep habits" listicle (branch of 1/8); redo of set 2 in the classic style | Classic outline | TikTok Sans 600 | Oct 30: 116 views, 1 like |
-| 34 | tight hips · "7 weird hip habits" listicle (branch of 1/8); classic version of set 24 | Classic outline | TikTok Sans 600 | Oct 30: 162 views, 0 likes |
-| 35 | legs/hamstrings · "7 weird leg habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: 178 views, 1 like |
-| 36 | upper back · "7 weird back habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: **208 views**, 2 likes, best of 30–36 |
-| 37 | feet & ankles · "7 weird foot habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | |
-| 38 | glutes · "7 weird glute habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | |
-| 39 | spine · "7 weird spine habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | |
-| 40 | general · "7 weird stretching habits", chest openers (branch of 36's doorway) | Classic outline | TikTok Sans 600 | |
+| 34 | tight hips · "7 weird hip habits" listicle (branch of 1/8); classic version of set 24 | Classic outline | TikTok Sans 600 | Oct 30: 162 views, 0 likes; Oct 31: 162 views, 0 likes |
+| 35 | legs/hamstrings · "7 weird leg habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: 178 views, 1 like; Oct 31: 179 views, 1 like |
+| 36 | upper back · "7 weird back habits" listicle (branch of 1/8) | Classic outline | TikTok Sans 600 | Oct 30: **208 views**, 2 likes, best of 30–36; Oct 31: **210 views, 2 likes**, best of 34–40 |
+| 37 | feet & ankles · "7 weird foot habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | Oct 31: 154 views, 1 like |
+| 38 | glutes · "7 weird glute habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | Oct 31: 123 views, 1 like |
+| 39 | spine · "7 weird spine habits" listicle (branch of 34–36) | Classic outline | TikTok Sans 600 | Oct 31: 176 views, 0 likes |
+| 40 | general · "7 weird stretching habits", chest openers (branch of 36's doorway) | Classic outline | TikTok Sans 600 | Oct 31: 138 views, 0 likes |
+| 41 | chest · "7 weird chest habits" listicle (branch of 36) | Classic outline | TikTok Sans 600 | |
+| 42 | hamstrings · "7 weird hamstring habits" listicle (branch of 35) | Classic outline | TikTok Sans 600 | |
+| 43 | desk · "7 weird desk habits", chair stretches (branch of 36 + early desk winners) | Classic outline | TikTok Sans 600 | Nov 1: 114 views, 0 likes |
+| 44 | arms/wrists · "7 weird arm habits" listicle (branch of 36) | Classic outline | TikTok Sans 600 | Nov 1: 108 views, 0 likes; Nov 2: 111 views, 0 likes |
+| 45 | calves · "7 weird calf habits" listicle (branch of 35/37) | Classic outline | TikTok Sans 600 | Nov 1: 116 views, 1 like; Nov 2: **125 views, 1 like**, best of 44–50 |
+| 46 | quads · "7 weird quad habits" listicle (branch of 35) | Classic outline | TikTok Sans 600 | Nov 1: 113 views, 0 likes; Nov 2: 118 views, 0 likes |
+| 47 | posture · "7 weird posture habits" v2, everyday cues (branch of 8) | Classic outline | TikTok Sans 600 | Nov 2: 99 views, 0 likes |
+| 48 | work stress · "7 weird work stress habits" v2 (branch of 7) | Classic outline | TikTok Sans 600 | Nov 2: 109 views, 1 like |
+| 49 | core · "7 weird core habits", new body-part noun (branch of 35/36) | Classic outline | TikTok Sans 600 | Nov 2: 0 views (7th post that day; see results check) |
+| 50 | couch · "7 weird couch habits", place-based noun (branch of 45's water-bottle caption) | Classic outline | TikTok Sans 600 | Nov 2: 0 views (8th post that day; see results check) |
+| 51 | kitchen · "7 weird kitchen habits", place-based noun (branch of 45's water bottle) | Classic outline | TikTok Sans 600 | |
+| 52 | stairs · "7 weird stair habits", place-based noun (branch of 45/46) | Classic outline | TikTok Sans 600 | |
+| 53 | bed · "7 weird bed habits", in-bed stretches, pet photos (branch of 46's lie-on-your-side caption) | Classic outline | TikTok Sans 600 | |
+| 54 | wall · "7 weird wall habits" (branch of 14, the all-time best) | Classic outline | TikTok Sans 600 | |
+| 55 | shower · "7 weird shower habits", place-based noun (branch of 51–54) | Classic outline | TikTok Sans 600 | |
+| 56 | car · "7 weird car habits", parked-car resets (branch of 25's car story) | Classic outline | TikTok Sans 600 | |
+| 57 | floor · "7 weird floor habits", floor stretches, pet photos (branch of 53) | Classic outline | TikTok Sans 600 | |
+| 58 | towel · "7 weird towel habits", object noun (branch of 45's water bottle) | Classic outline | TikTok Sans 600 | |
+| 59 | pillow · "7 weird pillow habits", in-bed/couch pillow moves, pet photos (branch of 53) | Classic outline | TikTok Sans 600 | |
+| 60 | doorway · "7 weird doorway habits", door-frame stretches (branch of 36's doorway caption + 54's wall) | Classic outline | TikTok Sans 600 | |
+| 61 | phone · "7 weird phone habits", object noun, phone-posture resets (branch of 45's water bottle) | Classic outline | TikTok Sans 600 | |
+| 62 | walking · "7 weird walking habits", everyday-activity noun (branch of 52's stairs + 56's car) | Classic outline | TikTok Sans 600 | |
 
 **Results check (2026-10-30, sets 29 and 31–36):** body-part stretch listicles won again: upper back (36) 208, legs (35)
 178, physio (31) 165, hips (34) 162. Sleep (33) 116, morning (32) 89 and the between-calls reset (29) 84 trailed; set 30 wasn't in the screenshot. The top
 captions each name one move as "the ___ one" ("the doorway one", "the fold-and-hang one"). Sets 37–40 keep that
 recipe with new body parts. Keep captions in that "the ___ one" form.
+
+**Results check (2026-10-31, sets 34–40):** upper back (36) still leads at 210 views / 2 likes, then legs (35) 179,
+spine (39) 176, hips (34) 162, feet (37) 154. The broad "stretching" noun (40) got 138 and glutes (38) 123, so a
+specific body-part noun beats a general one. Sets 41–46 stay on specific nouns and branch off 35/36.
+Openverse search was down (504s) when they were built; their new photos came straight from the WordPress Photo
+Directory API (all CC0), the rest are reused from earlier sets.
+
+**Results check (2026-11-01, sets 43–46):** all four flat at 108–116 views (calves 116 / 1 like, desk 114, quads 113,
+arms 108), below 34–40. They went up 10:30–10:34, one to four minutes apart, yet landed at almost the same number,
+so there's no clear sign that close posting hurt them. Narrow body-part nouns seem to be wearing out. Sets 47–50 go back to the all-time top
+topics with fresh moves (posture, set 8; work stress, set 7), try one new body part (core) and one place-based noun
+(couch) after the water-bottle caption got the batch's only like. **Spacing is unproven:** the only evidence for
+spacing posts out is sets 11/12 (2 posts), and the owner saw fewer views when posting an hour apart. Test it: post 2
+of these sets close together and 2 an hour or more apart, then compare 24 h views. Openverse
+was still down; photos came from the WordPress Photo Directory API. Apply EXIF rotation when saving those: phone
+photos come in sideways otherwise.
+
+**Results check (2026-11-02, sets 44–50):** everything that got distributed sits at 99–125 views: calves (45) 125 / 1 like,
+quads (46) 118, arms (44) 111, work stress v2 (48) 109 / 1 like, posture v2 (47) 99. Core (49) and couch (50) got **0 views**.
+Sets 43–46 went up ~10:30 AM Nov 1 and 47–50 at ~10:05 PM, so 49 and 50 were the 7th and 8th posts of the same day,
+while 47 and 48 (5th and 6th, posted in the same minute as 49/50) did get views. That fits a **daily cap of about 6 posts**
+better than "no more than 4 at once". Until it's disproven: post at most 4 a day, and re-post 49 and 50 on a later day
+rather than counting them as flops. The best captions of the batch name an everyday object or place ("the water bottle
+one", "lie on your side ... before you fall asleep"), so sets 51–54 test place/object nouns: kitchen, stairs, bed, wall.
+Openverse was still down; all their photos are new, from the WordPress Photo Directory API.
+Sets 55–58 (2026-11-03) carry on the place/object test with shower, car, floor and towel. Openverse was back up;
+their photos mix Openverse picks (rawpixel, StockSnap) with WordPress Photo Directory ones.
+Sets 59–62 (2026-11-04) add pillow, doorway, phone and walking. Openverse was down again (HTTP 500), so all their
+photos are new WordPress Photo Directory picks (checked against every earlier set's `credits.json` for reuse).
 
 Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/outputs/four-carousel-tests.md`
 (copy and captions verbatim from there). Log results at 4 h, 24 h and 7 days, per platform, as that file describes.
@@ -77,8 +128,8 @@ Sets 13–16 are the four carousel tests in `~/Documents/Codex/2026-10-16/ope/ou
 **Results check (2026-10-20, all 16 sets):** desk, work-stress and posture topics took the top six by views
 (14, 7, 8, 13, 9, 3). Sleep (2), WFH (5) and studying (6) lagged. Set 3's boxed POV tips still has the most likes;
 the first-person story sets (13–16) pull views but few likes. Sets 11 and 12 (9 and 0 views) went up one minute
-apart, so their result says more about back-to-back posting than about their content: space posts out.
-Sets 17–22 each branch off one of the winners. Post them at least an hour apart.
+apart. That might be back-to-back posting or their content; 2 posts can't tell them apart.
+Sets 17–22 each branch off one of the winners.
 
 Sets 9–10 are the carousel half of a 4-post batch (the other two, a wall-check attempt and a post-meeting shoulder
 reset, are 10–15 s videos filmed by hand). For this batch, record 4 h and 24 h views, average watch time,
