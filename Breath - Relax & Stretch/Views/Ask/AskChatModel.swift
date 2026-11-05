@@ -63,7 +63,7 @@ extension AskReply {
             if intent.areas.isEmpty {
                 return String(localized: "Here's a gentle \(minutes)-minute routine.")
             }
-            return String(localized: "Here's a gentle \(minutes)-minute routine for your \(intent.areaList).")
+            return String(localized: "Here's a gentle \(minutes)-minute routine for your \(intent.areaList()).")
         case .safety(let level, _):
             return level == .urgent ? Self.urgentText : Self.concerningText + " " + Self.urgentText
         case .clarify:
@@ -90,38 +90,48 @@ extension AskRoutine {
 
 extension AskIntent {
     /// Localized area names joined as a list ("neck and shoulders").
-    var areaList: String {
-        areas.map(\.displayName).formatted(.list(type: .and))
+    func areaList(locale: Locale = .current) -> String {
+        areas.map { $0.displayName.resolved(in: locale) }
+            .formatted(.list(type: .and).locale(locale))
+    }
+}
+
+extension LocalizedStringResource {
+    /// Resolves in `locale` (the in-app language), not the system one.
+    func resolved(in locale: Locale) -> String {
+        var copy = self
+        copy.locale = locale
+        return String(localized: copy)
     }
 }
 
 extension AskArea {
-    var displayName: String {
+    var displayName: LocalizedStringResource {
         switch self {
-        case .neck:       String(localized: "neck")
-        case .head:       String(localized: "head")
-        case .jaw:        String(localized: "jaw")
-        case .eyes:       String(localized: "eyes")
-        case .upperBack:  String(localized: "upper back")
-        case .shoulders:  String(localized: "shoulders")
-        case .chest:      String(localized: "chest")
-        case .core:       String(localized: "core")
-        case .obliques:   String(localized: "obliques")
-        case .lats:       String(localized: "lats")
-        case .lowerBack:  String(localized: "lower back")
-        case .biceps:     String(localized: "biceps")
-        case .triceps:    String(localized: "triceps")
-        case .forearms:   String(localized: "forearms")
-        case .hands:      String(localized: "hands")
-        case .glutes:     String(localized: "glutes")
-        case .hipFlexors: String(localized: "hip flexors")
-        case .hips:       String(localized: "hips")
-        case .adductors:  String(localized: "inner thighs")
-        case .quads:      String(localized: "quads")
-        case .hamstrings: String(localized: "hamstrings")
-        case .calves:     String(localized: "calves")
-        case .shins:      String(localized: "shins")
-        case .feet:       String(localized: "feet")
+        case .neck:       LocalizedStringResource("neck")
+        case .head:       LocalizedStringResource("head")
+        case .jaw:        LocalizedStringResource("jaw")
+        case .eyes:       LocalizedStringResource("eyes")
+        case .upperBack:  LocalizedStringResource("upper back")
+        case .shoulders:  LocalizedStringResource("shoulders")
+        case .chest:      LocalizedStringResource("chest")
+        case .core:       LocalizedStringResource("core")
+        case .obliques:   LocalizedStringResource("obliques")
+        case .lats:       LocalizedStringResource("lats")
+        case .lowerBack:  LocalizedStringResource("lower back")
+        case .biceps:     LocalizedStringResource("biceps")
+        case .triceps:    LocalizedStringResource("triceps")
+        case .forearms:   LocalizedStringResource("forearms")
+        case .hands:      LocalizedStringResource("hands")
+        case .glutes:     LocalizedStringResource("glutes")
+        case .hipFlexors: LocalizedStringResource("hip flexors")
+        case .hips:       LocalizedStringResource("hips")
+        case .adductors:  LocalizedStringResource("inner thighs")
+        case .quads:      LocalizedStringResource("quads")
+        case .hamstrings: LocalizedStringResource("hamstrings")
+        case .calves:     LocalizedStringResource("calves")
+        case .shins:      LocalizedStringResource("shins")
+        case .feet:       LocalizedStringResource("feet")
         }
     }
 }

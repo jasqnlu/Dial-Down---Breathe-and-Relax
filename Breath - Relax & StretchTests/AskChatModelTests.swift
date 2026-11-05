@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import BreathRelaxStretch
 
@@ -61,5 +62,34 @@ struct AskChatModelTests {
         #expect(m.messages.count == 1)
         #expect(m.messages[0].role == .reply)
         #expect(m.messages[0].reply == .clarify)
+    }
+
+    private func ex(_ name: String, _ seconds: Int = 60) -> Exercise {
+        Exercise(name: name, type: .stretch, targetBodyParts: [], durationSeconds: seconds,
+                 difficulty: 1, instructions: [])
+    }
+
+    @Test func pairsCollapseIntoOneRow() {
+        let routine = AskRoutine(exercises: [ex("Bridge"), ex("Left Hip Stretch", 30), ex("Right Hip Stretch", 45), ex("Knee Hug")],
+                                 isGentle: false)
+        let rows = routine.rows(locale: Locale(identifier: "en"))
+        #expect(rows.map(\.title) == ["Bridge", "Hip Stretch · L + R", "Knee Hug"])
+        #expect(rows.map(\.seconds) == [60, 75, 60])
+    }
+
+    @Test func unmatchedSidesStaySeparate() {
+        let routine = AskRoutine(exercises: [ex("Left Hip Stretch"), ex("Left Calf Stretch")], isGentle: false)
+        #expect(routine.rows(locale: Locale(identifier: "en")).count == 2)
+    }
+
+    @Test func minutesRoundUp() {
+        #expect(AskRoutine(exercises: [ex("A", 61)], isGentle: false).displayMinutes == 2)
+        #expect(AskRoutine(exercises: [ex("A", 60)], isGentle: false).displayMinutes == 1)
+        #expect(AskRoutine(exercises: [ex("A", 10)], isGentle: false).displayMinutes == 1)
+    }
+
+    @Test func areaNamesFollowGivenLocale() {
+        let intent = AskIntent(areas: [.neck, .shoulders], goal: nil, minutes: nil, seriousness: .ok, isOffTopic: false)
+        #expect(intent.areaList(locale: Locale(identifier: "es")).contains("cuello"))
     }
 }

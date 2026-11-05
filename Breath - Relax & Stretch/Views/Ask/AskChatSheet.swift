@@ -11,7 +11,8 @@ struct AskChatSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft = ""
     @State private var didSendInitial = false
-    @State private var playing: AskRoutine?
+    @State private var playing: PlayableRoutine?
+    @Environment(\.locale) private var locale
 
     init(model: AskChatModel, initialText: String?, onMicTap: (() -> Void)? = nil) {
         self.model = model
@@ -35,6 +36,9 @@ struct AskChatSheet: View {
                     }
                     .padding(16)
                 }
+                .onChange(of: model.isThinking) {
+                    if model.isThinking { withAnimation { proxy.scrollTo("thinking", anchor: .bottom) } }
+                }
                 .onChange(of: model.messages) {
                     if let last = model.messages.last { withAnimation { proxy.scrollTo(last.id, anchor: .bottom) } }
                 }
@@ -47,7 +51,7 @@ struct AskChatSheet: View {
             didSendInitial = true
             await model.send(initialText, catalog: catalog)
         }
-        .fullScreenCover(item: Binding(get: { playing.map(PlayableRoutine.init) }, set: { if $0 == nil { playing = nil } })) { item in
+        .fullScreenCover(item: $playing) { item in
             SessionPlayerView(exercises: item.routine.exercises)
         }
     }
@@ -80,23 +84,24 @@ struct AskChatSheet: View {
     private var chips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip(String(localized: "Stiff neck"), key: "Stiff neck")
-                chip(String(localized: "Lower back"), key: "Lower back")
-                chip(String(localized: "Can't sleep"), key: "Can't sleep")
-                chip(String(localized: "Tight hips"), key: "Tight hips")
+                chip("Stiff neck")
+                chip("Lower back")
+                chip("Can't sleep")
+                chip("Tight hips")
             }
         }
     }
 
-    private func chip(_ text: String, key: String) -> some View {
-        Button { submit(text) } label: {
-            Text(LocalizedStringKey(key))
+    private func chip(_ key: LocalizedStringResource) -> some View {
+        Button { submit(key.resolved(in: locale)) } label: {
+            Text(key)
                 .font(.luminaLabel)
                 .foregroundStyle(Color.luminaOnSurface)
                 .padding(.horizontal, 14).padding(.vertical, 8)
                 .background(Color.luminaCardFill, in: Capsule())
         }
         .buttonStyle(.plain)
+        .disabled(model.isThinking)
     }
 
     @ViewBuilder
@@ -123,7 +128,7 @@ struct AskChatSheet: View {
         case .routine(let routine, let intent):
             VStack(alignment: .leading, spacing: 10) {
                 bubble { routineText(routine, intent) }
-                AskRoutineCard(routine: routine) { playing = routine }
+                AskRoutineCard(routine: routine) { playing = PlayableRoutine(routine: routine) }
             }
         case .safety(let level, _):
             AskSafetyCard(level: level) { model.showGentleAnyway(for: id, catalog: catalog) }
@@ -141,7 +146,7 @@ struct AskChatSheet: View {
         if intent.areas.isEmpty {
             return Text("Here's a gentle \(minutes)-minute routine.")
         }
-        return Text("Here's a gentle \(minutes)-minute routine for your \(intent.areaList).")
+        return Text("Here's a gentle \(minutes)-minute routine for your \(intent.areaList(locale: locale)).")
     }
 
     private func bubble(@ViewBuilder _ content: () -> some View) -> some View {
@@ -177,6 +182,7 @@ struct AskChatSheet: View {
     }
 
     private func submit(_ text: String) {
+        guard !model.isThinking else { return }
         draft = ""
         Task { await model.send(text, catalog: catalog) }
     }
