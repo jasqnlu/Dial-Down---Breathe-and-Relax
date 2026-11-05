@@ -13,9 +13,10 @@ enum SpeechUnavailableReason: Equatable {
     case micDenied
     case speechDenied
     case localeUnsupported
-    /// The on-device speech model isn't installed and couldn't be installed (e.g. offline),
-    /// or audio/engine setup failed. Both are reported the same way to the user.
+    /// The on-device speech model isn't installed and couldn't be installed (e.g. offline).
     case assetUnavailable
+    /// Microphone/audio engine or session setup failed.
+    case audioFailed
 }
 
 /// On-device, offline speech-to-text with a live transcript. Uses the iOS 26
@@ -35,7 +36,8 @@ final class SpeechInput {
     /// Bumped by every start/stop/cancel so a stale `start` can detect it was superseded.
     @ObservationIgnored private var generation = 0
 
-    @ObservationIgnored private var sessionActivated = false
+    @ObservationIgnored /// Generation that activated the shared audio session; nil when we hold no activation.
+    @ObservationIgnored private var sessionOwnerGeneration: Int?
 
     /// Pure precedence rule for why speech can't run: mic > speech > locale > asset.
     nonisolated static func reason(
@@ -126,7 +128,7 @@ final class SpeechInput {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.record, mode: .measurement, options: [])
             try session.setActive(true, options: [])
-            sessionActivated = true
+            sessionOwnerGeneration = myGeneration
 
             let newEngine = AVAudioEngine()
             engine = newEngine
@@ -148,7 +150,7 @@ final class SpeechInput {
 
             guard myGeneration == generation else {
                 discardLocals()
-                releaseSessionIfOwned()
+                releaseSession(ifOwnedBy: myGeneration)
                 return
             }
             self.engine = newEngine
@@ -159,8 +161,8 @@ final class SpeechInput {
         } catch {
             discardLocals()
             guard myGeneration == generation else { return }
-            releaseSessionIfOwned()
-            state = .unavailable(.assetUnavailable)
+            releaseSession(ifOwnedBy: myGeneration)
+            state = .unavailable(.audioFailed)
         }
     }
 
@@ -225,12 +227,14 @@ final class SpeechInput {
             engine.stop()
         }
         engine = nil
-        releaseSessionIfOwned()
+        releaseSession(ifOwnedBy: nil)
     }
 
-    private func releaseSessionIfOwned() {
-        guard sessionActivated else { return }
-        sessionActivated = false
+    /// Deactivates the session if we hold it. A stale start passes its own generation so it
+    /// can't deactivate a session a newer start has since activated.
+    private func releaseSession(ifOwnedBy generation: Int?) {
+        guard let owner = sessionOwnerGeneration, generation == nil || generation == owner else { return }
+        sessionOwnerGeneration = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
