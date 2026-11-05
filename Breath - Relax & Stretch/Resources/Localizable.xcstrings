@@ -10579,6 +10579,72 @@
         }
       }
     },
+    "I couldn't find gentle stretches for that." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No encontré estiramientos suaves para eso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je n'ai pas trouvé d'étirements doux pour cela."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有找到适合的轻柔拉伸动作。"
+          }
+        }
+      }
+    },
+    "Browse %@ stretches" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver estiramientos de %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir les étirements : %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浏览%@拉伸动作"
+          }
+        }
+      }
+    },
+    "Browse stretches" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver estiramientos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir les étirements"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浏览拉伸动作"
+          }
+        }
+      }
+    },
     "This sounds like more than everyday tightness. It's worth checking with a doctor before stretching." : {
       "localizations" : {
         "es" : {

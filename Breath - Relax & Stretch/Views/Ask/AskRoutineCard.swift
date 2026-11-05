@@ -65,7 +65,7 @@ extension AskRoutine {
     }
 
     /// Display rows: an adjacent Left/Right pair collapses to one "<name> · L + R" row.
-    func rows(locale: Locale = .current) -> [Row] {
+    func rows(locale: Locale) -> [Row] {
         var result: [Row] = []
         var i = 0
         while i < exercises.count {

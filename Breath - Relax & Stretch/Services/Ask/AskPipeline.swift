@@ -7,6 +7,8 @@ enum AskReply: Equatable {
     case clarify
     case offTopic
     case noMatch(intent: AskIntent)
+    /// "Show gentle stretches anyway" found nothing gentle; offers browsing instead.
+    case gentleNoMatch(intent: AskIntent)
 }
 
 /// Safety screening, then intent extraction (AI with keyword fallback), then routine picking.
@@ -49,7 +51,7 @@ struct AskPipeline {
         if let routine = RoutinePicker.pick(intent: intent, from: catalog, gentle: true) {
             return .routine(routine, intent: intent)
         }
-        return .noMatch(intent: intent)
+        return .gentleNoMatch(intent: intent)
     }
 
     // MARK: - Private
@@ -79,6 +81,7 @@ struct AskPipeline {
     }
 
     /// Resumes its continuation exactly once, then cancels both racers.
+    @MainActor
     private final class Race {
         var continuation: CheckedContinuation<AskIntent?, Never>?
         var work: Task<Void, Never>?

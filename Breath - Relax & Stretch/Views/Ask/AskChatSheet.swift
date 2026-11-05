@@ -50,6 +50,11 @@ struct AskChatSheet: View {
             }
             inputRow
         }
+        .onChange(of: model.pendingDraft) {
+            // Dictation that finished while a reply was being worked out.
+            guard let words = model.takePendingDraft() else { return }
+            draft = draft.isEmpty ? words : draft + " " + words
+        }
         .background(Color.luminaSurface.ignoresSafeArea())
         .task {
             guard !didSendInitial, let initialText, !initialText.isEmpty else { return }
@@ -139,14 +144,45 @@ struct AskChatSheet: View {
                 }
             }
         case .safety(let level, _):
-            AskSafetyCard(level: level) { model.showGentleAnyway(for: id, catalog: catalog) }
+            AskSafetyCard(
+                level: level,
+                onGentleAnyway: model.gentleShownFor.contains(id)
+                    ? nil : { model.showGentleAnyway(for: id, catalog: catalog) }
+            )
         case .clarify:
             bubble { Text("Tell me where you feel it or what you'd like — for example, \"stiff neck\" or \"help me sleep\".") }
         case .offTopic:
             bubble { Text("I can help you find stretches and breathing exercises.") }
         case .noMatch:
             bubble { Text("I couldn't find stretches for that yet.") }
+        case .gentleNoMatch(let intent):
+            VStack(alignment: .leading, spacing: 10) {
+                bubble { Text("I couldn't find gentle stretches for that.") }
+                browseButton(intent)
+            }
         }
+    }
+
+    /// Closes the sheet and opens the Exercises tab (Areas view) via HomeView.
+    private func browseButton(_ intent: AskIntent) -> some View {
+        Button {
+            dismiss()
+            NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+        } label: {
+            Group {
+                if let area = intent.areas.first {
+                    Text("Browse \(area.displayName.resolved(in: locale)) stretches")
+                } else {
+                    Text("Browse stretches")
+                }
+            }
+            .font(.luminaLabel)
+            .foregroundStyle(Color.onPastel)
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(Color.pastelLavender, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("ask.browse")
     }
 
     private func routineText(_ routine: AskRoutine, _ intent: AskIntent) -> Text {

@@ -29,20 +29,70 @@ struct AskChatModelTests {
         #expect(!m.isThinking)
     }
 
-    @Test func gentleAnywayReplacesSafetyWithRoutine() async {
+    /// Sends a concerning request and returns the safety message.
+    private func concerningMessage(_ m: AskChatModel, catalog: [Exercise]) async -> AskMessage? {
+        await m.send("sharp pain in my lower back", catalog: catalog)
+        guard let last = m.messages.last, case .safety(.concerning, _)? = last.reply else {
+            Issue.record("got \(String(describing: m.messages.last?.reply))"); return nil
+        }
+        return last
+    }
+
+    @Test func gentleAnywayAppendsRoutineBelowSafety() async {
         let m = model()
-        await m.send("sharp pain in my lower back", catalog: catalog())
-        guard case .safety(.concerning, _) = m.messages.last?.reply else {
-            Issue.record("got \(String(describing: m.messages.last?.reply))"); return
-        }
-        let id = m.messages.last!.id
+        guard let safety = await concerningMessage(m, catalog: catalog()) else { return }
         let count = m.messages.count
-        m.showGentleAnyway(for: id, catalog: catalog())
-        #expect(m.messages.count == count)
-        guard case .routine(let routine, _) = m.messages.last?.reply else {
+        m.showGentleAnyway(for: safety.id, catalog: catalog())
+        #expect(m.messages.count == count + 1)
+        #expect(m.messages[count - 1] == safety, "the safety advice must stay in place")
+        #expect(m.gentleShownFor.contains(safety.id))
+        guard case .routine(let routine, _)? = m.messages.last?.reply else {
             Issue.record("got \(String(describing: m.messages.last?.reply))"); return
         }
+        #expect(m.messages.last?.role == .reply)
         #expect(routine.isGentle)
+    }
+
+    @Test func gentleAnywayNoMatchKeepsAdviceAndOffersBrowse() async {
+        let m = model()
+        guard let safety = await concerningMessage(m, catalog: []) else { return }
+        let count = m.messages.count
+        m.showGentleAnyway(for: safety.id, catalog: [])
+        #expect(m.messages.count == count + 1)
+        #expect(m.messages[count - 1] == safety)
+        guard case .gentleNoMatch(let intent)? = m.messages.last?.reply else {
+            Issue.record("got \(String(describing: m.messages.last?.reply))"); return
+        }
+        #expect(intent.areas == [.lowerBack])
+    }
+
+    @Test func secondGentleAnywayTapDoesNothing() async {
+        let m = model()
+        guard let safety = await concerningMessage(m, catalog: catalog()) else { return }
+        m.showGentleAnyway(for: safety.id, catalog: catalog())
+        let after = m.messages
+        m.showGentleAnyway(for: safety.id, catalog: catalog())
+        #expect(m.messages == after)
+    }
+
+    @Test func dictationWhileThinkingBecomesDraft() async {
+        let m = AskChatModel(pipeline: AskPipeline(
+            primary: StubExtractor(mode: .sleeping(.milliseconds(300), intent([.lowerBack])))))
+        let first = Task { await m.send("lower back pain", catalog: catalog()) }
+        while !m.isThinking { await Task.yield() }
+        await m.acceptDictation("and my neck", catalog: catalog())
+        #expect(m.messages.count == 1, "nothing is sent while thinking")
+        #expect(m.takePendingDraft() == "and my neck")
+        #expect(m.takePendingDraft() == nil, "the draft is handed over once")
+        await first.value
+        #expect(m.messages.map(\.role) == [.user, .reply])
+    }
+
+    @Test func dictationWhenIdleSends() async {
+        let m = model()
+        await m.acceptDictation("lower back pain", catalog: catalog())
+        #expect(m.messages.map(\.role) == [.user, .reply])
+        #expect(m.pendingDraft == nil)
     }
 
     @Test func gentleAnywayIgnoredForUrgent() async {

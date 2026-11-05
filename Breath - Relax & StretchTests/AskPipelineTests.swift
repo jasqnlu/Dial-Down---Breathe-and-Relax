@@ -133,6 +133,6 @@ struct AskPipelineTests {
 
     @Test func gentleRoutineEmptyCatalogNoMatch() {
         let reply = pipeline(nil).gentleRoutine(for: intent([.lowerBack]), catalog: [])
-        guard case .noMatch = reply else { Issue.record("got \(reply)"); return }
+        #expect(reply == .gentleNoMatch(intent: intent([.lowerBack])))
     }
 }
