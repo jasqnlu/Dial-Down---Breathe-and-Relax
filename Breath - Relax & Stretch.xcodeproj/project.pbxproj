@@ -411,6 +411,8 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lets you ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say into text on your iPhone so Dial Down can find matching exercises.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -464,6 +466,8 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lets you ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say into text on your iPhone so Dial Down can find matching exercises.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
