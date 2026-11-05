@@ -36,8 +36,15 @@ final class SpeechInput {
     /// Bumped by every start/stop/cancel so a stale `start` can detect it was superseded.
     @ObservationIgnored private var generation = 0
 
-    @ObservationIgnored /// Generation that activated the shared audio session; nil when we hold no activation.
+    /// Generation that activated the shared audio session; nil when we hold no activation.
     @ObservationIgnored private var sessionOwnerGeneration: Int?
+    /// Permission requests in flight (a counter: a superseded `start` may still be waiting).
+    @ObservationIgnored private var pendingPermissionRequests = 0
+
+    /// True while the mic/speech permission prompts may be on screen. Their alerts make
+    /// the scene briefly `.inactive`; owners use this to tell that apart from the user
+    /// leaving the app.
+    var isRequestingPermission: Bool { pendingPermissionRequests > 0 }
 
     /// Pure precedence rule for why speech can't run: mic > speech > locale > asset.
     nonisolated static func reason(
@@ -68,11 +75,10 @@ final class SpeechInput {
 
     /// Waits for the user's answer to the permission prompts (returns at once if
     /// already answered). `nil` when both are granted.
-    static func permissionOutcome() async -> SpeechUnavailableReason? {
-        let micGranted = await AVAudioApplication.requestRecordPermission()
-        let speechAuthorized = await requestSpeechAuthorization()
-        return reason(micGranted: micGranted, speechAuthorized: speechAuthorized,
-                      localeSupported: true, assetInstalled: true)
+    func permissionOutcome() async -> SpeechUnavailableReason? {
+        let (micGranted, speechAuthorized) = await requestPermissions()
+        return Self.reason(micGranted: micGranted, speechAuthorized: speechAuthorized,
+                           localeSupported: true, assetInstalled: true)
     }
 
     func start(locale: Locale) async {
@@ -84,8 +90,7 @@ final class SpeechInput {
         finalizedText = ""
         volatileText = ""
 
-        let micGranted = await AVAudioApplication.requestRecordPermission()
-        let speechAuthorized = await Self.requestSpeechAuthorization()
+        let (micGranted, speechAuthorized) = await requestPermissions()
         let supportedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: locale)
         guard myGeneration == generation else { return }
 
@@ -258,6 +263,16 @@ final class SpeechInput {
         guard let owner = sessionOwnerGeneration, generation == nil || generation == owner else { return }
         sessionOwnerGeneration = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// Asks for (or reads back) mic and speech permission, flagging the wait so a
+    /// permission alert isn't mistaken for the app going away.
+    private func requestPermissions() async -> (mic: Bool, speech: Bool) {
+        pendingPermissionRequests += 1
+        defer { pendingPermissionRequests -= 1 }
+        let micGranted = await AVAudioApplication.requestRecordPermission()
+        let speechAuthorized = await Self.requestSpeechAuthorization()
+        return (micGranted, speechAuthorized)
     }
 
     private nonisolated static func requestSpeechAuthorization() async -> Bool {

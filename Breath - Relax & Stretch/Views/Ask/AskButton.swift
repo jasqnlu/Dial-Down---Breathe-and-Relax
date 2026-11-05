@@ -40,6 +40,7 @@ struct AskButton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.locale) private var locale
 
     @State private var speech = SpeechInput()
     @State private var mode: Mode = .resting
@@ -64,6 +65,14 @@ struct AskButton: View {
     }
 
     private var isListening: Bool { speech.state == .listening }
+
+    /// The mic fails closed: leaving the app (or anything else making the scene inactive,
+    /// e.g. Control Center or an incoming call) stops it. The one exception is our own
+    /// permission alert, which also makes the scene inactive while the dictation that
+    /// asked for it waits.
+    static func shouldStopListening(phase: ScenePhase, requestingPermission: Bool) -> Bool {
+        phase == .background || (phase == .inactive && !requestingPermission)
+    }
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -93,9 +102,9 @@ struct AskButton: View {
         // backgrounding or a full-screen cover hides it mid-listen.
         .onDisappear { stopListeningSilently() }
         .onChange(of: scenePhase) { _, phase in
-            // Only .background: permission alerts make the scene briefly .inactive,
-            // and cancelling then would kill the very dictation that asked for them.
-            if phase == .background { stopListeningSilently() }
+            if Self.shouldStopListening(phase: phase, requestingPermission: speech.isRequestingPermission) {
+                stopListeningSilently()
+            }
         }
         .sheet(item: $chat, onDismiss: { speech.cancel(); voiceIssue = nil }) { request in
             // Close goes through dismiss() → onDismiss above, which cancels listening.
@@ -375,13 +384,15 @@ struct AskButton: View {
     }
 
     private func showPermissionOutcome() async {
-        if let reason = await SpeechInput.permissionOutcome() {
+        if let reason = await speech.permissionOutcome() {
             withAnimation(animation) { voiceIssue = reason }
             return
         }
         guard mode == .resting, voiceIssue == nil else { return }
         withAnimation(animation) { voiceReady = true }
-        AccessibilityNotification.Announcement(String(localized: "Voice is ready — hold again to talk.")).post()
+        AccessibilityNotification.Announcement(
+            LocalizedStringResource("Voice is ready — hold again to talk.").resolved(in: locale)
+        ).post()
         voiceReadyTask?.cancel()
         voiceReadyTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(3))
@@ -429,9 +440,9 @@ struct AskButton: View {
 
     private func toggleSheetMic(model: AskChatModel) {
         if isListening {
-            let text = speech.stop().trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !text.isEmpty else { return }
-            Task { await model.send(text, catalog: catalog) }
+            // Kept as a draft if the sheet is still answering, so nothing is lost.
+            let text = speech.stop()
+            Task { await model.acceptDictation(text, catalog: catalog) }
         } else {
             voiceIssue = nil
             Task { await speech.start(locale: speechLocale) }
