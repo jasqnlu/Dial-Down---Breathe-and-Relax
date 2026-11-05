@@ -16,7 +16,7 @@ struct AskButton: View {
     static let clearance: CGFloat = size + spacing
 
     /// How long a press must last before it becomes hold-to-talk.
-    private static let holdDelay: Duration = .milliseconds(300)
+    private static let holdSeconds: TimeInterval = 0.3
     /// Dragging this far from the press point while listening cancels it.
     private static let cancelDistance: CGFloat = 60
 
@@ -39,6 +39,7 @@ struct AskButton: View {
     @AppStorage(AppLanguage.storageKey) private var languageRaw = ""
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var speech = SpeechInput()
     @State private var mode: Mode = .resting
@@ -83,6 +84,12 @@ struct AskButton: View {
             if !pressing { pressEnded() }
         }
         .sensoryFeedback(.impact(weight: .light), trigger: holdCount)
+        // Never leave the mic running unseen: the tour removes this view, and
+        // backgrounding or a full-screen cover hides it mid-listen.
+        .onDisappear { stopListeningSilently() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { stopListeningSilently() }
+        }
         .sheet(item: $chat, onDismiss: { speech.cancel(); voiceIssue = nil }) { request in
             AskChatSheet(model: request.model, initialText: request.text) {
                 toggleSheetMic(model: request.model)
@@ -213,7 +220,7 @@ struct AskButton: View {
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isListening ? "Stop and send" : "Dictate")
+            .accessibilityLabel(isListening ? Text("Stop and send") : Text("Dictate"))
             .accessibilityIdentifier("ask.mic")
         }
         .padding(5)
@@ -283,7 +290,7 @@ struct AskButton: View {
     private func scheduleHold() {
         holdTask?.cancel()
         holdTask = Task { @MainActor in
-            try? await Task.sleep(for: Self.holdDelay)
+            try? await Task.sleep(for: .seconds(Self.holdSeconds))
             guard !Task.isCancelled, pressStart != nil, mode == .resting else { return }
             beginHold()
         }
@@ -305,7 +312,7 @@ struct AskButton: View {
     private func pressEnded() {
         holdTask?.cancel()
         holdTask = nil
-        let wasTap = pressStart.map { Date.now.timeIntervalSince($0) < 0.3 } ?? false
+        let wasTap = pressStart.map { Date.now.timeIntervalSince($0) < Self.holdSeconds } ?? false
         pressStart = nil
         switch mode {
         case .holding:
@@ -332,6 +339,15 @@ struct AskButton: View {
         if listening {
             Task { await speech.start(locale: speechLocale) }
         }
+    }
+
+    /// Drops any in-progress listening without sending (bar, hold and sheet mic).
+    private func stopListeningSilently() {
+        holdTask?.cancel()
+        holdTask = nil
+        pressStart = nil
+        speech.cancel()
+        if mode == .holding { mode = .resting }
     }
 
     private func collapse() {

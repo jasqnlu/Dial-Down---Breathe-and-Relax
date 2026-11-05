@@ -102,8 +102,9 @@ struct CustomTabBar: View {
 
 extension View {
     /// Reserves bottom safe-area space so page content clears the floating
-    /// tab bar and the Ask button resting above it. Must be applied INSIDE each tab page's NavigationStack (and
-    /// inside any view pushed onto it): a safe-area inset added outside a
+    /// tab bar and the Ask button resting above it. Must be applied INSIDE
+    /// each tab page's NavigationStack (and inside any view pushed onto it):
+    /// a safe-area inset added outside a
     /// NavigationStack is not forwarded to the stack's content, so HomeView
     /// cannot apply this once for all pages.
     func floatingTabBarClearance() -> some View {

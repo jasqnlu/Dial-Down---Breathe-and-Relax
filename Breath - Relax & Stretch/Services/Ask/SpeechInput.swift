@@ -53,6 +53,12 @@ final class SpeechInput {
         return nil
     }
 
+    /// Safety net if the owner goes away mid-listen: stop the engine and give
+    /// back the audio session. Isolated so it can touch main-actor state.
+    isolated deinit {
+        teardown()
+    }
+
     func start(locale: Locale) async {
         guard state != .listening else { return }
         teardown()
