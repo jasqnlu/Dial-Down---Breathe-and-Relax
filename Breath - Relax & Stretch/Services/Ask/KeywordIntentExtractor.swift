@@ -2,8 +2,7 @@ import Foundation
 
 /// No-AI fallback: turns a sentence into body areas, a goal and minutes by matching
 /// synonym tables (English, Spanish, French, Simplified Chinese) over normalized text.
-/// Latin phrases match on word boundaries ("back" never matches "backpack"; a trailing
-/// "*" marks a stem that may continue into a longer word). CJK phrases match as substrings.
+/// Phrase rules (word boundaries, "*" stems, CJK substrings) live in `PhraseMatcher`.
 /// The keyword path cannot judge safety or relevance: `seriousness` is `.ok`, `isOffTopic`
 /// is `false`, and an empty intent means "ask the user to clarify".
 nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
@@ -13,9 +12,9 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
 
     func intent(for text: String) -> AskIntent {
         // "1.5" -> "1d5" so a decimal can never be read as a whole number of minutes.
-        let normalized = SafetyScreener.normalize(text)
+        let normalized = PhraseMatcher.normalize(text)
             .replacing(/(\d)[.,](\d)/) { "\($0.1)d\($0.2)" }
-        var working = Self.boundaryForm(normalized)
+        var working = PhraseMatcher.boundaryForm(normalized)
 
         let minutes = Self.minutes(in: &working)
 
@@ -37,48 +36,6 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
                          seriousness: .ok, isOffTopic: false)
     }
 
-    // MARK: - Matching
-
-    private struct Phrase {
-        let text: String
-        let isStem: Bool
-        let isCJK: Bool
-
-        init(_ source: String) {
-            isStem = source.hasSuffix("*")
-            let raw = isStem ? String(source.dropLast()) : source
-            text = KeywordIntentExtractor.boundaryForm(SafetyScreener.normalize(raw))
-                .trimmingCharacters(in: .whitespaces)
-            isCJK = text.unicodeScalars.contains { $0.value >= 0x2E80 }
-        }
-
-        private var needle: String {
-            isCJK ? text : " " + text + (isStem ? "" : " ")
-        }
-
-        func matches(_ haystack: String) -> Bool { haystack.contains(needle) }
-
-        /// Replaces the first match with spaces (keeping neighbouring boundary spaces).
-        func blankFirstMatch(in haystack: inout String) -> Bool {
-            guard let found = haystack.range(of: needle) else { return false }
-            var inner = found
-            if !isCJK {
-                inner = haystack.index(after: found.lowerBound)..<(isStem ? found.upperBound
-                                                                   : haystack.index(before: found.upperBound))
-            }
-            haystack.replaceSubrange(inner, with: String(repeating: " ", count: haystack[inner].count))
-            return true
-        }
-    }
-
-    /// Non-letter/digit characters become spaces; padded so Latin phrases match whole words.
-    private static func boundaryForm(_ normalized: String) -> String {
-        let mapped = String(normalized.unicodeScalars.map {
-            CharacterSet.alphanumerics.contains($0) ? Character($0) : " "
-        })
-        return " " + mapped.split(separator: " ").joined(separator: " ") + " "
-    }
-
     // MARK: - Minutes
 
     /// Whole numbers only: "1.5 minutes" yields nil. Number words let "dos minutos" count as
@@ -98,7 +55,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         let words = numberWords.keys.sorted { $0.count > $1.count }.joined(separator: "|")
         return try! Regex("(?:^|[^\\da-z])(\\d{1,3}|\(words)) ?(?:(?:mins?|minutes?|minutos?)\\b|分钟)")
     }()
-    private static let quickPhrases = ["quick*", "rapid*", "快速"].map { Phrase($0) }
+    private static let quickPhrases = ["quick*", "rapid*", "快速"].map { PhraseMatcher($0) }
 
     /// Reads (and blanks) the duration so it can't be mistaken for a body part.
     private static func minutes(in working: inout String) -> Int? {
@@ -116,8 +73,8 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
     // another supported language (es "pie", fr "main", es "frente", es "sien" as a stem) and
     // bare single CJK characters that occur inside unrelated words (足, 手, 背).
 
-    private static let areaPhrases: [(Phrase, AskArea)] = areaSynonyms
-        .flatMap { area, words in words.map { (Phrase($0), area) } }
+    private static let areaPhrases: [(PhraseMatcher, AskArea)] = areaSynonyms
+        .flatMap { area, words in words.map { (PhraseMatcher($0), area) } }
         .sorted { $0.0.text.count > $1.0.text.count }
 
     // Bare "back" means lower back. Sides (left/right/izquierd*/derech*/gauche/droit/左/右) are never listed.
@@ -241,12 +198,12 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
     ]
 
     /// Phrases that look like goal words but aren't ("pas mal de stress" = a lot of stress).
-    private static let goalNeutralPhrases = ["pas mal"].map { Phrase($0) }
+    private static let goalNeutralPhrases = ["pas mal"].map { PhraseMatcher($0) }
 
     /// Checked in priority order: pain beats tight, stress beats sleep, and so on.
     /// Bare "mal" is not a pain word ("duermo mal", "mal a menudo"); only "mal de/au/aux", "mal a la/l/mon/ma/mes" and "fait mal" are.
-    private static let goalTable: [(AskGoal, [Phrase])] = goalSynonyms
-        .map { goal, words in (goal, words.map { Phrase($0) }) }
+    private static let goalTable: [(AskGoal, [PhraseMatcher])] = goalSynonyms
+        .map { goal, words in (goal, words.map { PhraseMatcher($0) }) }
 
     private static let goalSynonyms: [(AskGoal, [String])] = [
         (.pain_relief, [
