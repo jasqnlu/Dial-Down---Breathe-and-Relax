@@ -32,6 +32,38 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         }
     }
 
+    /// Redesigned Routines tab: empty state, two premade routines saved
+    /// from the strip, one pinned, then "See all".
+    func testRoutinesTabRedesign() throws {
+        continueAfterFailure = true
+        let app = launch(tab: 4)
+        sleep(4)
+        attach(app, "r1-routines-empty")
+
+        for title in ["Office Stretch", "Athletic Recovery"] {
+            let tile = app.buttons.matching(NSPredicate(format: "label BEGINSWITH[c] %@", title)).firstMatch
+            if tile.waitForExistence(timeout: 5) {
+                tile.tap()
+                let save = app.buttons["Save Routine"].firstMatch
+                if save.waitForExistence(timeout: 5) { save.tap() }
+                sleep(2)
+            }
+        }
+        attach(app, "r2-routines-saved")
+
+        let first = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH[c] 'Office Stretch'")).firstMatch
+        if first.waitForExistence(timeout: 5) {
+            first.swipeRight(); sleep(1)
+            attach(app, "r3-routines-swipe")
+            let pin = app.buttons["Pin to Today"].firstMatch
+            if pin.exists { pin.tap(); sleep(1) }
+        }
+        attach(app, "r4-routines-pinned")
+
+        let seeAll = app.buttons["Premade Routines"].firstMatch
+        if seeAll.waitForExistence(timeout: 5) { seeAll.tap(); sleep(2); attach(app, "r5-premade-see-all") }
+    }
+
     private func launch(tab: Int) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",

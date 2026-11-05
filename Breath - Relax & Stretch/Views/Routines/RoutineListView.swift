@@ -23,62 +23,82 @@ struct RoutineListView: View {
     /// handler below, consumed by the `showingBuilderAfterPick` sheet.
     @State private var builderRestoredState: (routineToEdit: Routine?, name: String, exerciseIDs: [UUID], durationOverrides: [UUID: Int])?
     @State private var showingBuilderAfterPick = false
+    @State private var selectedPremade: PremadeRoutine?
+    @State private var showingAllPremade = false
 
     var body: some View {
         NavigationStack {
             List {
+                // Premade strip — same tiles as Today's "Premade Routines" row.
                 Section {
-                    NavigationLink(destination: PremadeRoutinesView()) {
-                        entryRow(title: "Premade Routines", systemImage: "sparkles")
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .tourAnchor("routines.sharedList")
+                    premadeStrip
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 12, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .tourAnchor("routines.sharedList")
                 }
 
-                ForEach(routines) { routine in
-                    RoutineRow(routine: routine, resolvedCount: resolvedExercises(for: routine).count) {
-                        routineToPlay = routine
+                Section {
+                    yourRoutinesHeader
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
+                    if routines.isEmpty {
+                        emptyStateCard
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
-                    .listRowBackground(Color.luminaCardFill)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            routinePendingDelete = routine
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
 
-                        Button {
-                            routineToEdit = routine
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
+                    ForEach(Array(sortedRoutines.enumerated()), id: \.element.id) { index, routine in
+                        RoutineRow(
+                            routine: routine,
+                            resolvedCount: resolvedExercises(for: routine).count,
+                            minutes: totalMinutes(for: routine),
+                            pastel: Color.pastels[index % Color.pastels.count]
+                        ) {
+                            routineToPlay = routine
                         }
-                        .tint(Color.luminaContainer)
-
-                        if let url = shareURL(for: routine) {
-                            ShareLink(item: url) {
-                                Label("Share", systemImage: "square.and.arrow.up")
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                routinePendingDelete = routine
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                            .tint(Color(red: 0.36, green: 0.45, blue: 0.62))
+
+                            Button {
+                                routineToEdit = routine
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(Color.luminaContainer)
+
+                            if let url = shareURL(for: routine) {
+                                ShareLink(item: url) {
+                                    Label("Share", systemImage: "square.and.arrow.up")
+                                }
+                                .tint(Color(red: 0.36, green: 0.45, blue: 0.62))
+                            }
                         }
-                    }
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        // Toggles instantly, no confirmation — same as
-                        // flipping a switch. Newly pinned routines are
-                        // appended to the end of the priority order rather
-                        // than jumping to the front; the reorder sheet on
-                        // Today (once 2+ are pinned) is where the user
-                        // actually arranges priority.
-                        Button {
-                            togglePin(routine)
-                        } label: {
-                            Label(
-                                routine.isPinnedToToday ? "Unpin" : "Pin to Today",
-                                systemImage: routine.isPinnedToToday ? "pin.slash.fill" : "pin.fill"
-                            )
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            // Toggles instantly, no confirmation — same as
+                            // flipping a switch. Newly pinned routines are
+                            // appended to the end of the priority order; the
+                            // reorder sheet on Today arranges priority.
+                            Button {
+                                togglePin(routine)
+                            } label: {
+                                Label(
+                                    routine.isPinnedToToday ? "Unpin" : "Pin to Today",
+                                    systemImage: routine.isPinnedToToday ? "pin.slash.fill" : "pin.fill"
+                                )
+                            }
+                            .tint(Color.luminaPrimary)
                         }
-                        .tint(Color.luminaPrimary)
                     }
                 }
             }
@@ -99,40 +119,17 @@ struct RoutineListView: View {
                     // button used to require a second tap for. The
                     // `.exercisePickingFinished` handler below still routes
                     // the result into RoutineBuilderView for naming/saving.
-                    Button {
-                        pickingSession.begin(context: .init(
-                            title: "",
-                            isPinned: false,
-                            baseExercises: [],
-                            originTab: 4, // Routines tab
-                            editingRoutineID: nil,
-                            durationOverrides: [:]
-                        ))
-                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
-                    } label: {
+                    Button(action: startNewRoutine) {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("New Routine")
                 }
             }
-            .overlay {
-                if routines.isEmpty {
-                    ContentUnavailableView {
-                        VStack(spacing: 16) {
-                            Image(systemName: "rectangle.stack.badge.plus")
-                                .font(.system(size: 32))
-                                .foregroundStyle(Color.luminaOnSurfaceVariant)
-                                .frame(width: 88, height: 88)
-                                .background(Color.luminaContainer, in: Circle())
-                            Text("No Routines Yet")
-                                .font(.luminaHeadline)
-                                .foregroundStyle(Color.luminaOnSurface)
-                        }
-                    } description: {
-                        Text("Create your own routine from your favorite exercises.")
-                            .font(.luminaBody)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    }
-                }
+            .navigationDestination(isPresented: $showingAllPremade) {
+                PremadeRoutinesView()
+            }
+            .sheet(item: $selectedPremade) { routine in
+                PremadeRoutineCustomizeSheet(routine: routine, exercises: exercises)
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
@@ -229,17 +226,134 @@ struct RoutineListView: View {
         return RoutineSharePayload(name: routine.name, exerciseNames: names).shareURL
     }
 
-    private func entryRow(title: String, systemImage: String) -> some View {
-        HStack(spacing: 14) {
-            LuminaIconBadge(systemName: systemImage, tint: .pastelYellow, size: 44)
-
-            Text(title)
-                .font(.luminaCardTitle)
-                .foregroundStyle(Color.luminaOnSurface)
-
-            Spacer()
+    /// Pinned routines first (in Today's priority order), then newest first.
+    private var sortedRoutines: [Routine] {
+        routines.sorted { a, b in
+            if a.isPinnedToToday != b.isPinnedToToday { return a.isPinnedToToday }
+            if a.isPinnedToToday { return a.pinnedOrder < b.pinnedOrder }
+            return a.createdAt > b.createdAt
         }
-        .luminaCard(padding: 14)
+    }
+
+    /// Total play time in whole minutes, honoring per-routine duration overrides.
+    private func totalMinutes(for routine: Routine) -> Int {
+        let secs = resolvedExercises(for: routine).reduce(0) {
+            $0 + (routine.exerciseDurationOverrides[$1.uuid] ?? $1.durationSeconds)
+        }
+        return max(1, Int((Double(secs) / 60).rounded()))
+    }
+
+    private func premadeMeta(for routine: PremadeRoutine) -> (count: Int, minutes: Int)? {
+        let resolved = routine.resolvedExercises(in: exercises)
+        guard !resolved.isEmpty else { return nil }
+        let totalSecs = resolved.reduce(0) { $0 + $1.durationSeconds }
+        return (resolved.count, max(1, Int((Double(totalSecs) / 60).rounded())))
+    }
+
+    /// "+ New Routine" jumps straight into the Exercises tab's picking flow;
+    /// the `.exercisePickingFinished` handler routes the result into
+    /// RoutineBuilderView for naming/saving.
+    private func startNewRoutine() {
+        pickingSession.begin(context: .init(
+            title: "",
+            isPinned: false,
+            baseExercises: [],
+            originTab: 4, // Routines tab
+            editingRoutineID: nil,
+            durationOverrides: [:]
+        ))
+        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+    }
+
+    // MARK: Sections
+
+    private var premadeStrip: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Premade")
+                    .font(.luminaTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
+                Spacer()
+                Button {
+                    showingAllPremade = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("See all")
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .bold))
+                    }
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.luminaCardFill, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Premade Routines")
+            }
+            .padding(.horizontal, 16)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(PremadeRoutine.all) { routine in
+                        let meta = premadeMeta(for: routine)
+                        Button {
+                            selectedPremade = routine
+                        } label: {
+                            PremadeRoutineCard(routine: routine, meta: meta)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(meta == nil)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 2)
+            }
+        }
+    }
+
+    private var yourRoutinesHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                Text("Your Routines")
+                    .font(.luminaTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
+                if !routines.isEmpty {
+                    LuminaCountBadge(count: routines.count)
+                }
+                Spacer()
+            }
+            if !routines.isEmpty {
+                Text("Swipe right to pin to Today, left to edit or share.")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var emptyStateCard: some View {
+        VStack(spacing: 14) {
+            LuminaIconBadge(systemName: "rectangle.stack.badge.plus", tint: .pastelLavender, size: 64)
+            VStack(spacing: 4) {
+                Text("No Routines Yet")
+                    .font(.luminaHeadline)
+                    .foregroundStyle(Color.luminaOnSurface)
+                Text("Build your own from your favorite exercises, or save a premade one above.")
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .multilineTextAlignment(.center)
+            }
+            Button(action: startNewRoutine) {
+                // Explicit style: inside a List row a bare Label can collapse to icon-only.
+                Label("Create a Routine", systemImage: "plus")
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(LuminaPillButtonStyle())
+            .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .luminaCard(padding: 20)
     }
 }
 
@@ -252,42 +366,65 @@ struct RoutineRow: View {
     /// exercises that don't exist on this install), so this is what actually
     /// determines whether the routine can play, not the raw ID count.
     let resolvedCount: Int
+    var minutes: Int = 0
+    var pastel: Color = .pastelMint
     let onPlay: () -> Void
 
+    private var initial: String {
+        routine.name.trimmingCharacters(in: .whitespaces).first.map { String($0).uppercased() } ?? "R"
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
+            Text(initial)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.onPastel)
+                .frame(width: 46, height: 46)
+                .background(pastel, in: Circle())
+                .accessibilityHidden(true)
+
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(routine.name)
                         .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .lineLimit(1)
                     if routine.isPinnedToToday {
                         Image(systemName: "pin.fill")
-                            .font(.caption2)
-                            .foregroundStyle(Color.luminaPrimary)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color.onPastel)
+                            .frame(width: 18, height: 18)
+                            .background(Color.pastelYellow, in: Circle())
                             .accessibilityLabel("Pinned to Today")
+                    }
+                }
+
+                HStack(spacing: 6) {
+                    if resolvedCount == 0 {
+                        Text("Unavailable")
+                    } else {
+                        Text("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s") · \(minutes) min")
                     }
                     if routine.borrowedFromID != nil {
                         Label("Borrowed", systemImage: "arrow.triangle.branch")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .labelStyle(.titleAndIcon)
+                            .font(.system(size: 10, weight: .semibold))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(Color.luminaContainer, in: Capsule())
                     }
                 }
-
-                HStack(spacing: 12) {
-                    Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
-                          systemImage: "list.number")
-                }
                 .font(.luminaCaption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Button(action: onPlay) {
                 Image(systemName: "play.fill")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(Color.luminaOnPrimary)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
                     .background(Color.luminaPrimary, in: Circle())
                     .opacity(resolvedCount == 0 ? 0.35 : 1)
             }
@@ -295,7 +432,8 @@ struct RoutineRow: View {
             .disabled(resolvedCount == 0)
             .accessibilityLabel("Play \(routine.name)")
         }
-        .padding(.vertical, 4)
+        .luminaCard(padding: 14)
+        .contentShape(Rectangle())
     }
 }
 
