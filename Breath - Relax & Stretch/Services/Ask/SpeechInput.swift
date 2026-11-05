@@ -13,6 +13,9 @@ enum SpeechUnavailableReason: Equatable {
     case micDenied
     case speechDenied
     case localeUnsupported
+    /// The on-device speech model isn't installed and couldn't be installed (e.g. offline),
+    /// or audio/engine setup failed. Both are reported the same way to the user.
+    case assetUnavailable
 }
 
 /// On-device, offline speech-to-text with a live transcript. Uses the iOS 26
@@ -32,15 +35,19 @@ final class SpeechInput {
     /// Bumped by every start/stop/cancel so a stale `start` can detect it was superseded.
     @ObservationIgnored private var generation = 0
 
-    /// Pure precedence rule for why speech can't run. Mic is checked first.
+    @ObservationIgnored private var sessionActivated = false
+
+    /// Pure precedence rule for why speech can't run: mic > speech > locale > asset.
     nonisolated static func reason(
         micGranted: Bool,
         speechAuthorized: Bool,
-        localeSupported: Bool
+        localeSupported: Bool,
+        assetInstalled: Bool
     ) -> SpeechUnavailableReason? {
         if !micGranted { return .micDenied }
         if !speechAuthorized { return .speechDenied }
         if !localeSupported { return .localeUnsupported }
+        if !assetInstalled { return .assetUnavailable }
         return nil
     }
 
@@ -61,43 +68,73 @@ final class SpeechInput {
         if let reason = Self.reason(
             micGranted: micGranted,
             speechAuthorized: speechAuthorized,
-            localeSupported: supportedLocale != nil
+            localeSupported: supportedLocale != nil,
+            assetInstalled: true
         ) {
             state = .unavailable(reason)
             return
         }
         guard let supportedLocale else { return }
 
-        do {
-            let transcriber = SpeechTranscriber(
-                locale: supportedLocale,
-                transcriptionOptions: [],
-                reportingOptions: [.volatileResults],
-                attributeOptions: []
-            )
-            // Models are downloaded once by the system; recognition itself is offline.
-            if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-                try await request.downloadAndInstall()
-            }
-            guard myGeneration == generation else { return }
+        let transcriber = SpeechTranscriber(
+            locale: supportedLocale,
+            transcriptionOptions: [],
+            reportingOptions: [.volatileResults],
+            attributeOptions: []
+        )
 
-            let analyzer = SpeechAnalyzer(modules: [transcriber])
+        // Models are installed once by the system; recognition itself is offline.
+        // Already-installed models skip the download, so offline use needs no network.
+        var assetInstalled = await AssetInventory.status(forModules: [transcriber]) == .installed
+        if !assetInstalled {
+            do {
+                if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
+                    try await request.downloadAndInstall()
+                }
+                assetInstalled = true
+            } catch {
+                assetInstalled = false
+            }
+        }
+        guard myGeneration == generation else { return }
+        if let reason = Self.reason(
+            micGranted: true, speechAuthorized: true, localeSupported: true, assetInstalled: assetInstalled
+        ) {
+            state = .unavailable(reason)
+            return
+        }
+
+        // Local resources: owned here until published to self, torn down here if stale or failed.
+        let analyzer = SpeechAnalyzer(modules: [transcriber])
+        let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
+        var engine: AVAudioEngine?
+        var task: Task<Void, Never>?
+        func discardLocals() {
+            if let engine {
+                engine.inputNode.removeTap(onBus: 0)
+                engine.stop()
+            }
+            continuation.finish()
+            task?.cancel()
+            Task { await analyzer.cancelAndFinishNow() }
+        }
+
+        do {
             let format = await SpeechAnalyzer.bestAvailableAudioFormat(compatibleWith: [transcriber])
-            let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
+            guard myGeneration == generation else { discardLocals(); return }
 
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.record, mode: .measurement, options: [])
             try session.setActive(true, options: [])
+            sessionActivated = true
 
-            let engine = AVAudioEngine()
-            try Self.installTap(on: engine, analyzerFormat: format, continuation: continuation)
-            engine.prepare()
-            try engine.start()
+            let newEngine = AVAudioEngine()
+            engine = newEngine
+            try Self.installTap(on: newEngine, analyzerFormat: format, continuation: continuation)
+            newEngine.prepare()
+            try newEngine.start()
 
-            self.engine = engine
-            self.analyzer = analyzer
-            self.inputContinuation = continuation
-            resultsTask = Task { [weak self] in
+            task = Task { [weak self] in
                 do {
                     for try await result in transcriber.results {
                         guard let self else { return }
@@ -108,12 +145,22 @@ final class SpeechInput {
                 }
             }
             try await analyzer.start(inputSequence: stream)
-            guard myGeneration == generation else { return }
+
+            guard myGeneration == generation else {
+                discardLocals()
+                releaseSessionIfOwned()
+                return
+            }
+            self.engine = newEngine
+            self.analyzer = analyzer
+            self.inputContinuation = continuation
+            self.resultsTask = task
             state = .listening
         } catch {
+            discardLocals()
             guard myGeneration == generation else { return }
-            teardown()
-            state = .idle
+            releaseSessionIfOwned()
+            state = .unavailable(.assetUnavailable)
         }
     }
 
@@ -178,6 +225,12 @@ final class SpeechInput {
             engine.stop()
         }
         engine = nil
+        releaseSessionIfOwned()
+    }
+
+    private func releaseSessionIfOwned() {
+        guard sessionActivated else { return }
+        sessionActivated = false
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
