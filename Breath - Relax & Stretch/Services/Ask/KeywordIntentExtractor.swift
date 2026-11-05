@@ -12,19 +12,26 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
     }
 
     func intent(for text: String) -> AskIntent {
-        var working = Self.boundaryForm(SafetyScreener.normalize(text))
+        // "1.5" -> "1d5" so a decimal can never be read as a whole number of minutes.
+        let normalized = SafetyScreener.normalize(text)
+            .replacing(/(\d)[.,](\d)/) { "\($0.1)d\($0.2)" }
+        var working = Self.boundaryForm(normalized)
 
         let minutes = Self.minutes(in: &working)
+
+        // The goal is read before area phrases are blanked, so "mal au dos" and
+        // "dolor de cabeza" keep their pain word.
+        var goalText = working
+        for phrase in Self.goalNeutralPhrases { _ = phrase.blankFirstMatch(in: &goalText) }
+        let goal = Self.goalTable.first { _, phrases in
+            phrases.contains { $0.matches(goalText) }
+        }?.0
 
         // Longest phrase first; matched text is blanked so shorter synonyms can't re-match it.
         var areas: [AskArea] = []
         for (phrase, area) in Self.areaPhrases where phrase.blankFirstMatch(in: &working) {
             if !areas.contains(area) { areas.append(area) }
         }
-
-        let goal = Self.goalTable.first { _, phrases in
-            phrases.contains { $0.matches(working) }
-        }?.0
 
         return AskIntent(areas: areas, goal: goal, minutes: minutes,
                          seriousness: .ok, isOffTopic: false)
@@ -74,21 +81,40 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
 
     // MARK: - Minutes
 
-    private static let minutesPattern = try! Regex(#"(\d{1,3}) ?(?:min\w*|分钟)"#)
+    /// Whole numbers only: "1.5 minutes" yields nil. Number words let "dos minutos" count as
+    /// a duration (and keeps "dos" from being read as the French word for back).
+    private static let numberWords: [String: Int] = [
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
+        "nine": 9, "ten": 10, "fifteen": 15, "twenty": 20,
+        "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
+        "nueve": 9, "diez": 10, "quince": 15, "veinte": 20,
+        "deux": 2, "trois": 3, "quatre": 4, "cinq": 5, "sept": 7, "huit": 8, "neuf": 9,
+        "dix": 10, "quinze": 15, "vingt": 20,
+        "一": 1, "两": 2, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9,
+        "十": 10, "十五": 15, "二十": 20, "三十": 30,
+    ]
+
+    private static let minutesPattern: Regex<AnyRegexOutput> = {
+        let words = numberWords.keys.sorted { $0.count > $1.count }.joined(separator: "|")
+        return try! Regex("(?:^|[^\\da-z])(\\d{1,3}|\(words)) ?(?:(?:mins?|minutes?|minutos?)\\b|分钟)")
+    }()
     private static let quickPhrases = ["quick*", "rapid*", "快速"].map { Phrase($0) }
 
-    /// Reads (and blanks, so "dos minutos" can't look like a body part) the duration.
+    /// Reads (and blanks) the duration so it can't be mistaken for a body part.
     private static func minutes(in working: inout String) -> Int? {
         if let match = working.firstMatch(of: minutesPattern) {
-            let value = match.output[1].substring.flatMap { Int($0) }
-            let range = match.range
+            let token = String(match.output[1].substring ?? "")
+            let range = (match.output[1].range ?? match.range).lowerBound..<match.range.upperBound
             working.replaceSubrange(range, with: String(repeating: " ", count: working[range].count))
-            if let value, value > 0 { return value }
+            if let value = Int(token) ?? numberWords[token], value > 0 { return value }
         }
         return quickPhrases.contains { $0.matches(working) } ? 3 : nil
     }
 
     // MARK: - Tables (data, not branching code)
+    // A trailing "*" is a stem; never put "*" mid-phrase. Avoid bare words that are common in
+    // another supported language (es "pie", fr "main", es "frente", es "sien" as a stem) and
+    // bare single CJK characters that occur inside unrelated words (足, 手, 背).
 
     private static let areaPhrases: [(Phrase, AskArea)] = areaSynonyms
         .flatMap { area, words in words.map { (Phrase($0), area) } }
@@ -99,83 +125,79 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         (.lowerBack, [
             "lower back", "low back", "lumbar", "lumbar spine", "back", "spine",
             "espalda baja", "zona lumbar", "parte baja de la espalda", "lumbares", "espalda", "columna",
-            "bas du dos", "bas de dos", "lombaires", "lombalgie", "mal au dos", "le dos", "du dos", "mon dos", "au dos", "colonne",
-            "腰", "下背", "下背部", "腰部", "背", "脊柱"]),
+            "bas du dos", "bas de dos", "lombaires", "lombalgie", "mal de dos", "mal au dos", "dos", "colonne",
+            "腰", "下背", "下背部", "腰部", "后背", "背部", "脊柱"]),
         (.upperBack, [
             "upper back", "mid back", "middle back", "trapezius", "traps", "between my shoulder blades",
             "espalda alta", "parte alta de la espalda", "espalda media", "trapecio*", "dorsal*",
             "haut du dos", "milieu du dos", "trapeze*", "omoplate*",
             "上背", "上背部", "中背", "斜方肌", "肩胛"]),
         (.neck, [
-            "neck", "cervical",
-            "cuello", "cervical*", "cervicales",
-            "cou", "nuque", "cervicales",
+            "neck", "back of my neck", "back of the neck", "back of neck", "cervical*",
+            "cuello", "cervicales", "cou", "nuque",
             "脖子", "颈", "颈部", "颈椎"]),
         (.shoulders, [
             "shoulder*", "deltoid*",
-            "hombro*", "deltoides",
-            "epaule*", "deltoide*",
+            "hombro*", "epaule*",
             "肩", "肩膀", "肩部"]),
         (.head, [
-            "head", "headache*", "temple*", "forehead", "migraine*",
-            "cabeza", "dolor de cabeza", "sien*", "frente", "migrana*",
-            "tete", "mal de tete", "tempe*", "migraine*",
-            "头", "头部", "头痛", "太阳穴", "额头", "偏头痛"]),
+            "head", "back of my head", "back of the head", "headache*", "temples", "temple", "forehead", "migraine*",
+            "cabeza", "dolor de cabeza", "sien", "sienes", "la frente", "mi frente", "migrana*",
+            "tete", "mal de tete", "tempe", "tempes",
+            "头部", "头疼", "头痛", "太阳穴", "额头", "偏头痛"]),
         (.jaw, [
-            "jaw", "tmj", "clench*", "teeth grinding", "mandibula", "mandibul*", "bruxismo",
+            "jaw", "tmj", "clench*", "teeth grinding", "mandibul*", "bruxismo",
             "machoire", "bruxisme", "serrer les dents",
-            "下巴", "下颌", "颌", "磨牙"]),
+            "下巴", "下颌", "磨牙", "颌骨"]),
         (.eyes, [
             "eye", "eyes", "eyestrain", "eye strain", "screen fatigue",
-            "ojo*", "vista cansada", "fatiga visual",
+            "ojo", "ojos", "vista cansada", "fatiga visual",
             "oeil", "yeux", "fatigue oculaire",
-            "眼睛", "眼", "用眼", "视疲劳"]),
+            "眼睛", "眼部", "用眼", "视疲劳"]),
         (.chest, [
             "chest", "pecs", "pectoral*",
-            "pecho", "pectoral*",
-            "poitrine", "pectoraux",
-            "胸", "胸部", "胸肌"]),
+            "pecho", "poitrine", "pectoraux",
+            "胸部", "胸口", "胸肌"]),
         (.core, [
             "core", "abs", "abdominal*", "stomach", "belly", "tummy",
-            "abdomen", "abdominal*", "estomago", "barriga", "vientre", "panza",
+            "abdomen", "estomago", "barriga", "vientre", "panza",
             "abdominaux", "ventre", "estomac",
-            "核心", "腹部", "腹", "肚子", "小腹"]),
+            "核心", "腹部", "肚子", "小腹"]),
         (.obliques, [
             "oblique*", "side of my waist", "love handles", "waist", "side stretch",
             "oblicuo*", "cintura", "costado",
-            "obliques", "taille", "flanc*",
+            "taille", "flanc*",
             "腰侧", "侧腰", "腹斜肌"]),
         (.lats, [
             "lats", "latissimus", "side of my back",
-            "dorsales", "dorsal ancho", "latissimus dorsi", "grand dorsal", "grands dorsaux",
+            "dorsales", "dorsal ancho", "grand dorsal", "grands dorsaux",
             "背阔肌"]),
         (.biceps, [
             "bicep*", "upper arm*", "arm", "arms",
-            "biceps", "brazo*", "bras",
+            "brazo*", "mon bras", "mes bras", "le bras", "les bras",
             "二头肌", "上臂", "手臂", "胳膊"]),
         (.triceps, [
             "tricep*",
-            "triceps",
             "三头肌", "手臂后侧"]),
         (.forearms, [
             "forearm*", "wrist*", "elbow*", "typing", "carpal tunnel",
             "antebrazo*", "muneca*", "codo*", "tunel carpiano",
             "avant-bras", "poignet*", "coude*", "canal carpien",
-            "前臂", "手腕", "手肘", "肘", "腕管"]),
+            "前臂", "手腕", "手肘", "腕管"]),
         (.hands, [
-            "hand", "hands", "finger*", "palm*", "thumb*",
-            "mano*", "dedo*", "palma*", "pulgar*",
-            "main", "mains", "doigt*", "paume*", "pouce*",
-            "手", "手指", "手掌", "拇指"]),
+            "hand", "hands", "finger*", "palm", "palms", "thumb*",
+            "mano", "manos", "dedo", "dedos", "palma", "palmas", "pulgar*",
+            "mes mains", "les mains", "ma main", "mon doigt", "mes doigts", "doigt", "doigts", "paume*", "pouce*",
+            "手部", "手指", "手掌", "拇指"]),
         (.glutes, [
             "glute*", "butt", "buttock*", "piriformis", "sciatica",
-            "gluteo*", "nalga*", "gluteos", "piramidal", "ciatica",
-            "fessier*", "fesses", "piriforme", "sciatique",
+            "gluteo*", "nalga*", "ciatica", "piriforme",
+            "fessier*", "fesses", "sciatique",
             "臀", "臀部", "臀肌", "梨状肌", "坐骨神经"]),
         (.hipFlexors, [
             "hip flexor*", "psoas", "iliopsoas", "front of my hip*",
-            "flexor* de la cadera", "flexores de cadera", "psoas iliaco",
-            "fléchisseur* de la hanche", "flechisseur*", "psoas",
+            "flexores de la cadera", "flexores de cadera", "psoas iliaco",
+            "flechisseur*", "flechisseurs de la hanche", "flechisseur de la hanche",
             "髋屈肌", "髂腰肌", "髋前侧"]),
         (.hips, [
             "hip", "hips",
@@ -184,56 +206,66 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
             "髋", "髋部", "胯", "髋关节"]),
         (.adductors, [
             "adductor*", "inner thigh*", "groin",
-            "aductor*", "muslo interno", "muslos internos", "interior del muslo", "ingle*",
-            "adducteur*", "interieur des cuisses", "cuisse interne", "aine*",
+            "aductor*", "muslo interno", "muslos internos", "interior del muslo", "ingle", "ingles",
+            "adducteur*", "interieur des cuisses", "cuisse interne", "aine", "aines",
             "内收肌", "大腿内侧", "腹股沟"]),
         (.quads, [
             "quad*", "thigh*", "front of my thigh*", "front of my leg*",
             "cuadricep*", "muslo*", "frente del muslo",
-            "cuisse*", "quadriceps",
+            "cuisse*",
             "股四头肌", "大腿", "大腿前侧"]),
         (.hamstrings, [
-            "hamstring*", "back of my thigh*", "back of my leg*",
-            "isquiotibial*", "isquios", "femorales", "parte trasera del muslo",
-            "ischio-jambier*", "ischio jambier*", "ischios", "arriere des cuisses", "arriere de la cuisse",
+            "hamstring*", "back of my thigh*", "back of the thigh*", "behind my thigh*", "behind the thigh*",
+            "back of my leg*", "back of the leg*", "back of my knee", "back of the knee",
+            "behind my knee", "behind the knee",
+            "isquiotibial*", "isquios", "femorales", "parte trasera del muslo", "parte de atras del muslo",
+            "parte de atras de los muslos", "detras del muslo", "detras de los muslos", "detras de la rodilla",
+            "ischio jambier*", "ischios", "arriere des cuisses", "arriere de la cuisse",
+            "derriere de la cuisse", "derriere des cuisses", "derriere le genou",
             "腘绳肌", "大腿后侧", "大腿后面"]),
         (.calves, [
             "calf", "calves", "gastrocnemius", "soleus",
-            "pantorrilla*", "gemelo*", "sóleo", "soleo",
+            "pantorrilla*", "gemelo*", "soleo",
             "mollet*",
             "小腿", "腓肠肌", "小腿肚"]),
         (.shins, [
-            "shin*", "tibialis",
-            "espinilla*", "tibial*", "canilla*",
-            "tibia*",
+            "shin", "shins", "tibial*",
+            "espinilla*", "canilla*", "tibia", "tibias",
             "胫骨", "胫前肌", "小腿前侧"]),
         (.feet, [
-            "foot", "feet", "ankle*", "heel*", "arch of my foot", "plantar", "toes",
-            "pie", "pies", "tobillo*", "talon*", "talones", "planta del pie", "dedos del pie", "fascitis plantar",
-            "pied", "pieds", "cheville*", "talon*", "voute plantaire", "orteil*",
-            "脚", "足", "足部", "脚踝", "脚跟", "脚底", "足底", "脚趾"]),
+            "foot", "feet", "ankle*", "heel*", "arch of my foot", "plantar", "toe", "toes",
+            "dolor de pie", "dolor de pies", "los pies", "mis pies", "mi pie",
+            "tobillo*", "talon*", "planta del pie", "dedos del pie",
+            "au pied", "aux pieds", "les pieds", "mes pieds", "mon pied", "cheville*", "voute plantaire", "orteil*",
+            "脚", "足部", "足底", "脚踝", "脚跟", "脚底", "脚趾"]),
     ]
 
+    /// Phrases that look like goal words but aren't ("pas mal de stress" = a lot of stress).
+    private static let goalNeutralPhrases = ["pas mal"].map { Phrase($0) }
+
     /// Checked in priority order: pain beats tight, stress beats sleep, and so on.
+    /// Bare "mal" is not a pain word ("duermo mal"); only "mal de/au/aux/a" and "fait mal" are.
     private static let goalTable: [(AskGoal, [Phrase])] = goalSynonyms
         .map { goal, words in (goal, words.map { Phrase($0) }) }
 
     private static let goalSynonyms: [(AskGoal, [String])] = [
         (.pain_relief, [
             "pain", "pains", "painful", "sore", "soreness", "ache", "aches", "aching", "hurt", "hurts", "hurting",
-            "dolor*", "duele*", "adolorid*", "molestia*", "dolorid*",
-            "mal", "douleur*", "douloureu*", "courbature*", "fait mal",
-            "疼", "痛", "酸", "酸痛", "不舒服"]),
+            "headache*", "migraine*", "sciatica",
+            "dolor*", "duele*", "duelen", "adolorid*", "molestia*", "dolorid*", "migrana*", "ciatica", "lumbalgia",
+            "mal de", "mal au", "mal aux", "mal a", "fait mal", "douleur*", "douloureu*", "courbature*",
+            "lombalgie", "sciatique",
+            "疼", "痛", "酸", "不舒服"]),
         (.stress_relief, [
-            "stress*", "anxious", "anxiety", "nervous", "overwhelmed", "calm down", "tense",
-            "estres*", "ansios*", "ansiedad", "nervios*", "agobiad*", "calmarme", "tenso", "tensa",
-            "anxieu*", "anxiete", "angoiss*", "nerveu*", "tendu*", "tendue*", "calmer", "stresse*",
+            "stress*", "anxious", "anxiety", "nervous", "overwhelmed", "calm down",
+            "estres*", "ansios*", "ansiedad", "nervios*", "agobiad*", "calmarme",
+            "anxieu*", "anxiete", "angoiss*", "nerveu*", "calmer",
             "压力", "焦虑", "紧张", "烦躁", "平静"]),
         (.unwind, [
-            "sleep*", "wind down", "unwind", "bedtime", "before bed", "insomnia", "relax*", "night",
-            "dormir", "sueno", "antes de acostarme", "relajar*", "insomnio", "noche", "descansar",
-            "sommeil", "me detendre", "avant de dormir", "coucher", "insomnie", "detend*", "nuit",
-            "睡", "睡觉", "睡眠", "失眠", "放松", "睡前", "晚上"]),
+            "sleep*", "wind down", "unwind", "bedtime", "before bed", "insomnia", "night",
+            "dormir", "duermo", "duermes", "dormi", "sueno", "antes de acostarme", "insomnio", "noche", "descansar",
+            "sommeil", "avant de dormir", "coucher", "insomnie", "nuit",
+            "睡", "失眠", "晚上"]),
         (.wake_up, [
             "wake up", "wake me up", "morning", "energize", "energy", "energise", "get going", "sluggish",
             "despertar*", "despierto", "manana", "energia", "energizar", "activar*",
@@ -242,12 +274,12 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         (.better_breathing, [
             "breath*", "lungs", "diaphragm",
             "respir*", "pulmon*", "aliento", "diafragma",
-            "respire*", "poumon*", "souffle", "diaphragme",
-            "呼吸", "深呼吸", "肺", "横膈膜"]),
+            "poumon*", "souffle", "diaphragme",
+            "呼吸", "肺部", "横膈膜"]),
         (.flexibility, [
-            "flexib*", "tight*", "stiff*", "mobility", "loosen*", "stretch out", "limber",
-            "flexibilidad", "flexible*", "rigid*", "tens*", "agarrotad*", "movilidad", "soltar", "estirar",
-            "souple*", "souplesse", "raide*", "mobilite", "assouplir", "etirement*", "bloque*",
-            "灵活", "柔韧", "僵", "僵硬", "紧绷", "拉伸", "活动度"]),
+            "flexib*", "tight*", "stiff*", "tense", "tension*", "mobility", "loosen*", "stretch out", "limber",
+            "rigid*", "tenso", "tensa", "agarrotad*", "movilidad", "soltar", "estirar",
+            "souple*", "souplesse", "raide*", "mobilite", "assouplir", "etirement*", "bloque*", "tendu*",
+            "灵活", "柔韧", "僵", "紧绷", "拉伸", "活动度"]),
     ]
 }

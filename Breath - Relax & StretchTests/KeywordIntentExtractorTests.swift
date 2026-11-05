@@ -106,4 +106,73 @@ struct KeywordIntentExtractorTests {
         let text = "5 minute neck stretch"
         #expect(try await extractor.extract(text) == extractor.intent(for: text))
     }
+
+    // MARK: - Review fixes
+
+    @Test(arguments: [
+        ("me siento tenso", [AskArea]()),
+        ("dolor de cuello frente al ordenador", [.neck]),
+        ("my main issue is my neck", [.neck]),
+        ("estoy de pie todo el día y me duele la espalda", [.lowerBack]),
+        ("I love apple pie", []),
+        ("睡眠不足", []),
+        ("玩手机太久", []),
+        ("背包很重", []),
+        ("腰疼", [.lowerBack]),
+        ("back of my neck", [.neck]),
+        ("back of the neck", [.neck]),
+        ("back of my head", [.head]),
+        ("back of the knee", [.hamstrings]),
+        ("back of the thigh", [.hamstrings]),
+        ("behind my thigh", [.hamstrings]),
+        ("me duele detrás del muslo", [.hamstrings]),
+        ("parte de atrás del muslo", [.hamstrings]),
+        ("derrière de la cuisse", [.hamstrings]),
+        ("arrière de la cuisse", [.hamstrings]),
+        ("flexores de la cadera", [.hipFlexors]),
+        ("fléchisseurs de la hanche", [.hipFlexors]),
+        ("mal de dos", [.lowerBack]),
+        ("dos minutos para el cuello", [.neck]),
+        ("tengo dolor de pie", [.feet]),
+        ("mes mains sont fatiguées", [.hands]),
+        ("手腕疼", [.forearms]),
+    ])
+    func noCrossLanguageCollisions(_ text: String, _ expected: [AskArea]) {
+        #expect(extractor.intent(for: text).areas == expected)
+    }
+
+    @Test(arguments: [
+        ("j'ai mal au dos", AskArea.lowerBack),
+        ("dolor de cabeza", .head),
+        ("头痛", .head),
+        ("mal de dos", .lowerBack),
+    ])
+    func painWordSurvivesAreaPhrase(_ text: String, _ area: AskArea) {
+        let i = extractor.intent(for: text)
+        #expect(i.areas == [area])
+        #expect(i.goal == .pain_relief)
+    }
+
+    @Test(arguments: ["I have a headache", "migraine", "sciatica", "lombalgie"])
+    func painConditionsCarryPain(_ text: String) {
+        #expect(extractor.intent(for: text).goal == .pain_relief)
+    }
+
+    @Test func malIsNotAlwaysPain() {
+        #expect(extractor.intent(for: "duermo mal").goal == .unwind)
+        #expect(extractor.intent(for: "pas mal de stress").goal == .stress_relief)
+    }
+
+    @Test func muscleTensionIsFlexibilityNotRelaxation() {
+        #expect(extractor.intent(for: "tense neck").goal == .flexibility)
+        #expect(extractor.intent(for: "relax my shoulders").goal == nil)
+    }
+
+    @Test func minutesNeedAMinuteWord() {
+        #expect(extractor.intent(for: "5 minimal neck").minutes == nil)
+        #expect(extractor.intent(for: "4 mind neck").minutes == nil)
+        #expect(extractor.intent(for: "1.5 minutes neck").minutes == nil)
+        #expect(extractor.intent(for: "10mins neck").minutes == 10)
+        #expect(extractor.intent(for: "dos minutos para el cuello").minutes == 2)
+    }
 }
