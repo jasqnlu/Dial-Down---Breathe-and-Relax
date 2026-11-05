@@ -68,4 +68,16 @@ final class AskFlowUITests: XCTestCase {
         XCTAssertFalse(app.buttons["ask.start"].exists, "Urgent reply must not offer Start")
         attach(app, "4-urgent")
     }
+
+    func testGentleAnywayKeepsSafetyAdvice() throws {
+        let app = launch()
+        ask("sharp pain in my lower back", in: app)
+        let anyway = app.buttons["ask.gentleAnyway"]
+        XCTAssertTrue(anyway.waitForExistence(timeout: 20), "Gentle-anyway option not shown")
+        anyway.tap()
+        XCTAssertTrue(app.buttons["ask.start"].waitForExistence(timeout: 10), "Gentle routine not shown")
+        XCTAssertTrue(app.buttons["ask.emergency"].exists, "Safety card must stay visible")
+        XCTAssertFalse(app.buttons["ask.gentleAnyway"].exists, "Gentle-anyway must hide once used")
+        attach(app, "5-gentle-anyway")
+    }
 }
