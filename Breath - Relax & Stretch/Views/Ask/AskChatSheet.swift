@@ -6,6 +6,9 @@ struct AskChatSheet: View {
     let initialText: String?
     /// Shows the mic button when set (wired up by the caller).
     var onMicTap: (() -> Void)? = nil
+    /// Called when a routine's Start is tapped, before the player opens
+    /// (the caller stops any listening it started).
+    var onStart: (() -> Void)? = nil
 
     @Query private var catalog: [Exercise]
     @Environment(\.dismiss) private var dismiss
@@ -14,10 +17,12 @@ struct AskChatSheet: View {
     @State private var playing: PlayableRoutine?
     @Environment(\.locale) private var locale
 
-    init(model: AskChatModel, initialText: String?, onMicTap: (() -> Void)? = nil) {
+    init(model: AskChatModel, initialText: String?,
+         onMicTap: (() -> Void)? = nil, onStart: (() -> Void)? = nil) {
         self.model = model
         self.initialText = initialText
         self.onMicTap = onMicTap
+        self.onStart = onStart
     }
 
     var body: some View {
@@ -128,7 +133,10 @@ struct AskChatSheet: View {
         case .routine(let routine, let intent):
             VStack(alignment: .leading, spacing: 10) {
                 bubble { routineText(routine, intent) }
-                AskRoutineCard(routine: routine) { playing = PlayableRoutine(routine: routine) }
+                AskRoutineCard(routine: routine) {
+                    onStart?()
+                    playing = PlayableRoutine(routine: routine)
+                }
             }
         case .safety(let level, _):
             AskSafetyCard(level: level) { model.showGentleAnyway(for: id, catalog: catalog) }

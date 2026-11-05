@@ -91,9 +91,13 @@ struct AskButton: View {
             if phase != .active { stopListeningSilently() }
         }
         .sheet(item: $chat, onDismiss: { speech.cancel(); voiceIssue = nil }) { request in
-            AskChatSheet(model: request.model, initialText: request.text) {
-                toggleSheetMic(model: request.model)
-            }
+            // Close goes through dismiss() → onDismiss above, which cancels listening.
+            AskChatSheet(
+                model: request.model,
+                initialText: request.text,
+                onMicTap: { toggleSheetMic(model: request.model) },
+                onStart: { stopListeningSilently() }
+            )
             .overlay(alignment: .bottom) { sheetVoiceStatus }
             .presentationDetents([.large])
             .accessibilityIdentifier("ask.sheet")
