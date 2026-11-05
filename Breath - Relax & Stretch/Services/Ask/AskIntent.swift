@@ -1,7 +1,9 @@
 import Foundation
+import FoundationModels
 
 /// Side-neutral body areas a request can name. Each maps to the catalog tags
 /// (`MuscleGroup` / joint-region names) fed to `RegionExerciseResolver`.
+@Generable
 enum AskArea: String, CaseIterable, Codable {
     case neck, head, jaw, eyes, upperBack, shoulders, chest, core, obliques, lats
     case lowerBack, biceps, triceps, forearms, hands, glutes, hipFlexors, hips
@@ -41,6 +43,7 @@ enum AskArea: String, CaseIterable, Codable {
 }
 
 /// Goals a request can name. Raw values equal `GoalMeta` ids.
+@Generable
 enum AskGoal: String, CaseIterable, Codable {
     case flexibility
     case stress_relief
