@@ -55,24 +55,41 @@ struct AskPipeline {
     // MARK: - Private
 
     private func extractIntent(from text: String) async -> AskIntent {
-        if let primary, let intent = await extractWithTimeout(primary, text) {
-            return intent
-        }
-        return fallback.intent(for: text)
+        let keyword = fallback.intent(for: text)
+        guard let primary, let model = await extractWithTimeout(primary, text) else { return keyword }
+        guard model.isEmpty && !model.isOffTopic else { return model }
+        var merged = keyword
+        merged.seriousness = max(model.seriousness, keyword.seriousness)
+        return merged
     }
 
-    /// Races the extractor against a sleep; nil on throw or timeout.
+    /// Races the extractor against a sleep and resumes with whichever finishes first
+    /// (nil on throw or timeout). Returns on time even if the extractor ignores cancellation.
     private func extractWithTimeout(_ extractor: IntentExtractor, _ text: String) async -> AskIntent? {
         let timeout = self.timeout
-        return await withTaskGroup(of: AskIntent?.self) { group in
-            group.addTask { try? await extractor.extract(text) }
-            group.addTask {
+        let race = Race()
+        return await withCheckedContinuation { continuation in
+            race.continuation = continuation
+            race.work = Task { race.finish(try? await extractor.extract(text)) }
+            race.timer = Task {
                 try? await Task.sleep(for: timeout)
-                return nil
+                race.finish(nil)
             }
-            let first = await group.next() ?? nil
-            group.cancelAll()
-            return first
+        }
+    }
+
+    /// Resumes its continuation exactly once, then cancels both racers.
+    private final class Race {
+        var continuation: CheckedContinuation<AskIntent?, Never>?
+        var work: Task<Void, Never>?
+        var timer: Task<Void, Never>?
+
+        func finish(_ value: AskIntent?) {
+            guard let continuation else { return }
+            self.continuation = nil
+            continuation.resume(returning: value)
+            work?.cancel()
+            timer?.cancel()
         }
     }
 }

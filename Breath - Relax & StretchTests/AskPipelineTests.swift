@@ -7,6 +7,8 @@ struct StubExtractor: IntentExtractor {
         case fixed(AskIntent)
         case throwing
         case sleeping(Duration, AskIntent)
+        /// Keeps waiting even when cancelled.
+        case stubborn(Duration, AskIntent)
     }
     struct Failure: Error {}
 
@@ -18,6 +20,12 @@ struct StubExtractor: IntentExtractor {
         case .throwing: throw Failure()
         case .sleeping(let duration, let intent):
             try await Task.sleep(for: duration)
+            return intent
+        case .stubborn(let duration, let intent):
+            let end = ContinuousClock.now + duration
+            while ContinuousClock.now < end {
+                try? await Task.sleep(for: .milliseconds(20))
+            }
             return intent
         }
     }
@@ -73,13 +81,34 @@ struct AskPipelineTests {
         let start = ContinuousClock.now
         let reply = await pipeline(slow, timeout: .milliseconds(100))
             .respond(to: "lower back pain", catalog: catalog())
+        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
+        #expect(ContinuousClock.now - start < .seconds(1))
+    }
+
+    @Test func cancellationIgnoringModelStillTimesOut() async {
+        let start = ContinuousClock.now
+        let reply = await pipeline(.stubborn(.seconds(2), intent()), timeout: .milliseconds(100))
+            .respond(to: "lower back pain", catalog: catalog())
         guard case .routine = reply else { Issue.record("got \(reply)"); return }
         #expect(ContinuousClock.now - start < .seconds(1))
     }
 
+    @Test func emptyModelIntentUsesKeywords() async {
+        let reply = await pipeline(.fixed(intent())).respond(to: "lower back pain", catalog: catalog())
+        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
+    }
+
+    @Test func emptyModelIntentWithoutKeywordsClarifies() async {
+        let reply = await pipeline(.fixed(intent())).respond(to: "hello there", catalog: catalog())
+        #expect(reply == .clarify)
+    }
+
     @Test func noPrimaryUsesKeywords() async {
         let reply = await pipeline(nil).respond(to: "lower back pain", catalog: catalog())
-        guard case .routine = reply else { Issue.record("got \(reply)"); return }
+        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
     }
 
     @Test func offTopic() async {
