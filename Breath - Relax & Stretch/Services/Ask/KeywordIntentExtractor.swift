@@ -125,7 +125,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         (.lowerBack, [
             "lower back", "low back", "lumbar", "lumbar spine", "back", "spine",
             "espalda baja", "zona lumbar", "parte baja de la espalda", "lumbares", "espalda", "columna",
-            "bas du dos", "bas de dos", "lombaires", "lombalgie", "mal de dos", "mal au dos", "dos", "colonne",
+            "bas du dos", "bas de dos", "lombaires", "lombalgie", "mal de dos", "mal au dos", "le dos", "du dos", "mon dos", "au dos", "ton dos", "colonne",
             "腰", "下背", "下背部", "腰部", "后背", "背部", "脊柱"]),
         (.upperBack, [
             "upper back", "mid back", "middle back", "trapezius", "traps", "between my shoulder blades",
@@ -244,7 +244,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
     private static let goalNeutralPhrases = ["pas mal"].map { Phrase($0) }
 
     /// Checked in priority order: pain beats tight, stress beats sleep, and so on.
-    /// Bare "mal" is not a pain word ("duermo mal"); only "mal de/au/aux/a" and "fait mal" are.
+    /// Bare "mal" is not a pain word ("duermo mal", "mal a menudo"); only "mal de/au/aux", "mal a la/l/mon/ma/mes" and "fait mal" are.
     private static let goalTable: [(AskGoal, [Phrase])] = goalSynonyms
         .map { goal, words in (goal, words.map { Phrase($0) }) }
 
@@ -253,7 +253,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
             "pain", "pains", "painful", "sore", "soreness", "ache", "aches", "aching", "hurt", "hurts", "hurting",
             "headache*", "migraine*", "sciatica",
             "dolor*", "duele*", "duelen", "adolorid*", "molestia*", "dolorid*", "migrana*", "ciatica", "lumbalgia",
-            "mal de", "mal au", "mal aux", "mal a", "fait mal", "douleur*", "douloureu*", "courbature*",
+            "mal de", "mal au", "mal aux", "mal a la", "mal a l", "mal a mon", "mal a ma", "mal a mes", "fait mal", "douleur*", "douloureu*", "courbature*",
             "lombalgie", "sciatique",
             "疼", "痛", "酸", "不舒服"]),
         (.stress_relief, [

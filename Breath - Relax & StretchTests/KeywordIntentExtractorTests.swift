@@ -132,6 +132,8 @@ struct KeywordIntentExtractorTests {
         ("flexores de la cadera", [.hipFlexors]),
         ("fléchisseurs de la hanche", [.hipFlexors]),
         ("mal de dos", [.lowerBack]),
+        ("hace dos días me duele el cuello", [.neck]),
+        ("hace dos dias me duele el cuello", [.neck]),
         ("dos minutos para el cuello", [.neck]),
         ("tengo dolor de pie", [.feet]),
         ("mes mains sont fatiguées", [.hands]),
@@ -160,6 +162,8 @@ struct KeywordIntentExtractorTests {
 
     @Test func malIsNotAlwaysPain() {
         #expect(extractor.intent(for: "duermo mal").goal == .unwind)
+        #expect(extractor.intent(for: "duermo mal a menudo").goal == .unwind)
+        #expect(extractor.intent(for: "j'ai mal à la tête").goal == .pain_relief)
         #expect(extractor.intent(for: "pas mal de stress").goal == .stress_relief)
     }
 
