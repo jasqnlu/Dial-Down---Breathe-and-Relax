@@ -51,7 +51,7 @@ The home tab is one card that answers "what should I do right now?" — a time-o
 
 ### Body Map
 
-A freely rotatable 3D anatomy figure. Tap where it hurts: the body turns to face the point, the skin fades to reveal the muscles underneath, and up to four candidate muscles light up in pastel with labels on the emptier side. Tap one to highlight it, tap again to see its stretches.
+Lives inside the Exercises tab: flip the **Areas / Body** switch at the top to swap the bubble map for the body. A freely rotatable 3D anatomy figure. Tap where it hurts: the body turns to face the point, the skin fades to reveal the muscles underneath, and up to four candidate muscles light up in pastel with labels on the emptier side. Tap one to highlight it, tap again to see its stretches.
 
 <table>
   <tr>
@@ -154,8 +154,8 @@ Box, 4-7-8, Belly, Energising, and a custom pattern you set yourself. A graphite
 ```mermaid
 flowchart LR
     subgraph UI["SwiftUI views"]
-        T[Today] --- B[Body Map] --- E[Exercises]
-        BR[Breathing] --- R[Routines] --- P[Profile]
+        T[Today] --- E[Exercises<br/>Areas · Body Map] --- BR[Breathing]
+        R[Routines] --- P[Profile]
     end
 
     subgraph Services
@@ -205,7 +205,7 @@ flowchart TD
     RV -- signed in --> RG[RegistrationGate<br/>name step for new accounts]
     AU --> RV
     LK --> RV
-    RG --> H[HomeView<br/>6 tabs + floating tab bar]
+    RG --> H[HomeView<br/>5 tabs + floating tab bar]
     H -. first visit .-> TOUR[Coach-mark tour]
 ```
 

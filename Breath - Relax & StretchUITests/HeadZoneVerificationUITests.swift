@@ -21,8 +21,11 @@ final class HeadZoneVerificationUITests: XCTestCase {
                                 "-hasSeenAppGuide", "YES",
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]
+        // Body lives behind the Exercises tab's Areas / Body switch; this opens
+        // it on Body without tapping (a tap would save the choice for later tests).
+        app.launchArguments += ["-exercisesMode", "body"]
         app.launch()
-        app.descendants(matching: .any)["Body"].firstMatch.tap()
+        app.buttons["Exercises"].firstMatch.tap()
         sleep(6) // async OBJ parse
         return app
     }

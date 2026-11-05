@@ -14,7 +14,7 @@ struct MiniRoutineReviewView: View {
     /// to the tab that actually opened this screen, not always Exercises.
     /// Defaults to 2 (Exercises) since that tab's own "Select" button was
     /// this view's original and, for a while, only entry point.
-    var originTab: Int = 2
+    var originTab: Int = AppTab.exercises.rawValue
     /// Called once one of the three destinations actually completes (a
     /// routine was saved, or the mini-routine session was dismissed) so the
     /// caller can clear the picking session. Not called if the user just

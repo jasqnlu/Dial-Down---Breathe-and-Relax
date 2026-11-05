@@ -13,9 +13,12 @@ final class AnatomyJointRevealUITest: XCTestCase {
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",
         ]
+        // Body lives behind the Exercises tab's Areas / Body switch; this opens
+        // it on Body without tapping (a tap would save the choice for later tests).
+        app.launchArguments += ["-exercisesMode", "body"]
         app.launch()
 
-        let bodyTab = app.descendants(matching: .any)["Body"].firstMatch
+        let bodyTab = app.buttons["Exercises"].firstMatch
         XCTAssertTrue(bodyTab.waitForExistence(timeout: 15), "Body tab not found")
         bodyTab.tap()
         sleep(6) // let the 13MB OBJ finish parsing before tapping

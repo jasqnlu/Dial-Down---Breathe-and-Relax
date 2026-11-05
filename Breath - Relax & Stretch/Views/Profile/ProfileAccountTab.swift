@@ -21,14 +21,15 @@ struct ProfileAccountTab: View {
                 Section("Your Stats") {
                     statsRow(icon: "clock", color: .pastelBlue,
                              label: "Total Minutes", value: "\(profile.totalMinutes) min")
+                        .tourAnchor("profile.stats")
                     statsRow(icon: "star", color: .pastelYellow,
                              label: "Total Points",  value: "\(profile.totalPoints) pts")
                     statsRow(icon: "flame", color: .pastelPeach,
                              label: "Current Streak", value: String(localized: "\(profile.streak) days"))
                     statsRow(icon: "medal", color: .pastelLavender,
                              label: "Badges Earned", value: "\(profile.badges.count)")
+                        .tourAnchor("profile.stats#last")
                 }
-                .tourAnchor("profile.stats")
 
                 Section {
                     NavigationLink(destination: BadgesView(earnedBadges: profile.badges)) {

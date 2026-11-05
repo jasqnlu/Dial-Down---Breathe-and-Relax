@@ -19,12 +19,16 @@ final class BodyMapFastPathUITests: XCTestCase {
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]
         app.launchArguments += extraArgs
+        app.launchArguments += ["-exercisesMode", "body"]
         app.launch()
         // Cold/fresh-install launches run seed insertion + up to 5 sequential
         // SwiftData migration passes synchronously in `.onAppear` — wait that
         // out before assuming the tab bar exists, or later steps fail against
         // a still-launching app rather than testing what they mean to test.
-        let bodyTab = app.descendants(matching: .any)["Body"].firstMatch
+        // Body lives behind the Exercises tab's Areas / Body switch. The
+        // `-exercisesMode body` launch argument opens it on Body without a
+        // tap — tapping the switch would save the choice into later tests.
+        let bodyTab = app.buttons["Exercises"].firstMatch
         _ = bodyTab.waitForExistence(timeout: 30)
         bodyTab.tap()
         // Wait out the async OBJ parse ("Loading 3D model…" placeholder).
@@ -122,7 +126,7 @@ final class BodyMapFastPathUITests: XCTestCase {
         sleep(1)
         attach(app, "08-after-outside-tap-at-rest")
 
-        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+        XCTAssertTrue(app.staticTexts["3D body map"].exists,
                       "Should still be on Body Map — an outside tap at rest must not navigate")
         XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
                        "Still no selection — the outside tap must not have hit the body")

@@ -11,10 +11,10 @@ struct HomeView: View {
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @Environment(\.locale) private var locale
     @State private var selectedTab: Int
+    @AppStorage(ExercisesMode.storageKey) private var exercisesMode = ExercisesMode.areas.rawValue
     // Tabs are created on first visit and kept alive after, so nav/scroll
-    // state survives switching (what TabView used to give us) without
-    // TabView's 5-item UIKit limit — a 6th child spills into a "More"
-    // controller even when the tab bar chrome is hidden.
+    // state survives switching (what TabView used to give us). See `AppTab` for
+    // the tab order.
     @State private var visitedTabs: Set<Int>
 
     init() {
@@ -82,7 +82,10 @@ struct HomeView: View {
             guard phase == .active else { return }
         }
         .onReceive(NotificationCenter.default.publisher(for: .browseExercisesRequested)) { _ in
-            selectedTab = 2
+            // Picking from Today/Routines happens in the Areas view (search +
+            // tiles), so land there even if the user last left Body open.
+            exercisesMode = ExercisesMode.areas.rawValue
+            selectedTab = AppTab.exercises.rawValue
         }
         .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
             // Read lastFinishedOriginTab, NOT lastFinished — the destination
@@ -117,13 +120,12 @@ struct HomeView: View {
 
     @ViewBuilder
     private func tabContent(_ index: Int) -> some View {
-        switch index {
-        case 0:  TodayView()
-        case 1:  BodyMapView()
-        case 2:  ExerciseListView()
-        case 3:  BreathingView()
-        case 4:  RoutineListView()
-        default: ProfileView()
+        switch AppTab(rawValue: index) ?? .profile {
+        case .today:     TodayView()
+        case .exercises: ExercisesTabView()
+        case .breathe:   BreathingView()
+        case .routines:  RoutineListView()
+        case .profile:   ProfileView()
         }
     }
 

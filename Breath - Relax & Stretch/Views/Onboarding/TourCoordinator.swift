@@ -13,9 +13,11 @@ struct TourStep: Identifiable {
     let tabIndex: Int?
     let title: String
     let message: String
-    /// True only for the two body-map steps, which wait for a real tap
-    /// instead of a Next button.
+    /// True for steps that wait for a real tap (the Areas / Body switch and
+    /// the two body-map steps) instead of a Next button.
     let isInteractive: Bool
+    /// Short "do this to continue" line shown on interactive steps.
+    let hint: String?
     /// Screen-relative fallback for a toolbar-hosted callout, where
     /// `.tourAnchor` can't cross the `NavigationStack` → `UINavigationController`
     /// boundary reliably. No current step needs this (the tour is anchor-only
@@ -23,12 +25,14 @@ struct TourStep: Identifiable {
     let fixedFrame: ((GeometryProxy) -> CGRect)?
 
     init(id: String, tabIndex: Int? = nil, title: String, message: String,
-         isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil) {
+         isInteractive: Bool = false, hint: String? = nil,
+         fixedFrame: ((GeometryProxy) -> CGRect)? = nil) {
         self.id = id
         self.tabIndex = tabIndex
         self.title = title
         self.message = message
         self.isInteractive = isInteractive
+        self.hint = hint
         self.fixedFrame = fixedFrame
     }
 }
@@ -40,38 +44,74 @@ extension TourStep: Equatable {
 }
 
 extension TourStep {
-    /// A light, one-step-per-section overview: each tab gets a single
-    /// callout on arrival, except Body, which keeps a short interactive
-    /// walkthrough (tap-to-advance) since that's the one flow worth
-    /// teaching by doing rather than telling.
-    static let allSteps: [TourStep] = [
-        // MARK: Today
-        TourStep(id: "tabbar.today", tabIndex: 0,
-                 title: "Today", message: "Start here each day. Your picked routine is ready, or browse more below."),
+    /// Ids of the two full-screen cards that open and close the tour. They
+    /// have no spotlight target and aren't counted in a section's "x / y".
+    static let welcomeID = "tour.welcome"
+    static let finishID = "tour.finish"
 
-        // MARK: Body
-        TourStep(id: "bodymap.tapRegion", tabIndex: 1,
-                 title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it and zooms in to the exact muscle.",
-                 isInteractive: true),
-        TourStep(id: "bodymap.findStretches",
-                 title: "Find Stretches", message: "Pick the muscle, then tap here for stretches that target it. Tap outside the body anytime to zoom back out.",
-                 isInteractive: true),
+    /// A walk through every part of the app, one section per tab. Each
+    /// section's first step carries its tab's `tabIndex` (HomeView switches
+    /// tabs on it); the steps after it stay on that tab. Three steps wait for
+    /// a real tap: flipping the Exercises switch to Body, then tapping a sore
+    /// spot and "Find Stretches" — the flow worth teaching by doing.
+    /// `ExercisesTabView` flips the Areas / Body switch to match each step.
+    static let allSteps: [TourStep] = [
+        // MARK: Welcome
+        TourStep(id: welcomeID, tabIndex: AppTab.today.rawValue,
+                 title: "Welcome to Dial Down",
+                 message: "Here's a quick look around — about a minute. You can skip ahead or leave anytime."),
+
+        // MARK: Today
+        TourStep(id: "today.heroCard",
+                 title: "Today's Session",
+                 message: "A short routine picked for you each day. Tap Begin to start, or the sliders to change what's in it. Days you stretch fill in on the week strip."),
+        TourStep(id: "today.recommended",
+                 title: "Recommended for You",
+                 message: "Stretches for the areas you chose at sign-up. Swipe through and tap one to see how it's done."),
 
         // MARK: Exercises
-        TourStep(id: "tabbar.exercises", tabIndex: 2,
-                 title: "Exercises", message: "Browse the full library, search by name, or explore by body region."),
+        TourStep(id: "exercises.search", tabIndex: AppTab.exercises.rawValue,
+                 title: "Find Any Exercise",
+                 message: "Search the full library by name, filter by type, difficulty or length, or tap the check to pick a few and build a quick routine."),
+        TourStep(id: "exercises.browseByArea",
+                 title: "Browse by Area",
+                 message: "Each bubble is a body area. Tap one to see its stretches, and pinch or drag to explore."),
+        TourStep(id: "exercises.modeSwitch",
+                 title: "Switch to the Body",
+                 message: "Know where it hurts but not what it's called? The 3D body map finds stretches for the exact spot.",
+                 isInteractive: true, hint: "Tap Body to continue"),
+        TourStep(id: "bodymap.tapRegion",
+                 title: "Tap a Sore Spot",
+                 message: "Tap anywhere that feels tense or sore — the body turns to face it and zooms in to the exact muscle.",
+                 isInteractive: true, hint: "Tap the body to continue"),
+        TourStep(id: "bodymap.findStretches",
+                 title: "Find Stretches",
+                 message: "Pick the muscle, then tap here for stretches that target it. Tap outside the body anytime to zoom back out.",
+                 isInteractive: true, hint: "Tap the bar to continue"),
 
         // MARK: Breathe
-        TourStep(id: "tabbar.breathe", tabIndex: 3,
-                 title: "Breathe", message: "Guided patterns — pick one, then preview or start a full session."),
+        TourStep(id: "breathe.patternPicker", tabIndex: AppTab.breathe.rawValue,
+                 title: "Pick a Pattern",
+                 message: "Box breathing, 4-7-8, belly breathing and more — each tuned for calm, sleep or energy."),
+        TourStep(id: "breathe.previewCircle",
+                 title: "Breathe Along",
+                 message: "Tap the circle to try one round, then start a full session when you're ready."),
 
         // MARK: Routines
-        TourStep(id: "tabbar.routines", tabIndex: 4,
-                 title: "Routines", message: "Build your own routines or borrow ready-made ones."),
+        TourStep(id: "routines.sharedList", tabIndex: AppTab.routines.rawValue,
+                 title: "Premade Routines",
+                 message: "Ready-made routines for the office, recovery, sleep and more. Open one to tweak it and save it as your own."),
+        TourStep(id: "routines.yourRoutines",
+                 title: "Your Routines",
+                 message: "Everything you save lands here. Swipe right to pin one to Today, or left to edit or share it."),
 
         // MARK: Profile
-        TourStep(id: "tabbar.profile", tabIndex: 5,
-                 title: "Profile", message: "Track your stats, and restart this tour anytime from here."),
+        TourStep(id: "profile.stats", tabIndex: AppTab.profile.rawValue,
+                 title: "Your Progress",
+                 message: "Points, streaks and badges add up as you go. Progress & Charts shows the bigger picture."),
+        TourStep(id: finishID,
+                 title: "You're All Set",
+                 message: "Take a breath and start with Today's session. You can replay this tour anytime from Profile → Settings."),
     ]
 }
 
@@ -148,6 +188,35 @@ final class TourCoordinator: ObservableObject {
     func notifyInteraction(id: String) {
         guard isActive, let step = currentStep, step.isInteractive, step.id == id else { return }
         advance()
+    }
+
+    /// The tab of the section the current step belongs to.
+    var currentSectionTab: Int? { sectionTab(atOrBefore: currentStepIndex) }
+
+    /// Each section's tab, in tour order — one entry per progress segment.
+    var sectionTabs: [Int] {
+        var seen: [Int] = []
+        for tab in steps.compactMap(\.tabIndex) where !seen.contains(tab) { seen.append(tab) }
+        return seen
+    }
+
+    /// Where the current step sits within its section ("2 of 3"), counting
+    /// only spotlight steps — the welcome and finish cards aren't counted.
+    /// Nil on those cards.
+    var positionInSection: (index: Int, count: Int)? {
+        guard let step = currentStep, !Self.isCardOnly(step) else { return nil }
+        var start = currentStepIndex
+        while start > 0, steps[start].tabIndex == nil { start -= 1 }
+        var end = currentStepIndex + 1
+        while end < steps.count, steps[end].tabIndex == nil { end += 1 }
+        let counted = steps[start..<end].enumerated().filter { !Self.isCardOnly($0.element) }
+        guard let index = counted.firstIndex(where: { $0.offset + start == currentStepIndex }) else { return nil }
+        return (index + 1, counted.count)
+    }
+
+    /// The welcome and finish cards: centered, no spotlight target.
+    static func isCardOnly(_ step: TourStep) -> Bool {
+        step.id == TourStep.welcomeID || step.id == TourStep.finishID
     }
 
     /// Walks backward from `index` to the most recent step that declared a

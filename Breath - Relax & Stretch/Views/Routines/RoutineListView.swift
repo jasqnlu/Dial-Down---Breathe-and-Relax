@@ -40,12 +40,14 @@ struct RoutineListView: View {
 
                 Section {
                     yourRoutinesHeader
+                        .tourAnchor("routines.yourRoutines")
                         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
 
                     if routines.isEmpty {
                         emptyStateCard
+                            .tourAnchor("routines.yourRoutines#first")
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
@@ -60,6 +62,9 @@ struct RoutineListView: View {
                         ) {
                             routineToPlay = routine
                         }
+                        // The tour's "Your Routines" spotlight covers the header
+                        // plus the first card; other rows get unused ids.
+                        .tourAnchor(index == 0 ? "routines.yourRoutines#first" : "routines.row\(index)")
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
@@ -139,7 +144,7 @@ struct RoutineListView: View {
                 // tab 0) can also finish a pick, and this same notification fires at
                 // every mounted listener. See TodayView.swift's identical handler for
                 // the full rationale.
-                guard let result = pickingSession.lastFinished, result.context.originTab == 4 else { return }
+                guard let result = pickingSession.lastFinished, result.context.originTab == AppTab.routines.rawValue else { return }
                 _ = pickingSession.consumeFinished()
                 let editingRoutine = result.context.editingRoutineID.flatMap { id in
                     routines.first(where: { $0.uuid == id })
@@ -258,7 +263,7 @@ struct RoutineListView: View {
             title: "",
             isPinned: false,
             baseExercises: [],
-            originTab: 4, // Routines tab
+            originTab: AppTab.routines.rawValue,
             editingRoutineID: nil,
             durationOverrides: [:]
         ))

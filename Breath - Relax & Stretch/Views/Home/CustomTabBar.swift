@@ -33,7 +33,6 @@ struct CustomTabBar: View {
 
     private let tabs: [TabItem] = [
         TabItem(icon: "sun.max",         activeIcon: "sun.max.fill",         label: "Today",     anchorID: "tabbar.today",     tint: .pastelYellow),
-        TabItem(icon: "figure.stand",    activeIcon: "figure.stand",         label: "Body",      anchorID: "tabbar.body",      tint: .pastelPeach),
         TabItem(icon: "square.grid.2x2", activeIcon: "square.grid.2x2.fill", label: "Exercises", anchorID: "tabbar.exercises", tint: .pastelBlue),
         TabItem(icon: "wind",            activeIcon: "wind",                 label: "Breathe",   anchorID: "tabbar.breathe",   tint: .pastelMint),
         TabItem(icon: "rectangle.stack", activeIcon: "rectangle.stack.fill", label: "Routines",  anchorID: "tabbar.routines",  tint: .pastelLavender),

@@ -14,7 +14,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
 
     func testAllTabs() throws {
         continueAfterFailure = true
-        let tabs = ["Today", "Body", "Exercises", "Breathe", "Routines", "Profile"]
+        let tabs = ["Today", "Exercises", "Breathe", "Routines", "Profile"]
         for (index, name) in tabs.enumerated() {
             let app = XCUIApplication()
             app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
@@ -23,7 +23,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
             app.launch()
             sleep(index == 0 ? 6 : 4) // first launch seeds exercises
             attach(app, "tab-\(index)-\(name)")
-            if index != 1 { // Body tab is a 3D scene; swiping rotates it
+            do {
                 app.swipeUp()
                 sleep(1)
                 attach(app, "tab-\(index)-\(name)-scrolled")
@@ -36,7 +36,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     /// from the strip, one pinned, then "See all".
     func testRoutinesTabRedesign() throws {
         continueAfterFailure = true
-        let app = launch(tab: 4)
+        let app = launch(tab: 3)
         sleep(4)
         attach(app, "r1-routines-empty")
 
@@ -64,11 +64,30 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         if seeAll.waitForExistence(timeout: 5) { seeAll.tap(); sleep(2); attach(app, "r5-premade-see-all") }
     }
 
-    private func launch(tab: Int) -> XCUIApplication {
+    /// Five-tab bar + the Exercises tab's Areas / Body switch. Ends back on
+    /// Areas because the choice is saved and later tests expect Areas.
+    func testExercisesAreasBodySwitch() throws {
+        continueAfterFailure = true
+        let app = launch(tab: 0)
+        attach(app, "t1-five-tab-bar")
+        app.buttons["Exercises"].firstMatch.tap(); sleep(2)
+        attach(app, "t2-exercises-areas")
+        let body = app.buttons["exercisesMode.body"].firstMatch
+        XCTAssertTrue(body.waitForExistence(timeout: 5))
+        body.tap(); sleep(6) // 3D model loads on first show
+        attach(app, "t3-exercises-body")
+        app.buttons["Breathe"].firstMatch.tap(); sleep(1)
+        app.buttons["Exercises"].firstMatch.tap(); sleep(1)
+        attach(app, "t4-exercises-body-kept")
+        app.buttons["exercisesMode.areas"].firstMatch.tap(); sleep(1)
+        attach(app, "t5-exercises-back-to-areas")
+    }
+
+    private func launch(tab: Int, extraArgs: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
-                                "-debugInitialTab", "\(tab)"]
+                                "-debugInitialTab", "\(tab)"] + extraArgs
         app.launch()
         sleep(4)
         return app
@@ -78,7 +97,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
 
         // Profile → Settings segment, and Progress & Charts
-        var app = launch(tab: 5)
+        var app = launch(tab: 4)
         app.buttons["Settings"].firstMatch.tap(); sleep(1)
         attach(app, "z1-profile-settings")
         app.swipeUp(); sleep(1)
@@ -106,13 +125,13 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         _ = rec
 
         // Routines → Premade Routines
-        app = launch(tab: 4)
+        app = launch(tab: 3)
         let premade = app.buttons["Premade Routines"].firstMatch
         if premade.waitForExistence(timeout: 5) { premade.tap(); sleep(2); attach(app, "z6-premade") }
         app.terminate()
 
         // Exercises → first search result list item via search
-        app = launch(tab: 2)
+        app = launch(tab: 1)
         let field = app.textFields["Search exercises"].firstMatch
         if field.waitForExistence(timeout: 5) {
             field.tap(); field.typeText("neck"); sleep(2)
@@ -146,7 +165,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         attach(app, "p1-today-premade")
         app.terminate()
 
-        app = launch(tab: 4)
+        app = launch(tab: 3)
         let premade = app.buttons["Premade Routines"].firstMatch
         if premade.waitForExistence(timeout: 5) {
             premade.tap(); sleep(2)
@@ -161,7 +180,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     /// (Exercises → Select → pick → Continue → Review Picks → Start Mini-Routine).
     func testPremadeAndMiniRoutineScreens() throws {
         continueAfterFailure = true
-        var app = launch(tab: 4)
+        var app = launch(tab: 3)
         let premade = app.buttons["Premade Routines"].firstMatch
         if premade.waitForExistence(timeout: 5) {
             premade.tap(); sleep(2)
@@ -175,7 +194,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         }
         app.terminate()
 
-        app = launch(tab: 2)
+        app = launch(tab: 1)
         let field = app.textFields["Search exercises"].firstMatch
         if field.waitForExistence(timeout: 10) {
             field.tap(); field.typeText("Neck Stretch")
@@ -199,7 +218,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     /// the region's stretch list it drills into.
     func testBodyMapPicker() throws {
         continueAfterFailure = true
-        let app = launch(tab: 1)
+        let app = launch(tab: 1, extraArgs: ["-exercisesMode", "body"])
         sleep(6) // async OBJ parse
         attach(app, "bm1-idle")
         let scene = app.otherElements.firstMatch
@@ -224,7 +243,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     /// Breathe tab idle, mid-session, and the completion screen.
     func testBreathingScreen() throws {
         continueAfterFailure = true
-        let app = launch(tab: 3)
+        let app = launch(tab: 2)
         sleep(4) // first launch seeds the library behind the splash
         attach(app, "b1-breathe-idle")
         // Energising is 6s in / 2s out — the shortest pattern.
@@ -252,7 +271,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         attach(app, "t1-today-foryou")
         app.terminate()
 
-        app = launch(tab: 2)
+        app = launch(tab: 1)
         let chest = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label BEGINSWITH 'Chest,'")).firstMatch
         if chest.waitForExistence(timeout: 10) {
@@ -324,7 +343,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         }
         app.terminate()
 
-        app = launch(tab: 2)
+        app = launch(tab: 1)
         let field = app.textFields["Search exercises"].firstMatch
         if field.waitForExistence(timeout: 8) {
             field.tap(); field.typeText("Cat-Cow")
@@ -336,13 +355,13 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         }
         app.terminate()
 
-        app = launch(tab: 4)
+        app = launch(tab: 3)
         attach(app, "s6-routines")
         let plus = app.navigationBars.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'add' OR label CONTAINS[c] 'new' OR label CONTAINS[c] 'create'")).firstMatch
         if tapIfExists(plus) { sleep(2); attach(app, "s7-routine-create") }
         app.terminate()
 
-        app = launch(tab: 5)
+        app = launch(tab: 4)
         for (name, label) in [("s8-progress", "Progress & Charts"), ("s9-badges", "View All Badges"),
                               ("sA-leaderboard", "Leaderboard")] {
             let link = app.buttons[label].firstMatch

@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five-Tab Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: #0A0A0B;
+    --card: #17171A;
+    --container: #26262A;
+    --hairline: rgba(255,255,255,0.07);
+    --text: #F5F5F7;
+    --muted: #8E8E93;
+    --yellow: #F4DC6C;
+    --pink: #F4B8D7;
+    --olive: #A9B874;
+    --blue: #BED0F1;
+    --peach: #F5C09A;
+    --lavender: #D4C6F0;
+    --mint: #B9DEC6;
+    --coral: #F2A99E;
+    --ink: #1E1D1A;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    --display: "Manrope", var(--sans);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 56px 24px 96px; }
+  h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; margin: 0; }
+  h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 800; line-height: 1.05; }
+  h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  h3 { font-size: 17px; font-weight: 700; }
+  p { margin: 0; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    background: var(--card); border: 1px solid var(--hairline);
+    padding: 6px 12px; border-radius: 999px; margin-bottom: 20px;
+  }
+  .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--lavender); }
+  .lede { color: var(--muted); font-size: 18px; max-width: 640px; margin-top: 16px; }
+  section { margin-top: 88px; }
+  .section-sub { color: var(--muted); max-width: 640px; margin-bottom: 32px; }
+
+  /* ---------- Hero: prototype + summary ---------- */
+  .hero { display: grid; grid-template-columns: 1fr auto; gap: 56px; align-items: center; margin-top: 48px; }
+  .summary { display: grid; gap: 12px; }
+  .change {
+    display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start;
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 24px; padding: 16px;
+  }
+  .change .dot {
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    color: var(--ink); font-weight: 800; font-family: var(--display);
+  }
+  .change p { color: var(--muted); font-size: 15px; margin-top: 2px; }
+  .hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 14px; }
+
+  /* ---------- Phone ---------- */
+  .phone {
+    --w: 300px;
+    width: var(--w);
+    aspect-ratio: 590 / 1282;
+    position: relative;
+    border-radius: calc(var(--w) * 0.14);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: 0 0 0 10px #1c1c1f, 0 0 0 11px #2c2c30, 0 30px 80px rgba(0,0,0,0.6);
+    container-type: inline-size;
+  }
+  .phone.sm { --w: 230px; box-shadow: 0 0 0 7px #1c1c1f, 0 0 0 8px #2c2c30, 0 20px 50px rgba(0,0,0,0.5); }
+  .screen { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .screen.on { opacity: 1; pointer-events: auto; }
+  .screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Covers the old 6-tab bar baked into each screenshot. */
+  .bar-cover { position: absolute; left: 0; right: 0; bottom: 0; height: 15%; background: var(--surface); }
+
+  /* Header band drawn over Exercises screenshots to add the Areas | Body toggle. */
+  .ex-head {
+    position: absolute; left: 0; right: 0; top: 6.5%; height: 8%;
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 4.2%;
+  }
+  .ex-head .title { font-family: var(--display); font-weight: 800; font-size: 8.6cqw; letter-spacing: -0.03em; }
+  .seg {
+    display: flex; background: var(--card); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 0.8cqw; gap: 0.6cqw;
+  }
+  .seg button {
+    all: unset; cursor: pointer;
+    font-size: 3.6cqw; font-weight: 600; color: var(--muted);
+    padding: 1.6cqw 3.6cqw; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 1.2cqw;
+  }
+  .seg button svg { width: 3.6cqw; height: 3.6cqw; }
+  .seg button.on { background: var(--text); color: var(--surface); }
+  .seg button:focus-visible { outline: 2px solid var(--lavender); outline-offset: 1px; }
+
+  /* ---------- Tab bar (shared by phones and the before/after strip) ---------- */
+  .tabbar {
+    position: absolute; left: 4%; right: 4%; bottom: 2.4%; height: 6.8%;
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 999px;
+    display: flex; align-items: center; justify-content: space-around; padding: 0 2%;
+  }
+  .tab {
+    all: unset; cursor: pointer; position: relative;
+    flex: 1; height: 100%; display: grid; place-items: center;
+    color: var(--muted);
+  }
+  .tab svg { width: 7cqw; height: 7cqw; position: relative; z-index: 1; transition: transform .25s ease, color .25s ease; }
+  .tab .bubble {
+    position: absolute; left: 50%; top: 50%;
+    width: 15cqw; height: 15cqw; border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.4); opacity: 0;
+    background: var(--tint);
+    box-shadow: 0 0 0 1.6cqw var(--surface), 0 1cqw 4cqw color-mix(in srgb, var(--tint) 40%, transparent);
+    transition: transform .3s cubic-bezier(.3,1.4,.5,1), opacity .2s ease;
+  }
+  .tab.on .bubble { opacity: 1; transform: translate(-50%, -78%) scale(1); }
+  .tab.on svg { color: var(--ink); transform: translateY(-2.4cqw); }
+  .tab:focus-visible { outline: 2px solid var(--lavender); outline-offset: -4px; border-radius: 12px; }
+  .static .tab { cursor: default; }
+
+  /* ---------- Before / after strip ---------- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-card {
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 24px;
+    padding: 24px; display: grid; gap: 18px;
+  }
+  .compare-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; color: var(--ink); }
+  .strip {
+    container-type: inline-size;
+    position: relative; height: 96px;
+  }
+  .strip .tabbar { left: 0; right: 0; bottom: 8px; height: 60px; }
+  .strip .tab svg { width: 24px; height: 24px; }
+  .strip .tab .bubble { width: 54px; height: 54px; box-shadow: 0 0 0 5px var(--card); }
+  .strip .tab.on svg { transform: translateY(-9px); }
+  .labels { display: flex; justify-content: space-around; font-size: 12px; color: var(--muted); }
+  .labels span { flex: 1; text-align: center; }
+  .labels .gone { text-decoration: line-through; color: var(--coral); }
+  .compare-card .note { color: var(--muted); font-size: 14px; }
+
+  /* ---------- Gallery ---------- */
+  .gallery {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 56px 32px; justify-items: center;
+  }
+  figure { margin: 0; display: grid; gap: 18px; justify-items: center; }
+  figcaption { text-align: center; max-width: 240px; }
+  figcaption p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; margin-bottom: 8px; color: var(--ink); }
+  .tag.same { background: var(--container); color: var(--muted); }
+
+  /* ---------- Table ---------- */
+  .table-wrap { overflow-x: auto; border-radius: 24px; border: 1px solid var(--hairline); }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; background: var(--card); }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--hairline); font-size: 15px; vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  td .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; }
+  td.muted { color: var(--muted); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; background: var(--container); padding: 1px 6px; border-radius: 6px; }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .note-card { background: var(--card); border: 1px solid var(--hairline); border-radius: 24px; padding: 20px; }
+  .note-card p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+  footer { margin-top: 88px; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; justify-items: center; gap: 40px; }
+    .summary { width: 100%; }
+    .compare { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 40px 16px 72px; }
+    .phone { --w: min(300px, calc(100vw - 64px)); }
+    .compare-card { padding: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow"><i></i>Dial Down · seperate-main · Proposal</span>
+  <h1>Five tabs instead of six</h1>
+  <p class="lede">People said the bottom bar has too many buttons. This proposal moves the Body map into the Exercises tab as a second view, so the bar drops from six tabs to five and no feature is lost.</p>
+
+  <!-- ===== Interactive prototype ===== -->
+  <div class="hero">
+    <div class="summary">
+      <div class="change">
+        <div class="dot" style="background:var(--coral)">−1</div>
+        <div><h3>Body is no longer its own tab</h3><p>The 3D body map was a way to find stretches for a sore spot. That's the same job as Exercises.</p></div>
+      </div>
+      <div class="change">
+        <div class="dot" style="background:var(--blue)">↔</div>
+        <div><h3>Exercises gets an Areas / Body switch</h3><p><b>Areas</b> is today's bubble map, search and filters. <b>Body</b> is the 3D map, unchanged. The switch remembers your last choice.</p></div>
+      </div>
+      <div class="change">
+        <div class="dot" style="background:var(--mint)">✓</div>
+        <div><h3>Everything else stays put</h3><p>Today, Breathe, Routines and Profile keep their screens. Each tab gets about 20% more width, so icons are easier to tell apart and hit.</p></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="phone" id="proto" aria-label="Interactive prototype of the five-tab layout"></div>
+      <p class="hint">Try it: tap the tabs, and switch Areas / Body on Exercises.</p>
+    </div>
+  </div>
+
+  <!-- ===== Before / after ===== -->
+  <section>
+    <h2>The bottom bar</h2>
+    <p class="section-sub">Same floating bar and pop-out pastel circle as now, with one fewer tab.</p>
+    <div class="compare">
+      <div class="compare-card">
+        <header><h3>Now · 6 tabs</h3><span class="pill" style="background:var(--container);color:var(--muted)">Current</span></header>
+        <div class="strip static" id="before"></div>
+        <div class="labels"><span>Today</span><span class="gone">Body</span><span>Exercises</span><span>Breathe</span><span>Routines</span><span>Profile</span></div>
+        <p class="note">Two tabs (Body, Exercises) both lead to "find a stretch for this area."</p>
+      </div>
+      <div class="compare-card">
+        <header><h3>Proposed · 5 tabs</h3><span class="pill" style="background:var(--mint)">New</span></header>
+        <div class="strip static" id="after"></div>
+        <div class="labels"><span>Today</span><span>Exercises</span><span>Breathe</span><span>Routines</span><span>Profile</span></div>
+        <p class="note">Within Apple's 3–5 tab guidance. Breathe sits dead center, fitting for an app called "Breathe and Relax."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Gallery ===== -->
+  <section>
+    <h2>Every screen</h2>
+    <p class="section-sub">Unchanged screens are real screenshots from the current build. The Exercises header with the Areas / Body switch is the only new piece.</p>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <!-- ===== Mapping table ===== -->
+  <section>
+    <h2>What moves where</h2>
+    <p class="section-sub">Nothing is removed from the app. One tab folds into another.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Now</th><th>Proposed</th><th>What changes</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:var(--yellow)"></span>Today</td><td>Today</td><td class="muted">Nothing.</td></tr>
+          <tr><td><span class="sw" style="background:var(--peach)"></span>Body</td><td>Exercises → Body</td><td>Moves behind the Areas / Body switch. Front/back flip, tap-a-sore-spot and the mini-routine bar all work the same.</td></tr>
+          <tr><td><span class="sw" style="background:var(--blue)"></span>Exercises</td><td>Exercises → Areas</td><td>Gets the Areas / Body switch in its header. "372 total" moves under the search bar.</td></tr>
+          <tr><td><span class="sw" style="background:var(--mint)"></span>Breathe</td><td>Breathe</td><td class="muted">Nothing.</td></tr>
+          <tr><td><span class="sw" style="background:var(--lavender)"></span>Routines</td><td>Routines</td><td class="muted">Nothing. Keeps the redesign from <code>7e2b2a2</code>.</td></tr>
+          <tr><td><span class="sw" style="background:var(--pink)"></span>Profile</td><td>Profile</td><td class="muted">Nothing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== Build notes ===== -->
+  <section>
+    <h2>Build notes</h2>
+    <p class="section-sub">Details to handle in the implementation.</p>
+    <div class="notes">
+      <div class="note-card"><h3>Tab numbers shift</h3><p>Tabs are picked by index in <code>HomeView</code>. Exercises goes from 2 → 1, Breathe 3 → 2, Routines 4 → 3, Profile 5 → 4. Update <code>originTab: 4</code> in Routines and <code>selectedTab = 2</code> for "browse exercises."</p></div>
+      <div class="note-card"><h3>Links into Body</h3><p>Anything that opened the Body tab switches to Exercises with the Body view selected, so existing entry points still land in the right place.</p></div>
+      <div class="note-card"><h3>App tour</h3><p>The <code>tabbar.body</code> tour stop goes away. Its step should point at the new Areas / Body switch.</p></div>
+      <div class="note-card"><h3>UI tests</h3><p>Tests that tap <code>app.buttons["Body"]</code> or launch with <code>-debugInitialTab</code> need the new indexes and a tap on the Body switch.</p></div>
+      <div class="note-card"><h3>Body scene stays alive</h3><p>Keep the 3D scene mounted when you flip to Areas, so switching back is instant and keeps your zoom and rotation.</p></div>
+      <div class="note-card"><h3>Later: four tabs?</h3><p>Today already shows pinned and premade routines. Routines could fold into Today later for a four-tab bar. That's a separate decision.</p></div>
+    </div>
+  </section>
+
+  <footer>Mockup for the Dial Down app · docs/mockups/five-tab-layout.html · screenshots from docs/images/screens/</footer>
+</div>
+
+<script>
+  const IMG = "../images/screens/";
+
+  // Line icons approximating the SF Symbols used by CustomTabBar.
+  const ICON = {
+    today: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"/></svg>',
+    body: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4.2" r="2.2"/><path d="M9.3 7.6h5.4c.8 0 1.4.6 1.4 1.4v5.3c0 .5-.4.9-.9.9h-.6V21c0 .6-.5 1-1 1h-3.2c-.5 0-1-.4-1-1v-5.8h-.6a.9.9 0 0 1-.9-.9V9c0-.8.6-1.4 1.4-1.4z"/></svg>',
+    exercises: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg>',
+    breathe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 9h11a3 3 0 1 0-3-3"/><path d="M3 13h15a3 3 0 1 1-3 3"/><path d="M3 17h7"/></svg>',
+    routines: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3.5" y="8.5" width="17" height="12" rx="2.5"/><path d="M6 5.5h12M8 2.8h8"/></svg>',
+    profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20.5c1.2-3.6 4.3-5.5 8-5.5s6.8 1.9 8 5.5" stroke-linecap="round"/></svg>',
+    areas: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="7" cy="7" r="4"/><circle cx="17" cy="9" r="3.4"/><circle cx="10" cy="17" r="4.4"/></svg>',
+  };
+  const TINT = { today: "var(--yellow)", body: "var(--peach)", exercises: "var(--blue)", breathe: "var(--mint)", routines: "var(--lavender)", profile: "var(--pink)" };
+  const LABEL = { today: "Today", body: "Body", exercises: "Exercises", breathe: "Breathe", routines: "Routines", profile: "Profile" };
+  const NEW_TABS = ["today", "exercises", "breathe", "routines", "profile"];
+  const OLD_TABS = ["today", "body", "exercises", "breathe", "routines", "profile"];
+
+  function tabBar(tabs, active, interactive) {
+    const bar = document.createElement("div");
+    bar.className = "tabbar";
+    bar.setAttribute("role", "tablist");
+    tabs.forEach(key => {
+      const b = document.createElement("button");
+      b.className = "tab" + (key === active ? " on" : "");
+      b.style.setProperty("--tint", TINT[key]);
+      b.dataset.tab = key;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-label", LABEL[key]);
+      b.setAttribute("aria-selected", key === active);
+      if (!interactive) b.tabIndex = -1;
+      b.innerHTML = '<span class="bubble"></span>' + ICON[key];
+      bar.appendChild(b);
+    });
+    return bar;
+  }
+
+  function exHeader(mode, interactive) {
+    const head = document.createElement("div");
+    head.className = "ex-head";
+    head.innerHTML =
+      '<span class="title">Exercises</span>' +
+      '<div class="seg" role="radiogroup" aria-label="Exercises view">' +
+        `<button data-mode="areas" role="radio" class="${mode === "areas" ? "on" : ""}" aria-checked="${mode === "areas"}" ${interactive ? "" : 'tabindex="-1"'}>${ICON.areas}Areas</button>` +
+        `<button data-mode="body" role="radio" class="${mode === "body" ? "on" : ""}" aria-checked="${mode === "body"}" ${interactive ? "" : 'tabindex="-1"'}>${ICON.body}Body</button>` +
+      '</div>';
+    return head;
+  }
+
+  // One screen layer: screenshot + cover over the old bar (+ Exercises header).
+  function screen(key, mode, interactive) {
+    const s = document.createElement("div");
+    s.className = "screen";
+    s.dataset.key = key + (key === "exercises" ? ":" + mode : "");
+    const src = { today: "today.jpg", breathe: "breathe.jpg", routines: "routines.jpg", profile: "profile.jpg" }[key]
+      || (mode === "body" ? "body-map.jpg" : "exercises.jpg");
+    s.innerHTML = `<img src="${IMG + src}" alt="${LABEL[key]} screen${key === "exercises" ? " (" + mode + ")" : ""}" loading="lazy"><div class="bar-cover"></div>`;
+    if (key === "exercises") s.appendChild(exHeader(mode, interactive));
+    return s;
+  }
+
+  function buildPhone(el, tab, mode, interactive) {
+    const state = { tab, mode };
+    const layers = [];
+    ["today", "breathe", "routines", "profile"].forEach(k => layers.push(screen(k, null, interactive)));
+    layers.push(screen("exercises", "areas", interactive), screen("exercises", "body", interactive));
+    layers.forEach(l => el.appendChild(l));
+    const bar = tabBar(NEW_TABS, tab, interactive);
+    el.appendChild(bar);
+    if (!interactive) el.classList.add("static");
+
+    function render() {
+      const want = state.tab + (state.tab === "exercises" ? ":" + state.mode : "");
+      layers.forEach(l => {
+        const on = l.dataset.key === want;
+        l.classList.toggle("on", on);
+        l.inert = !on;
+      });
+      bar.querySelectorAll(".tab").forEach(b => {
+        const on = b.dataset.tab === state.tab;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-selected", on);
+      });
+      el.querySelectorAll(".seg button").forEach(b => {
+        const on = b.dataset.mode === state.mode;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on);
+      });
+    }
+    if (interactive) {
+      el.addEventListener("click", e => {
+        const t = e.target.closest(".tab");
+        if (t) { state.tab = t.dataset.tab; render(); return; }
+        const m = e.target.closest(".seg button");
+        if (m) { state.mode = m.dataset.mode; render(); }
+      });
+    }
+    render();
+  }
+
+  // Prototype — start on Exercises so the new switch is the first thing seen.
+  buildPhone(document.getElementById("proto"), "exercises", "areas", true);
+
+  // Before / after strips
+  document.getElementById("before").appendChild(tabBar(OLD_TABS, "body", false));
+  document.getElementById("after").appendChild(tabBar(NEW_TABS, "exercises", false));
+
+  // Gallery
+  const SHOTS = [
+    { tab: "today", tag: null, title: "Today", body: "Unchanged. Week strip, today's routine and premade routines." },
+    { tab: "exercises", mode: "areas", tag: ["New header", "var(--blue)"], title: "Exercises · Areas", body: "The bubble map, search and filters, plus the Areas / Body switch." },
+    { tab: "exercises", mode: "body", tag: ["Moved here", "var(--peach)"], title: "Exercises · Body", body: "The 3D body map, now one tap away inside Exercises." },
+    { tab: "breathe", tag: null, title: "Breathe", body: "Unchanged. Now the center tab." },
+    { tab: "routines", tag: null, title: "Routines", body: "Unchanged from the new redesign: premade strip and pastel routine cards." },
+    { tab: "profile", tag: null, title: "Profile", body: "Unchanged." },
+  ];
+  const gallery = document.getElementById("gallery");
+  SHOTS.forEach(s => {
+    const fig = document.createElement("figure");
+    const ph = document.createElement("div");
+    ph.className = "phone sm";
+    ph.setAttribute("aria-hidden", "true");
+    buildPhone(ph, s.tab, s.mode || "areas", false);
+    const cap = document.createElement("figcaption");
+    cap.innerHTML = (s.tag ? `<span class="tag" style="background:${s.tag[1]}">${s.tag[0]}</span>` : '<span class="tag same">Unchanged</span>') +
+      `<h3>${s.title}</h3><p>${s.body}</p>`;
+    fig.append(ph, cap);
+    gallery.appendChild(fig);
+  });
+</script>
+</body>
+</html>

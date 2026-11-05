@@ -20,6 +20,9 @@ import SwiftData
 struct BodyMapView: View {
     @EnvironmentObject private var tourCoordinator: TourCoordinator
     @State private var facing: BodyFacing = .front
+    /// The Exercises tab's Areas / Body switch. When set, this view shows the
+    /// shared "Exercises" title row instead of an inline "Body Map" title.
+    var mode: Binding<ExercisesMode>? = nil
 
     /// The current single-tap selection. Drives the dot, the region
     /// highlight and the action bar. Nil means nothing is selected.
@@ -54,6 +57,12 @@ struct BodyMapView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+
+                if let mode {
+                    ExercisesTitleRow(mode: mode, subtitle: "3D body map")
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                }
 
                 // ── Top bar ──────────────────────────────────────────────────
                 HStack(spacing: 8) {
@@ -111,8 +120,13 @@ struct BodyMapView: View {
             }
             .background(Color.luminaSurface.ignoresSafeArea())
             .floatingTabBarClearance()
+            // Kept as "Body Map" even inside the Exercises tab, where the bar
+            // itself is hidden (the shared title row replaces it, and hiding
+            // it keeps that row at the same height as in Areas): it's still
+            // the back-button label on pushed stretch lists.
             .navigationTitle("Body Map")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar(mode == nil ? .automatic : .hidden, for: .navigationBar)
             .animation(.easeInOut(duration: 0.2), value: selection)
             .navigationDestination(item: $exercisesRoute) { route in
                 BodyPartExercisesView(bodyPart: route.region)

@@ -32,7 +32,7 @@ struct CustomizeRoutineView: View {
     /// return to — see `ExercisePickingSession.Context.originTab`. Today's
     /// Customize is opened from the Today tab (0); routine-creation flows
     /// pass the tab they were opened from instead.
-    var pickingOriginTab: Int = 0
+    var pickingOriginTab: Int = AppTab.today.rawValue
     /// Hides the "Add Exercises" toolbar button — for flows already nested
     /// inside another `ExercisePickingSession` (MiniRoutineReviewView's
     /// "Create New Routine"/"Start Mini-Routine", both presented from a
@@ -61,7 +61,7 @@ struct CustomizeRoutineView: View {
         showsNameField: Bool = false, initialName: String = "",
         showsPinToggle: Bool = true,
         primaryActionLabel: String = "Begin", primaryActionIcon: String = "play.fill",
-        pickingOriginTab: Int = 0, showsAddExercisesButton: Bool = true,
+        pickingOriginTab: Int = AppTab.today.rawValue, showsAddExercisesButton: Bool = true,
         onDone: @escaping (_ name: String, _ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
     ) {
         self.title = title

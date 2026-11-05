@@ -18,8 +18,12 @@ final class BodyMapMusclePickerUITests: XCTestCase {
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]
         app.launchArguments += extraArgs
+        app.launchArguments += ["-exercisesMode", "body"]
         app.launch()
-        let bodyTab = app.descendants(matching: .any)["Body"].firstMatch
+        // Body lives behind the Exercises tab's Areas / Body switch. The
+        // `-exercisesMode body` launch argument opens it on Body without a
+        // tap — tapping the switch would save the choice into later tests.
+        let bodyTab = app.buttons["Exercises"].firstMatch
         _ = bodyTab.waitForExistence(timeout: 30)
         bodyTab.tap()
         sleep(6) // async OBJ parse
@@ -70,7 +74,7 @@ final class BodyMapMusclePickerUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["bodymap.regionActionBar"].waitForExistence(timeout: 5),
                       "Cancel should land back on the zoomed region's action bar, not a full reset")
-        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+        XCTAssertTrue(app.staticTexts["3D body map"].exists,
                       "Cancel should not navigate anywhere")
     }
 
@@ -135,7 +139,7 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: app.staticTexts["Which area did you mean?"])
         waitForExpectations(timeout: 5)
-        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+        XCTAssertTrue(app.staticTexts["3D body map"].exists,
                       "Should still be on Body Map, not navigated to a stretch list")
 
         // Must STAY gone, not just disappear momentarily — an

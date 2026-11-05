@@ -316,7 +316,7 @@ struct TodayView: View {
             // Peek first and check originTab before consuming — a second screen
             // (RoutineBuilderView, via RoutineListView) can also finish a pick
             // now, and this same notification fires at every mounted listener.
-            guard let result = pickingSession.lastFinished, result.context.originTab == 0 else { return }
+            guard let result = pickingSession.lastFinished, result.context.originTab == AppTab.today.rawValue else { return }
             _ = pickingSession.consumeFinished()
             customizeOverride = (result.context.title, result.merged, result.context.isPinned)
             showingCustomize = true

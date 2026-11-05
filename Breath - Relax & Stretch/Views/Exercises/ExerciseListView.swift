@@ -12,6 +12,9 @@ struct ExerciseListView: View {
     @State private var visibleSearchCount = ExerciseSearchResults.pageSize
     @FocusState private var isSearchFocused: Bool
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    /// The Exercises tab's Areas / Body switch. Nil outside the tab (previews),
+    /// which shows the plain title + count instead.
+    var mode: Binding<ExercisesMode>? = nil
 
     private var normalizedSearchText: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -171,19 +174,22 @@ struct ExerciseListView: View {
     /// seperate-main restyle's header (no Liquid Glass container anymore).
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Exercises")
-                    .font(.luminaDisplay)
-                    .tracking(-0.6)
-                Spacer()
-                Text("\(exercises.count) total")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            if let mode {
+                ExercisesTitleRow(mode: mode, subtitle: "\(exercises.count) exercises")
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Exercises")
+                        .font(.luminaDisplay)
+                        .tracking(-0.6)
+                    Spacer()
+                    Text("\(exercises.count) total")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
             }
 
             HStack(spacing: 10) {
                 searchBar
-                    .tourAnchor("exercises.search")
 
                 Button {
                     showingFilterSheet = true
@@ -221,6 +227,7 @@ struct ExerciseListView: View {
                 .background(pickingSession.isActive ? Color.pastelMint : Color.luminaContainer, in: Circle())
                 .accessibilityIdentifier("exerciseSelectToggle")
             }
+            .tourAnchor("exercises.search")
 
             typeChips
         }
@@ -295,11 +302,11 @@ struct ExerciseListView: View {
 struct PickingBar: View {
     /// Which HomeView tab hosts the screen this bar is attached to —
     /// forwarded to `MiniRoutineReviewView` so its own Customize sheets
-    /// route "Add Exercises" back to the right tab. Defaults to 2
-    /// (Exercises), this bar's original home; `BodyPartExercisesView`
-    /// passes 1 (Body) since it hosts the same bar.
-    var originTab: Int = 2
+    /// route "Add Exercises" back to the right tab. Defaults to Exercises,
+    /// which now also hosts the body map (`BodyPartExercisesView`).
+    var originTab: Int = AppTab.exercises.rawValue
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @Environment(\.exercisesViewIsVisible) private var isVisible
     @State private var showingReview = false
 
     private var pickedMinutes: Int {
@@ -307,6 +314,12 @@ struct PickingBar: View {
     }
 
     var body: some View {
+        // The hidden half of the Exercises tab draws no bar at all — otherwise
+        // VoiceOver (and UI tests) find two "Continue" buttons.
+        if isVisible { content }
+    }
+
+    private var content: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 1) {
                 Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")

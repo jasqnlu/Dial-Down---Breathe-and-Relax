@@ -77,7 +77,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
-                                "-debugInitialTab", "2"]
+                                "-debugInitialTab", "1"]
         app.launch()
         sleep(3)
         attach(app, "repro-graph-initial")
@@ -140,7 +140,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
-                                "-debugInitialTab", "3"]
+                                "-debugInitialTab", "2"]
         app.launch()
         sleep(2)
         attach(app, "Breathe-tab-background")
@@ -153,7 +153,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
-                                "-debugInitialTab", "2"]
+                                "-debugInitialTab", "1"]
         app.launch()
         sleep(2)
         let searchField = app.textFields["Search exercises"]

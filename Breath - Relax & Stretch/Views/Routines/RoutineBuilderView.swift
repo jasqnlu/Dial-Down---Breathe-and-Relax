@@ -30,7 +30,7 @@ struct RoutineBuilderView: View {
     /// (RoutineListView, PremadeRoutinesView); callers presenting this view
     /// from a different tab (e.g. TodayView's premade-routine sheet, tab 0)
     /// must override it, or the user gets returned to the wrong tab.
-    var pickingOriginTab: Int = 4
+    var pickingOriginTab: Int = AppTab.routines.rawValue
     /// Whether "Add Exercise" should be offered at all. False for
     /// call sites where the cross-tab picking flow would conflict with an
     /// already-in-progress `ExercisePickingSession` this view is nested

@@ -30,9 +30,13 @@ final class BodyMapMiniRoutineStartUITests: XCTestCase {
             "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
+        app.launchArguments += ["-exercisesMode", "body"]
         app.launch()
 
-        let bodyTab = app.descendants(matching: .any)["Body"].firstMatch
+        // Body lives behind the Exercises tab's Areas / Body switch. The
+        // `-exercisesMode body` launch argument opens it on Body without a
+        // tap — tapping the switch would save the choice into later tests.
+        let bodyTab = app.buttons["Exercises"].firstMatch
         XCTAssertTrue(bodyTab.waitForExistence(timeout: 30))
         bodyTab.tap()
         sleep(6) // async OBJ parse — mirrors BodyMapMusclePickerUITests
@@ -68,7 +72,7 @@ final class BodyMapMiniRoutineStartUITests: XCTestCase {
         // its known corner position is the reliable way to hit it).
         let firstTile = app.descendants(matching: .any).matching(identifier: "exerciseGridTile").firstMatch
         XCTAssertTrue(firstTile.waitForExistence(timeout: 10))
-        firstTile.coordinate(withNormalizedOffset: CGVector(dx: 0.83, dy: 0.61)).tap()
+        firstTile.coordinate(withNormalizedOffset: CGVector(dx: 0.83, dy: 0.49)).tap() // the + badge on the restyled ExerciseTileCard
 
         // "Continue" opens the shared review screen with the three
         // destinations (Create New Routine / Add to Existing Routine /

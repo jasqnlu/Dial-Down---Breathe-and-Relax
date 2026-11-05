@@ -201,7 +201,7 @@ struct BodyPartExercisesView: View {
         // swallowed by the tab bar sitting on top of it).
         .safeAreaInset(edge: .bottom) {
             if pickingSession.isActive {
-                PickingBar(originTab: 1) // Body tab
+                PickingBar() // Exercises tab (Body view)
             }
         }
         .floatingTabBarClearance()
