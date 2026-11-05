@@ -1217,6 +1217,28 @@
         }
       }
     },
+    "Voice is ready — hold again to talk." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La voz está lista: mantén pulsado otra vez para hablar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La voix est prête — maintenez à nouveau pour parler."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音已就绪——再次按住即可说话。"
+          }
+        }
+      }
+    },
     "Voice isn't available right now — you can type instead." : {
       "localizations" : {
         "es" : {

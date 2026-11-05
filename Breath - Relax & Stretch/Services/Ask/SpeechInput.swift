@@ -59,6 +59,22 @@ final class SpeechInput {
         teardown()
     }
 
+    /// True when the mic or speech permission prompt hasn't been answered yet,
+    /// i.e. the next `start` will show a system alert.
+    nonisolated static var permissionsUndetermined: Bool {
+        AVAudioApplication.shared.recordPermission == .undetermined
+            || SFSpeechRecognizer.authorizationStatus() == .notDetermined
+    }
+
+    /// Waits for the user's answer to the permission prompts (returns at once if
+    /// already answered). `nil` when both are granted.
+    static func permissionOutcome() async -> SpeechUnavailableReason? {
+        let micGranted = await AVAudioApplication.requestRecordPermission()
+        let speechAuthorized = await requestSpeechAuthorization()
+        return reason(micGranted: micGranted, speechAuthorized: speechAuthorized,
+                      localeSupported: true, assetInstalled: true)
+    }
+
     func start(locale: Locale) async {
         guard state != .listening else { return }
         teardown()

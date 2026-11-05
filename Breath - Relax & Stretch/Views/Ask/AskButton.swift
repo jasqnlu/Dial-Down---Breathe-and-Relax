@@ -50,6 +50,11 @@ struct AskButton: View {
     @State private var holdTask: Task<Void, Never>?
     @State private var pressStart: Date?
     @State private var holdCount = 0
+    /// The current hold began before the user had answered the voice permission prompts.
+    @State private var holdNeedsPermission = false
+    /// Brief "voice is ready" note after the first-use permission prompts.
+    @State private var voiceReady = false
+    @State private var voiceReadyTask: Task<Void, Never>?
     @GestureState private var isPressing = false
     @FocusState private var fieldFocused: Bool
     @Namespace private var ns
@@ -88,7 +93,9 @@ struct AskButton: View {
         // backgrounding or a full-screen cover hides it mid-listen.
         .onDisappear { stopListeningSilently() }
         .onChange(of: scenePhase) { _, phase in
-            if phase != .active { stopListeningSilently() }
+            // Only .background: permission alerts make the scene briefly .inactive,
+            // and cancelling then would kill the very dictation that asked for them.
+            if phase == .background { stopListeningSilently() }
         }
         .sheet(item: $chat, onDismiss: { speech.cancel(); voiceIssue = nil }) { request in
             // Close goes through dismiss() → onDismiss above, which cancels listening.
@@ -119,10 +126,12 @@ struct AskButton: View {
     /// Ignores the keyboard so it doesn't ride up over other screens' keyboards.
     private var restingLayer: some View {
         HStack(alignment: .bottom, spacing: 12) {
-            if mode == .holding || voiceIssue != nil {
+            if mode == .holding || voiceIssue != nil || voiceReady {
                 Group {
                     if let voiceIssue {
                         VoiceIssueNote(reason: voiceIssue, openSettings: openSettings)
+                    } else if voiceReady {
+                        VoiceReadyNote()
                     } else {
                         transcriptBubble
                     }
@@ -302,6 +311,8 @@ struct AskButton: View {
 
     private func beginHold() {
         voiceIssue = nil
+        hideVoiceReady()
+        holdNeedsPermission = SpeechInput.permissionsUndetermined
         holdCount += 1
         withAnimation(animation) { mode = .holding }
         Task { await speech.start(locale: speechLocale) }
@@ -322,7 +333,14 @@ struct AskButton: View {
         case .holding:
             let text = speech.stop()
             withAnimation(animation) { mode = .resting }
-            if !text.isEmpty { presentChat(text) }
+            if holdNeedsPermission {
+                // The permission alert took over this hold (it cancels the touch),
+                // so nothing was heard. Once answered, say what to do next.
+                holdNeedsPermission = false
+                Task { await showPermissionOutcome() }
+            } else if !text.isEmpty {
+                presentChat(text)
+            }
         case .resting:
             if wasTap { expand(listening: false) }
         case .typing:
@@ -338,6 +356,7 @@ struct AskButton: View {
 
     private func expand(listening: Bool) {
         voiceIssue = nil
+        hideVoiceReady()
         draft = ""
         withAnimation(animation) { mode = .typing }
         if listening {
@@ -351,7 +370,30 @@ struct AskButton: View {
         holdTask = nil
         pressStart = nil
         speech.cancel()
-        if mode == .holding { mode = .resting }
+        holdNeedsPermission = false
+        if mode == .holding { withAnimation(animation) { mode = .resting } }
+    }
+
+    private func showPermissionOutcome() async {
+        if let reason = await SpeechInput.permissionOutcome() {
+            withAnimation(animation) { voiceIssue = reason }
+            return
+        }
+        guard mode == .resting, voiceIssue == nil else { return }
+        withAnimation(animation) { voiceReady = true }
+        AccessibilityNotification.Announcement(String(localized: "Voice is ready — hold again to talk.")).post()
+        voiceReadyTask?.cancel()
+        voiceReadyTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled else { return }
+            hideVoiceReady()
+        }
+    }
+
+    private func hideVoiceReady() {
+        voiceReadyTask?.cancel()
+        voiceReadyTask = nil
+        if voiceReady { withAnimation(animation) { voiceReady = false } }
     }
 
     private func collapse() {
@@ -398,6 +440,23 @@ struct AskButton: View {
 
     private func openSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+    }
+}
+
+/// Shown once after the first-use permission prompts are granted. No backdrop.
+private struct VoiceReadyNote: View {
+    var body: some View {
+        Text("Voice is ready — hold again to talk.")
+            .font(.luminaBody)
+            .foregroundStyle(Color.luminaOnSurface)
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .strokeBorder(Color.pastelMint, lineWidth: 1.5)
+            )
+            .accessibilityIdentifier("ask.voiceReady")
     }
 }
 
