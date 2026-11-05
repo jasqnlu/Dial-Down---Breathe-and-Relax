@@ -32,6 +32,7 @@ struct StubExtractor: IntentExtractor {
 }
 
 @MainActor
+@Suite(.serialized)
 struct AskPipelineTests {
     private func intent(_ areas: [AskArea] = [], seriousness: SafetyLevel = .ok,
                         offTopic: Bool = false) -> AskIntent {
@@ -76,22 +77,33 @@ struct AskPipelineTests {
         #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
     }
 
+    /// Builds the static phrase tables before a timed test starts its clock.
+    private func warmUp() {
+        _ = KeywordIntentExtractor().intent(for: "warm up")
+        _ = SafetyScreener.screen("x")
+    }
+
+    /// The model would answer `.neck`, so a `.lowerBack` reply proves the keyword
+    /// fallback won the race, independent of how fast the machine is.
     @Test func slowModelFallsBackToKeywords() async {
-        let slow = StubExtractor.Mode.sleeping(.seconds(2), intent())
+        warmUp()
+        let slow = StubExtractor.Mode.sleeping(.seconds(30), intent([.neck]))
         let start = ContinuousClock.now
         let reply = await pipeline(slow, timeout: .milliseconds(100))
             .respond(to: "lower back pain", catalog: catalog())
-        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
-        #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
-        #expect(ContinuousClock.now - start < .seconds(1))
+        guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.areas == [.lowerBack])
+        #expect(ContinuousClock.now - start < .seconds(10))
     }
 
     @Test func cancellationIgnoringModelStillTimesOut() async {
+        warmUp()
         let start = ContinuousClock.now
-        let reply = await pipeline(.stubborn(.seconds(2), intent()), timeout: .milliseconds(100))
+        let reply = await pipeline(.stubborn(.seconds(30), intent([.neck])), timeout: .milliseconds(100))
             .respond(to: "lower back pain", catalog: catalog())
-        guard case .routine = reply else { Issue.record("got \(reply)"); return }
-        #expect(ContinuousClock.now - start < .seconds(1))
+        guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.areas == [.lowerBack])
+        #expect(ContinuousClock.now - start < .seconds(10))
     }
 
     @Test func emptyModelIntentUsesKeywords() async {
