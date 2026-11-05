@@ -100,6 +100,14 @@ struct HomeView: View {
             selectedTab = originTab
         }
         .ignoresSafeArea(.keyboard)
+        // Above the tab bar (its backdrop dims the bar too). Added after the
+        // keyboard-ignoring modifier so the expanded ask bar can still sit on
+        // top of the keyboard. Hidden while the app tour runs.
+        .overlay {
+            if !tourCoordinator.isActive {
+                AskButton()
+            }
+        }
         .sheet(item: pendingActionBinding) { action in
             switch action {
             case .quickSession:
