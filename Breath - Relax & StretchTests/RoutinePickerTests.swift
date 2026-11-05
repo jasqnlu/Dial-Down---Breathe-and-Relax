@@ -94,6 +94,40 @@ struct RoutinePickerTests {
                 ["Left Hip Opener", "Right Hip Opener"])
     }
 
+    @Test func oneSidedMatchIsCompletedFromCatalog() {
+        let catalog = [
+            make("Left Hip Opener", ["Left Hip"]),
+            make("Right Hip Opener", ["Right Chest"]),
+        ]
+        // Only "Left Hip" is requested via the resolver's direct match on the left twin.
+        let routine = RoutinePicker.pick(intent: intent([.hips]), from: catalog)
+        #expect(names(routine) == ["Left Hip Opener", "Right Hip Opener"])
+    }
+
+    @Test func gentleDropsPairWhenPartnerTooHard() {
+        let catalog = [
+            make("Left Hip Opener", ["Left Hip"], difficulty: 1),
+            make("Right Hip Opener", ["Right Hip"], difficulty: 2),
+        ]
+        #expect(RoutinePicker.pick(intent: intent([.hips]), from: catalog, gentle: true) == nil)
+    }
+
+    @Test func oneSidedWithoutPartnerIsDropped() {
+        let catalog = [make("Left Hip Opener", ["Left Hip"])]
+        #expect(RoutinePicker.pick(intent: intent([.hips]), from: catalog) == nil)
+    }
+
+    @Test func explicitMinutesIgnoreFourSlotMinimum() {
+        let catalog = (0..<10).map { make("Back Move \($0)", ["Lower Back"]) }
+        #expect(RoutinePicker.pick(intent: intent([.lowerBack], minutes: 1), from: catalog)?.totalSeconds == 60)
+        #expect(RoutinePicker.pick(intent: intent([.lowerBack], minutes: 3), from: catalog)?.totalSeconds == 180)
+    }
+
+    @Test func sixSlotCapWithoutMinutes() {
+        let catalog = (0..<10).map { make("Back Move \($0)", ["Lower Back"], seconds: 30) }
+        #expect(RoutinePicker.pick(intent: intent([.lowerBack]), from: catalog)?.exercises.count == 6)
+    }
+
     @Test func pairKeyStripsSidePrefix() {
         #expect(RoutinePicker.pairKey("Left Hip Opener") == "Hip Opener")
         #expect(RoutinePicker.pairKey("Right Hip Opener") == "Hip Opener")

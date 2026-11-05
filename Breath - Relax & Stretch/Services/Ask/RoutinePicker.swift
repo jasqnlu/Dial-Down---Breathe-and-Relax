@@ -22,16 +22,17 @@ enum RoutinePicker {
     static func pick(intent: AskIntent, from catalog: [Exercise], gentle: Bool = false) -> AskRoutine? {
         var candidates = orderedCandidates(for: intent, in: catalog)
         if gentle { candidates = candidates.filter { $0.difficulty == 1 } }
-        let slots = makeSlots(from: candidates)
+        let slots = makeSlots(from: candidates, catalog: catalog,
+                              allowBreath: intent.areas.isEmpty, gentle: gentle)
 
-        let requested = (intent.minutes ?? 0) > 0 ? intent.minutes : nil
+        let requested = intent.minutes.flatMap { $0 > 0 ? $0 : nil }
         let target = min(max(requested ?? defaultMinutes, 1), 20) * 60
 
         var chosen: [Exercise] = []
         var slotCount = 0
         var total = 0
         for slot in slots {
-            if total >= target && slotCount >= minSlots { break }
+            if total >= target && (requested != nil || slotCount >= minSlots) { break }
             if requested == nil && slotCount >= maxSlotsWithoutMinutes { break }
             chosen.append(contentsOf: slot)
             slotCount += 1
@@ -72,7 +73,10 @@ enum RoutinePicker {
     }
 
     /// Groups Left/Right pairs into one slot (Left first); others stand alone.
-    private static func makeSlots(from exercises: [Exercise]) -> [[Exercise]] {
+    /// A one-sided slot is completed with its partner from the full catalog;
+    /// if the partner is missing or breaks a rule (gentle, breath), the slot is dropped.
+    private static func makeSlots(from exercises: [Exercise], catalog: [Exercise],
+                                  allowBreath: Bool, gentle: Bool) -> [[Exercise]] {
         var order: [String] = []
         var groups: [String: [Exercise]] = [:]
         for exercise in exercises {
@@ -80,8 +84,16 @@ enum RoutinePicker {
             if groups[key] == nil { order.append(key) }
             groups[key, default: []].append(exercise)
         }
-        return order.map { key in
-            (groups[key] ?? []).sorted { $0.name.hasPrefix("Left ") && !$1.name.hasPrefix("Left ") }
+        return order.compactMap { key in
+            var slot = groups[key] ?? []
+            if slot.count == 1, let only = slot.first, only.name != key {
+                let partnerName = (only.name.hasPrefix("Left ") ? "Right " : "Left ") + key
+                guard let partner = catalog.first(where: { $0.name == partnerName }),
+                      allowBreath || partner.type != .breath,
+                      !gentle || partner.difficulty == 1 else { return nil }
+                slot.append(partner)
+            }
+            return slot.sorted { $0.name.hasPrefix("Left ") && !$1.name.hasPrefix("Left ") }
         }
     }
 }
