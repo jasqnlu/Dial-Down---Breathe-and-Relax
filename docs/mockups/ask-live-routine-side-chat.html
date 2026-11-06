@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask Live Routine</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Lumina dark tokens (LuminaTheme.swift) */
+  --surface:#0A0A0B; --card:#17171A; --container:#26262A; --outline:#2A2A2E;
+  --on:#F5F5F7; --onVar:#8E8E93; --onPastel:#1E1D1A;
+  --yellow:#F4DC6C; --pink:#F4B8D7; --olive:#A9B874; --blue:#BED0F1;
+  --peach:#F5C09A; --lavender:#D4C6F0; --mint:#B9DEC6; --coral:#F2A99E;
+  --glass:rgba(23,23,26,.62); --glassEdge:rgba(255,255,255,.09);
+  --spring:cubic-bezier(.32,.72,0,1);
+  --page:#050506; --pageInk:#C9C9CE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--pageInk);font-family:Manrope,system-ui,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.stage{display:flex;gap:40px;justify-content:center;align-items:flex-start;padding:32px 16px;flex-wrap:wrap}
+
+/* ---------- side controls ---------- */
+.controls{width:340px;max-width:100%;display:flex;flex-direction:column;gap:22px}
+.controls h1{font-size:22px;font-weight:800;color:var(--on);letter-spacing:-.02em}
+.controls p{font-size:13.5px;line-height:1.55;color:var(--onVar)}
+.controls h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--onVar);margin-bottom:8px;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-radius:12px;padding:3px}
+.seg button{padding:8px 0;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--onVar)}
+.seg button.on{background:var(--on);color:var(--surface)}
+.samples{display:flex;flex-direction:column;gap:6px}
+.samples button{text-align:left;padding:9px 12px;border-radius:10px;background:var(--card);font-size:13px;color:var(--on);border:1px solid transparent}
+.samples button:hover{border-color:var(--outline)}
+.samples button small{display:block;color:var(--onVar);font-size:11px;margin-top:2px}
+.notes{font-size:12.5px;line-height:1.6;color:var(--onVar);background:var(--card);border-radius:14px;padding:14px 16px}
+.notes b{color:var(--on)} .notes li{margin-left:16px;margin-bottom:4px}
+code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--lavender)}
+
+/* ---------- phone ---------- */
+.phone{width:410px;height:864px;border-radius:58px;background:#1b1b1d;padding:10px;box-shadow:0 0 0 1px #333,0 40px 80px rgba(0,0,0,.6);flex-shrink:0}
+.screen{position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden;background:var(--surface);color:var(--on)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:34px;border-radius:20px;background:#000;z-index:50}
+.status{position:absolute;top:16px;left:34px;right:30px;display:flex;justify-content:space-between;font-size:15px;font-weight:700;z-index:49}
+
+/* fake home behind the chat */
+.home{position:absolute;inset:0;padding:64px 20px 0;overflow:hidden}
+.home .hi{font-size:14px;color:var(--onVar);font-weight:600}
+.home h3{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:2px 0 18px}
+.hero{border-radius:26px;background:var(--yellow);color:var(--onPastel);padding:20px;height:170px;display:flex;flex-direction:column;justify-content:space-between}
+.hero b{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.tile{border-radius:22px;height:132px;padding:16px;color:var(--onPastel);font-weight:800;font-size:16px;display:flex;align-items:flex-end}
+.row{margin-top:12px;border-radius:22px;background:var(--card);height:88px;padding:16px;display:flex;align-items:center;gap:12px}
+.row i{width:52px;height:52px;border-radius:16px;background:var(--lavender)}
+.row div b{display:block;font-size:15px} .row div span{font-size:12.5px;color:var(--onVar)}
+.tabbar{position:absolute;left:16px;right:16px;bottom:24px;height:64px;border-radius:32px;background:rgba(38,38,42,.85);backdrop-filter:blur(20px);display:flex;justify-content:space-around;align-items:center;z-index:5}
+.tabbar span{width:22px;height:22px;border-radius:7px;background:var(--onVar);opacity:.55}
+.tabbar span.on{background:var(--on);opacity:1}
+
+/* ---------- Ask FAB ---------- */
+.fab{position:absolute;right:18px;bottom:104px;width:58px;height:58px;border-radius:50%;background:var(--lavender);color:var(--onPastel);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45);z-index:20;transition:transform .4s var(--spring),opacity .25s}
+.fab svg{width:26px;height:26px}
+.fab.hidden{transform:scale(.4);opacity:0;pointer-events:none}
+.badge{position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;border-radius:11px;background:var(--mint);color:var(--onPastel);font-size:12px;font-weight:800;display:grid;place-items:center;padding:0 6px;border:2px solid var(--surface);transform:scale(0);transition:transform .35s var(--spring)}
+.badge.show{transform:scale(1)}
+
+/* ---------- minimized pill ---------- */
+.pill{position:absolute;right:14px;bottom:104px;height:58px;border-radius:29px;padding:0 8px 0 16px;display:flex;align-items:center;gap:10px;background:var(--glass);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border:1px solid var(--glassEdge);box-shadow:0 12px 30px rgba(0,0,0,.45);z-index:21;transform-origin:right center;transition:transform .45s var(--spring),opacity .25s}
+.pill.hidden{transform:scale(.3);opacity:0;pointer-events:none}
+.pill .dot{width:9px;height:9px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(185,222,198,.6);animation:pulse 2s infinite}
+.pill .txt{font-size:13.5px;font-weight:700;white-space:nowrap}
+.pill .txt span{color:var(--onVar);font-weight:600}
+.pill .swatches{display:flex}
+.pill .swatches i{width:16px;height:16px;border-radius:50%;border:2px solid #1c1c1f;margin-left:-6px}
+.pill .x{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;color:var(--onVar)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(185,222,198,.55)}70%{box-shadow:0 0 0 9px rgba(185,222,198,0)}100%{box-shadow:0 0 0 0 rgba(185,222,198,0)}}
+
+/* ---------- chat panel ---------- */
+.chat{position:absolute;z-index:30;display:flex;flex-direction:column;overflow:hidden;
+  right:10px;top:96px;bottom:100px;width:300px;border-radius:30px;
+  background:var(--glass);backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+  border:1px solid var(--glassEdge);box-shadow:0 24px 60px rgba(0,0,0,.55);
+  transform-origin:calc(100% - 30px) calc(100% + 40px);
+  transition:right .5s var(--spring),top .5s var(--spring),bottom .5s var(--spring),width .5s var(--spring),border-radius .5s var(--spring),background .4s,transform .45s var(--spring),opacity .3s}
+.chat.full{right:0;top:0;bottom:0;width:390px;border-radius:48px;background:rgba(10,10,11,.97);border-color:transparent}
+.chat.hidden{transform:scale(.15);opacity:0;pointer-events:none}
+.chat.dragging{transition:none}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.18);z-index:25;opacity:0;pointer-events:none;transition:opacity .3s}
+.scrim.show{opacity:1}
+
+.head{display:flex;align-items:center;gap:8px;padding:14px 12px 10px 16px;cursor:grab;touch-action:none;user-select:none}
+.chat.full .head{padding:58px 16px 10px 20px}
+.head .grab{position:absolute;top:6px;left:50%;width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);transform:translateX(-50%)}
+.chat.full .head .grab{display:none}
+.head .t{flex:1;min-width:0}
+.head .t b{font-size:15.5px;font-weight:800;letter-spacing:-.01em;display:block}
+.chat.full .head .t b{font-size:20px}
+.ondev{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:var(--onVar);letter-spacing:.02em}
+.ondev i{width:6px;height:6px;border-radius:50%;background:var(--mint)}
+.hbtn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.09);display:grid;place-items:center;color:var(--on);flex-shrink:0;transition:background .2s,transform .15s}
+.hbtn:active{transform:scale(.9)} .hbtn:hover{background:rgba(255,255,255,.16)}
+.hbtn svg{width:15px;height:15px}
+
+/* routine tray */
+.tray{margin:0 10px;border-radius:20px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:max-height .45s var(--spring)}
+.chat.full .tray{margin:0 16px}
+.tray-h{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 14px}
+.tray-h .lbl{flex:1;font-size:12.5px;font-weight:800}
+.tray-h .lbl span{display:block;font-size:11px;font-weight:600;color:var(--onVar);font-variant-numeric:tabular-nums}
+.start{height:32px;padding:0 14px;border-radius:16px;background:var(--mint);color:var(--onPastel);font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:6px;transition:opacity .2s,transform .15s}
+.start:disabled{opacity:.35;cursor:default}
+.start:active:not(:disabled){transform:scale(.95)}
+.bar{display:flex;height:4px;margin:0 14px 8px;border-radius:2px;overflow:hidden;gap:2px;background:rgba(255,255,255,.06)}
+.bar i{display:block;height:100%;transition:flex-grow .5s var(--spring)}
+.items{list-style:none;max-height:132px;overflow-y:auto;padding:0 6px 6px;scrollbar-width:none}
+.chat.full .items{max-height:230px}
+.items:empty::before{content:"Exercises you ask for land here.";display:block;padding:4px 8px 8px;font-size:12px;color:var(--onVar)}
+.it{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:12px;font-size:12.5px;animation:inSlide .5s var(--spring) both}
+.chat.full .it{font-size:14px;padding:9px 10px}
+.it .sw{width:22px;height:22px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;color:var(--onPastel);font-size:10.5px;font-weight:800}
+.it .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.it .nm em{font-style:normal;color:var(--onVar);font-weight:500}
+.it .du{color:var(--onVar);font-variant-numeric:tabular-nums;font-weight:600}
+.it .rm{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--onVar);opacity:.0;transition:opacity .2s}
+.it:hover .rm,.chat.full .it .rm{opacity:1}
+.it.fresh{background:rgba(185,222,198,.13)}
+.it.out{animation:outSlide .35s ease-in both}
+@keyframes inSlide{from{opacity:0;transform:translateY(-10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes outSlide{to{opacity:0;transform:translateX(30px);height:0;padding-top:0;padding-bottom:0}}
+
+/* messages */
+.msgs{flex:1;overflow-y:auto;padding:12px 12px 8px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.chat.full .msgs{padding:16px 16px 10px}
+.u{align-self:flex-end;max-width:85%;background:var(--lavender);color:var(--onPastel);padding:9px 13px;border-radius:18px 18px 6px 18px;font-size:13.5px;font-weight:600;line-height:1.4;animation:inSlide .35s var(--spring)}
+.a{align-self:flex-start;max-width:92%;font-size:13.5px;line-height:1.5;animation:inSlide .35s var(--spring)}
+.chat.full .u,.chat.full .a{font-size:15px}
+.intent{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.intent span{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--onVar)}
+.intent span b{color:var(--on);font-weight:800}
+.thinking{display:flex;gap:4px;padding:6px 2px;align-items:center;font-size:11.5px;color:var(--onVar)}
+.thinking i{width:6px;height:6px;border-radius:50%;background:var(--onVar);animation:blink 1s infinite}
+.thinking i:nth-child(2){animation-delay:.15s}.thinking i:nth-child(3){animation-delay:.3s;margin-right:6px}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.safety{background:var(--peach);color:var(--onPastel);border-radius:16px;padding:11px 13px;font-size:12.5px;font-weight:600;line-height:1.45}
+.safety button{margin-top:8px;padding:6px 11px;border-radius:10px;background:rgba(30,29,26,.12);font-weight:800;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:7px 11px;border-radius:14px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700}
+
+/* input */
+.inp{display:flex;align-items:center;gap:6px;padding:8px 10px 12px}
+.chat.full .inp{padding:10px 16px 34px}
+.field{flex:1;height:42px;border-radius:21px;background:rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px;min-width:0}
+.field input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--on);font:inherit;font-size:13.5px;font-weight:600}
+.field input::placeholder{color:var(--onVar)}
+.wave{display:none;align-items:center;gap:3px;flex:1;min-width:0}
+.wave i{width:3px;border-radius:2px;background:var(--mint);animation:wv .9s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.12s}.wave i:nth-child(3n){animation-delay:.3s}
+.wave span{margin-left:8px;font-size:12.5px;font-weight:600;color:var(--on);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes wv{0%,100%{height:5px}50%{height:18px}}
+.field.listening input{display:none}.field.listening .wave{display:flex}
+.cbtn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;transition:transform .15s,background .2s}
+.cbtn:active{transform:scale(.9)}
+.cbtn svg{width:18px;height:18px}
+.mic{background:rgba(255,255,255,.08)} .mic.on{background:var(--coral);color:var(--onPastel)}
+.send{background:var(--on);color:var(--surface)}
+
+.toast{position:absolute;left:50%;top:60px;transform:translate(-50%,-20px);opacity:0;background:var(--mint);color:var(--onPastel);padding:10px 16px;border-radius:16px;font-weight:800;font-size:13px;z-index:60;transition:all .4s var(--spring);white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Customize button in the tray ---------- */
+.cust{height:32px;min-width:32px;padding:0 9px;border-radius:16px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:800;font-size:12.5px;transition:opacity .2s,transform .15s,background .2s}
+.cust:hover:not(:disabled){background:rgba(255,255,255,.16)}
+.cust:active:not(:disabled){transform:scale(.95)}
+.cust:disabled{opacity:.35;cursor:default}
+.cust svg{width:14px;height:14px}
+.cust span{display:none}
+.chat.full .cust span{display:inline}
+
+/* ---------- Customize screen (mirrors CustomizeRoutineView) ---------- */
+.cz{position:absolute;inset:0;z-index:40;background:var(--surface);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .5s var(--spring);border-radius:48px;overflow:hidden}
+.cz.open{transform:none}
+.cz-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:56px 14px 6px}
+.cz-nav b{font-size:16px;font-weight:800}
+.cz-nav .l{justify-self:start}.cz-nav .r{justify-self:end}
+.navbtn{height:36px;min-width:36px;padding:0 12px;border-radius:18px;background:var(--card);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:14px}
+.navbtn svg{width:14px;height:14px}
+.cz-body{flex:1;overflow-y:auto;padding:8px 16px 130px;scrollbar-width:none}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile2{background:var(--card);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.tile2 .k{font-size:12.5px;font-weight:700;color:var(--onVar)}
+.ring{position:relative;width:96px;height:96px;align-self:center}
+.ring svg{width:96px;height:96px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .val{transition:stroke-dashoffset .3s ease-out}
+.ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring div b{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.ring div span{font-size:11.5px;color:var(--onVar);font-weight:600;margin-top:2px}
+.big{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.types{display:flex;flex-direction:column;gap:6px}
+.types div{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--onVar);font-weight:600}
+.types i{width:8px;height:8px;border-radius:50%}
+.types em{margin-left:auto;font-style:normal;color:var(--on);font-variant-numeric:tabular-nums}
+.cz-h{display:flex;align-items:baseline;justify-content:space-between;margin:20px 0 10px}
+.cz-h b{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.cz-h span{font-size:11.5px;color:var(--onVar);font-weight:600}
+.cards{position:relative;display:flex;flex-direction:column;gap:10px}
+.cc{position:relative;display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border-radius:20px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.06);user-select:none;-webkit-user-select:none;touch-action:pan-y;cursor:grab;outline:none}
+.cc:focus-visible{box-shadow:inset 0 0 0 2px var(--lavender)}
+.cc.shift{transition:transform .25s var(--spring)}
+.cc.lifted{z-index:5;cursor:grabbing;box-shadow:0 20px 44px rgba(0,0,0,.65),inset 0 0 0 .5px rgba(255,255,255,.12);background:#1d1d21}
+.cc.settle{transition:transform .28s var(--spring),box-shadow .28s}
+.glyph{position:relative;width:52px;height:52px;border-radius:16px;flex-shrink:0;display:grid;place-items:center;color:var(--onPastel)}
+.glyph svg{width:30px;height:30px}
+.glyph .n{position:absolute;top:-5px;left:-5px;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;display:grid;place-items:center;color:var(--onPastel);box-shadow:0 0 0 2.5px var(--card)}
+.cc .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cc .info b{font-size:15px;font-weight:800;line-height:1.25}
+.cc .info small{display:block;font-size:11.5px;color:var(--onVar);font-weight:600;margin-top:2px}
+.step{display:inline-flex;align-items:center;align-self:flex-start;background:var(--container);border-radius:15px;color:var(--onVar)}
+.step button{width:32px;height:30px;display:grid;place-items:center}
+.step button svg{width:11px;height:11px}
+.step span{min-width:40px;text-align:center;font-size:13px;font-weight:700;color:var(--on);font-variant-numeric:tabular-nums}
+.rmx{position:relative;width:30px;height:30px;border-radius:50%;background:var(--container);color:var(--onVar);display:grid;place-items:center;flex-shrink:0;transition:background .2s,color .2s}
+.rmx svg{width:12px;height:12px}
+.rmx.arm{background:var(--coral);color:var(--onPastel)}
+.rmx .cap{position:absolute;bottom:calc(100% + 6px);right:0;white-space:nowrap;font-size:11px;font-weight:700;background:var(--container);color:var(--on);padding:4px 8px;border-radius:8px;opacity:0;transform:translateY(4px);transition:all .2s;pointer-events:none}
+.rmx.arm .cap{opacity:1;transform:none}
+.cz-empty{padding:30px 0;text-align:center;color:var(--onVar);font-size:13.5px}
+.cz-foot{position:absolute;left:0;right:0;bottom:0;padding:20px 16px 30px;background:linear-gradient(to bottom,rgba(10,10,11,0),var(--surface) 35%)}
+.primary{width:100%;height:54px;border-radius:27px;background:var(--on);color:var(--surface);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s,transform .15s}
+.primary span{opacity:.55}
+.primary:active:not(:disabled){transform:scale(.98)}
+.primary:disabled{opacity:.4;cursor:default}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media (max-width:460px){.phone{transform:scale(.86);transform-origin:top center;margin-bottom:-120px}}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <aside class="controls">
+    <div>
+      <h1>Ask Dial Down: live routine</h1>
+      <p style="margin-top:6px">Prototype. A see-through side chat that builds a mini routine while you talk. Expand it to full screen, shrink it to a pill, or close it.</p>
+    </div>
+    <div>
+      <h2>Chat state</h2>
+      <div class="seg" id="seg">
+        <button data-m="closed">Closed</button><button data-m="side" class="on">Side</button><button data-m="mini">Pill</button><button data-m="full">Full</button>
+      </div>
+    </div>
+    <div>
+      <h2>Try a request</h2>
+      <div class="samples" id="samples">
+        <button>3 exercises for my neck<small>exact count, default timings</small></button>
+        <button>3 minutes for my lower back<small>fills to exactly 3:00</small></button>
+        <button>2 more for my hips, 2 minutes<small>appends 2 hips, 1:00 each</small></button>
+        <button>swap the last one<small>replaces with another from the same area</small></button>
+        <button>make it 5 minutes<small>re-times the whole routine</small></button>
+        <button>remove the neck ones<small>removes by area</small></button>
+        <button>five stretches to help me sleep<small>goal, not an area</small></button>
+        <button>sharp pain in my shoulder<small>safety screen first</small></button>
+        <button>start over<small>clears the routine</small></button>
+      </div>
+    </div>
+    <div class="notes">
+      <b>How it behaves</b>
+      <ul style="margin-top:6px">
+        <li><b>Count wins.</b> "3 exercises" always gives 3 rows. An L + R pair counts as one.</li>
+        <li><b>Count + time</b> splits the time evenly: 3 for 3 min is 1:00 each.</li>
+        <li><b>Time only</b> keeps adding until it fills the time, then trims the last one to land exactly.</li>
+        <li>New asks <b>add to</b> the routine. "start over" clears it.</li>
+        <li>Drag the panel header right to shrink it to the pill. Drag it up to go full screen.</li>
+        <li>The chips under each reply show what the on-device model understood.</li>
+        <li><b>Customize</b> (sliders button in the tray) opens the app's Customize screen. Hold a card to drag it into a new order, use − / + to change times, tap × twice to remove. <b>Add</b> takes you back to the chat. Every change shows up in the tray right away.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="phone"><div class="screen" id="screen">
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span>●●● ▮</span></div>
+
+    <div class="home">
+      <div class="hi">Good evening, Jason</div>
+      <h3>Ready to unwind?</h3>
+      <div class="hero"><span style="font-weight:700;font-size:13px">TONIGHT</span><b>Slow-down breathing<br>5 min</b></div>
+      <div class="grid">
+        <div class="tile" style="background:var(--pink)">Neck &amp; shoulders</div>
+        <div class="tile" style="background:var(--blue)">Desk reset</div>
+        <div class="tile" style="background:var(--olive)">Hips</div>
+        <div class="tile" style="background:var(--peach)">Wind down</div>
+      </div>
+      <div class="row"><i></i><div><b>Your streak</b><span>4 days · keep it going</span></div></div>
+    </div>
+    <div class="tabbar"><span class="on"></span><span></span><span></span><span></span><span></span></div>
+
+    <div class="scrim" id="scrim"></div>
+
+    <button class="fab hidden" id="fab" aria-label="Ask Dial Down">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M7 7l-1.4-1.4M18.4 18.4 17 17M7 17l-1.4 1.4M18.4 5.6 17 7"/><circle cx="12" cy="12" r="3.2"/></svg>
+      <span class="badge" id="badge">0</span>
+    </button>
+
+    <div class="pill hidden" id="pill" role="button" aria-label="Open mini routine">
+      <span class="dot"></span>
+      <span class="txt" id="pillTxt">Mini routine</span>
+      <span class="swatches" id="pillSw"></span>
+      <button class="x" id="pillClose" aria-label="Close"><svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+
+    <section class="chat" id="chat" aria-label="Ask Dial Down">
+      <div class="head" id="head">
+        <span class="grab"></span>
+        <div class="t"><b>Ask Dial Down</b><span class="ondev"><i></i>On-device AI</span></div>
+        <button class="hbtn" id="bMin" aria-label="Shrink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+        <button class="hbtn" id="bFull" aria-label="Full screen"><svg id="fullIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button>
+        <button class="hbtn" id="bClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+
+      <div class="tray">
+        <div class="tray-h">
+          <div class="lbl">Mini routine<span id="sum">Empty</span></div>
+          <button class="cust" id="cust" disabled aria-label="Customize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Customize</span></button>
+          <button class="start" id="start" disabled><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>Start</button>
+        </div>
+        <div class="bar" id="bar"></div>
+        <ul class="items" id="items"></ul>
+      </div>
+
+      <div class="msgs" id="msgs"></div>
+
+      <form class="inp" id="form" autocomplete="off">
+        <div class="field" id="field">
+          <input id="input" placeholder="e.g. 3 exercises for my neck" aria-label="Message">
+          <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><span id="live"></span></div>
+        </div>
+        <button type="button" class="cbtn mic" id="mic" aria-label="Voice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button type="submit" class="cbtn send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      </form>
+    </section>
+
+    <section class="cz" id="cz" aria-label="Customize mini routine" aria-hidden="true">
+      <div class="cz-nav">
+        <button class="navbtn l" id="czClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        <b>Mini Routine</b>
+        <button class="navbtn r" id="czAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+      </div>
+      <div class="cz-body" id="czBody">
+        <div class="tiles">
+          <div class="tile2">
+            <span class="k">Total time</span>
+            <div class="ring">
+              <svg viewBox="0 0 96 96"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9DEC6"/><stop offset=".5" stop-color="#BED0F1"/><stop offset="1" stop-color="#D4C6F0"/></linearGradient></defs>
+                <circle cx="48" cy="48" r="40" stroke="#26262A"/><circle class="val" id="ringVal" cx="48" cy="48" r="40" stroke="url(#rg)" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"/></svg>
+              <div><b id="czMin">0</b><span>min</span></div>
+            </div>
+          </div>
+          <div class="tile2">
+            <span class="k">Exercises</span>
+            <span class="big" id="czCount">0</span>
+            <div class="types" id="czTypes"></div>
+          </div>
+        </div>
+        <div class="cz-h"><b>Exercises</b><span>Hold a card to reorder</span></div>
+        <div class="cards" id="cards"></div>
+      </div>
+      <div class="cz-foot"><button class="primary" id="czStart"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>Start <span id="czStartMin"></span></button></div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+</div>
+
+<script>
+/* ======================== catalog (stand-in for SwiftData Exercise) ======================== */
+const AREAS = {
+  neck:      {label:'Neck',       color:'--pink',     ex:[['Chin Tucks',40],['Neck Side Tilt',60,1],['Levator Scapulae Stretch',60,1],['Slow Neck Rotations',45],['Neck Flexion Hold',40]]},
+  shoulders: {label:'Shoulders',  color:'--blue',     ex:[['Shoulder Rolls',40],['Cross-Body Shoulder Stretch',60,1],['Doorway Pec Opener',45],['Thread the Needle',60,1],['Wall Angels',45]]},
+  upperBack: {label:'Upper back', color:'--lavender', ex:[['Cat–Cow',60],['Thoracic Rotation',60,1],['Child’s Pose Reach',45],['Seated Twist',60,1]]},
+  lowerBack: {label:'Lower back', color:'--peach',    ex:[['Knees-to-Chest',60],['Supine Twist',60,1],['Pelvic Tilts',45],['Sphinx Pose',45],['Figure-4 Stretch',60,1],['Child’s Pose',60]]},
+  hips:      {label:'Hips',       color:'--olive',    ex:[['Low Lunge Hip Flexor',60,1],['90/90 Hip Switch',60],['Butterfly Stretch',45],['Pigeon Pose',60,1],['Hip Circles',40]]},
+  hamstrings:{label:'Hamstrings', color:'--yellow',   ex:[['Standing Forward Fold',45],['Supine Hamstring Stretch',60,1],['Half Split',60,1]]},
+  calves:    {label:'Calves',     color:'--mint',     ex:[['Wall Calf Stretch',45,1],['Downward Dog Pedal',45],['Heel Drops',40]]},
+  wrists:    {label:'Wrists',     color:'--coral',    ex:[['Wrist Flexor Stretch',30,1],['Prayer Stretch',30],['Wrist Circles',30]]},
+  breathing: {label:'Breathing',  color:'--mint',     ex:[['Box Breathing',60],['4-7-8 Breath',60],['Physiological Sigh',45],['Legs Up the Wall',90],['Body Scan Breath',60]]},
+  wake:      {label:'Wake up',    color:'--yellow',   ex:[['Sun Salutation Flow',60],['Standing Side Bend',45,1],['Arm Swings',30],['Bellows Breath',40]]},
+};
+const AREA_WORDS = [
+  ['neck',/\bneck|nape\b/],['shoulders',/\bshoulders?\b/],['upperBack',/\bupper back|traps?|posture\b/],
+  ['lowerBack',/\blower back|low back|\bback\b(?! up)/],['hips',/\bhips?|hip flexors?\b/],['hamstrings',/\bhamstrings?|legs?\b/],
+  ['calves',/\bcalf|calves|ankles?\b/],['wrists',/\bwrists?|hands?|forearms?|typing\b/],
+  ['breathing',/\bsleep|unwind|relax|stress|anxious|anxiety|calm|breath(e|ing)?|wind down\b/],['wake',/\bwake|morning|energi[sz]e|tired\b/],
+];
+const NUM = {one:1,a:1,an:1,single:1,two:2,couple:2,three:3,few:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
+const toNum = w => w==null ? null : (isNaN(+w) ? NUM[w] ?? null : +w);
+
+/* ======================== "model": text -> intent ========================
+   In the app this is ModelIntentExtractor (FoundationModels @Generable) with
+   KeywordIntentExtractor as fallback. The model fills an intent; it never picks exercises. */
+function extract(raw){
+  const t = raw.toLowerCase().replace(/[’']/g,"'");
+  const intent = {action:'add', areas:[], count:null, seconds:null, target:null, safety:false};
+  if (/\b(sharp|stabbing|numb|tingl|shooting|chest pain|can't breathe|injur|fractur|dislocat)/.test(t)) intent.safety = true;
+  // Asks ADD to the routine by default. Only explicit "new routine" wording replaces it.
+  const NEW_RE = /\b(start over|start fresh|from scratch|clear|reset|scrap|(create|make|build|give me|start) an? (new|fresh|different) (routine|one|session)|new routine|instead)\b/;
+  if (NEW_RE.test(t)) intent.action='clear';
+  else if (/\b(remove|delete|drop|take out|get rid)\b/.test(t)) intent.action='remove';
+  else if (/\b(swap|replace|different one|something else)\b/.test(t)) intent.action='swap';
+  else if (/\bshorter|quicker\b/.test(t)) intent.action='shorter';
+  else if (/\blonger\b/.test(t)) intent.action='longer';
+
+  const W = '(\\d+|one|two|three|four|five|six|seven|eight|nine|ten|a couple of|a few|couple of|few|a|an|single)';
+  const tc = t.replace(NEW_RE, ' ');   // so "a new one" isn't read as "1 exercise"
+  const cm = tc.match(new RegExp(`\\b${W}\\s+(?:(?!min|sec)[a-z-]+\\s+){0,3}(exercises?|stretch(?:es)?|moves?|ones?|poses?)\\b`));
+  if (cm) intent.count = toNum(cm[1].replace(/^(a |an )?(couple|few) of$/, '$2').replace(/ of$/,'').trim());
+  else if (/\banother\b/.test(t)) intent.count = 1;
+  if (!intent.count){ const more = tc.match(new RegExp(`\\b${W}\\s+more\\b`)); if (more) intent.count = toNum(more[1].replace(/ of$/,'').replace(/^an? /,'')); }
+  // "2 for my shoulders", "add 3 for hips": a bare number before for/of/on is a count
+  if (!intent.count){ const bare = tc.match(/(?:^|\badd\s+|\bgive me\s+|\bdo\s+)(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:for|of|on|to)\b/); if (bare) intent.count = toNum(bare[1]); }
+
+  const mm = t.match(new RegExp(`\\b(\\d+(?:\\.\\d+)?|one|two|three|four|five|six|seven|eight|nine|ten|half an?)\\s*-?\\s*(minutes?|mins?|m)\\b`));
+  const sm = t.match(/\b(\d+)\s*-?\s*(seconds?|secs?|s)\b/);
+  if (mm) intent.seconds = Math.round((mm[1].startsWith('half') ? .5 : toNum(mm[1])) * 60);
+  else if (sm) intent.seconds = +sm[1];
+
+  for (const [k,re] of AREA_WORDS) if (re.test(t) && !intent.areas.includes(k)) intent.areas.push(k);
+  if (intent.areas.includes('upperBack')) intent.areas = intent.areas.filter(a=>a!=='lowerBack' || /lower|low back/.test(t));
+  if (/\blast\b/.test(t)) intent.target='last';
+  // "create a new routine for my hips": clear, then build what they asked for
+  if (intent.action==='clear' && (intent.areas.length || intent.count || intent.seconds)) intent.action='replace';
+  // "another one" / "one more": stay in the area of the last exercise added
+  if (intent.action==='add' && !intent.areas.length && routine.length && /\b(another|more|again)\b/.test(t)) intent.areas = [routine[routine.length-1].area];
+
+  // "make it 5 minutes": time with nothing to add means re-time what's there
+  if (intent.action==='add' && intent.seconds && !intent.count && !intent.areas.length && routine.length && !/\badd|more|also|another\b/.test(t)) intent.action='retime';
+  return intent;
+}
+
+/* ======================== routine state ======================== */
+let routine = [];          // {id, name, area, dur, sided}
+let uid = 0;
+const fmt = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+const total = () => routine.reduce((a,e)=>a+e.dur,0);
+const round5 = s => Math.max(15, Math.round(s/5)*5);
+
+const MIX = ['neck','shoulders','upperBack','hips','hamstrings','lowerBack','calves'];
+/* Round-robin across the asked areas, never repeating an exercise. With `spill`
+   (an explicit count), a too-small area borrows from the full-body mix so
+   "8 for my wrists" still returns 8. */
+function pick(areas, n, spill = false){
+  const toPool = a => AREAS[a].ex.map(e=>({area:a,name:e[0],dur:e[1],sided:!!e[2]}));
+  const used = new Set(routine.map(e=>e.name));
+  const out = [];
+  const draw = keys => { const pools = keys.map(toPool); let i = 0, misses = 0;
+    while (out.length < n && misses < pools.length){
+      const next = pools[i++ % pools.length].find(e => !used.has(e.name));
+      if (next){ used.add(next.name); out.push(next); misses = 0; } else misses++;
+    } };
+  draw(areas.length ? areas : MIX);
+  if (spill && out.length < n) draw(MIX);
+  return out;
+}
+
+/* The deterministic part (RoutinePicker in the app): count and time -> exact list. */
+function build(intent){
+  const {count, seconds, areas} = intent;
+  if (count && seconds){ const per = round5(seconds / count); const l = pick(areas, count, true); l.forEach(e=>e.dur=per); fit(l, seconds); return l; }
+  if (count) return pick(areas, count, true);
+  if (seconds){
+    const l = []; let sum = 0;
+    for (const e of pick(areas, 12)){ if (sum >= seconds) break; l.push(e); sum += e.dur; }
+    // overshot? dropping the last one may land closer
+    if (l.length > 1 && sum - seconds > seconds - (sum - l[l.length-1].dur)) l.pop();
+    fit(l, seconds); return l;
+  }
+  return pick(areas, 3);
+}
+function fit(list, seconds){                     // land exactly on the requested time
+  if (!list.length) return;
+  // spread the difference over every item (in 5 s steps) so no one exercise becomes a stub
+  let diff = seconds - list.reduce((a,e)=>a+e.dur,0);
+  const step = Math.trunc(diff / list.length / 5) * 5;
+  list.forEach(e => { e.dur = Math.max(15, e.dur + step); });
+  diff = seconds - list.reduce((a,e)=>a+e.dur,0);
+  for (let i = list.length-1; diff !== 0 && i >= 0; i--){
+    const d = diff > 0 ? Math.min(diff, 5) : Math.max(diff, -Math.max(0, list[i].dur - 15), -5);
+    list[i].dur += d; diff -= d;
+    if (i === 0 && diff !== 0) i = list.length;   // keep cycling in 5 s nudges until exact
+  }
+}
+
+/* ======================== chat flow ======================== */
+const $ = id => document.getElementById(id);
+const msgs = $('msgs'), items = $('items');
+let busy = false;
+
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function addMsg(cls, html){ const d = document.createElement('div'); d.className = cls; d.innerHTML = html; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d; }
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+
+async function stream(el, text){ for (const w of text.split(' ')){ el.insertAdjacentText('beforeend', (el.textContent ? ' ' : '') + w); msgs.scrollTop = msgs.scrollHeight; await wait(28); } }
+
+function intentChips(i){
+  const c = [];
+  const act = {add:'Add',replace:'New routine',remove:'Remove',swap:'Swap',clear:'Clear',retime:'Re-time',shorter:'Shorter',longer:'Longer'}[i.action];
+  c.push(`<span><b>${act}</b></span>`);
+  i.areas.forEach(a => c.push(`<span>area <b>${AREAS[a].label}</b></span>`));
+  if (i.count) c.push(`<span>count <b>${i.count}</b></span>`);
+  if (i.seconds) c.push(`<span>time <b>${fmt(i.seconds)}</b></span>`);
+  return `<div class="intent">${c.join('')}</div>`;
+}
+
+async function send(text){
+  text = text.trim(); if (!text || busy) return;
+  busy = true; $('input').value = '';
+  if (mode === 'closed' || mode === 'mini') setMode('side');
+  addMsg('u', esc(text));
+  const th = addMsg('a thinking', '<i></i><i></i><i></i>Understanding…');
+  await wait(650 + Math.random()*350);
+  th.remove();
+  const intent = extract(text);
+
+  if (intent.safety){
+    addMsg('a', `<div class="safety">Sharp pain, numbness or tingling can mean something needs a professional’s eyes. If it’s severe or came on suddenly, call your local emergency number.<br><button data-gentle='${esc(JSON.stringify(intent))}'>Add a gentle version anyway</button></div>`);
+    busy = false; return;
+  }
+  const bubble = addMsg('a', intentChips(intent) + '<span class="body"></span>');
+  const body = bubble.querySelector('.body');
+  await apply(intent, body);
+  busy = false;
+}
+
+async function apply(intent, body, gentle=false){
+  switch (intent.action){
+    case 'clear': {
+      await removeEls([...routine]);
+      return stream(body, 'Cleared. What would you like to start with?');
+    }
+    case 'remove': {
+      let gone = intent.areas.length ? routine.filter(e=>intent.areas.includes(e.area)) : routine.slice(-(intent.count||1));
+      if (!gone.length) return stream(body, 'Nothing like that is in your routine.');
+      await removeEls(gone);
+      return stream(body, `Removed ${gone.length === 1 ? gone[0].name : gone.length + ' exercises'}. Now ${routine.length} · ${fmt(total())}.`);
+    }
+    case 'swap': {
+      const old = intent.areas.length ? routine.filter(e=>intent.areas.includes(e.area)).slice(-1)[0] : routine[routine.length-1];
+      if (!old) return stream(body, 'There’s nothing to swap yet.');
+      const [fresh] = pick([old.area], 1); fresh.dur = old.dur;
+      replaceEl(old, fresh);
+      return stream(body, `Swapped ${old.name} for ${fresh.name}, same length.`);
+    }
+    case 'retime': case 'shorter': case 'longer': {
+      if (!routine.length) return stream(body, 'Add a few exercises first, then I can change the timing.');
+      const target = intent.action === 'retime' ? intent.seconds : round5(total() * (intent.action === 'shorter' ? .75 : 1.25));
+      const k = target / total(); routine.forEach(e => e.dur = round5(e.dur * k)); fit(routine, target);
+      render(); return stream(body, `Re-timed all ${routine.length} to ${fmt(total())} total.`);
+    }
+    case 'replace':
+      if (routine.length) await removeEls([...routine]);
+      // falls through: build the new request into the now-empty routine
+    default: {
+      const list = build(intent);
+      if (gentle) list.forEach(e => e.dur = round5(e.dur * .75));
+      const where = intent.areas.length ? intent.areas.map(a=>AREAS[a].label.toLowerCase()).join(' & ') : 'full-body';
+      const timed = intent.seconds ? `, ${fmt(list.reduce((a,e)=>a+e.dur,0))} total` : '';
+      const lead = stream(body, `Adding ${list.length} ${where} exercise${list.length>1?'s':''}${timed}.`);
+      for (const e of list){ await wait(380); addEl(e); }
+      await lead;
+      if (routine.length === list.length) await stream(body, 'Ask for more, or tap Start.');
+    }
+  }
+}
+
+/* ======================== routine rendering ======================== */
+function rowHTML(e, idx){
+  return `<span class="sw" style="background:var(${AREAS[e.area].color})">${idx+1}</span>
+    <span class="nm">${esc(e.name)}${e.sided ? ' <em>· L + R</em>' : ''}</span>
+    <span class="du">${fmt(e.dur)}</span>
+    <button class="rm" aria-label="Remove ${esc(e.name)}"><svg width="10" height="10" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+}
+function addEl(e){
+  e.id = ++uid; routine.push(e);
+  const li = document.createElement('li'); li.className = 'it fresh'; li.dataset.id = e.id;
+  li.innerHTML = rowHTML(e, routine.length-1); items.appendChild(li);
+  items.scrollTop = items.scrollHeight;
+  setTimeout(()=>li.classList.remove('fresh'), 1400);
+  summary(); bump();
+}
+function replaceEl(old, fresh){
+  fresh.id = ++uid; routine[routine.indexOf(old)] = fresh;
+  render(); const li = items.querySelector(`[data-id="${fresh.id}"]`); li.classList.add('fresh'); setTimeout(()=>li.classList.remove('fresh'),1400);
+}
+async function removeEls(list){
+  const ids = new Set(list.map(e=>e.id));
+  items.querySelectorAll('.it').forEach(li => { if (ids.has(+li.dataset.id)) li.classList.add('out'); });
+  await wait(330);
+  routine = routine.filter(e => !ids.has(e.id)); render();
+}
+function render(){
+  items.innerHTML = routine.map((e,i)=>`<li class="it" style="animation:none" data-id="${e.id}">${rowHTML(e,i)}</li>`).join('');
+  summary();
+}
+function summary(){
+  const n = routine.length, s = total();
+  $('sum').textContent = n ? `${n} exercise${n>1?'s':''} · ${fmt(s)}` : 'Empty';
+  $('start').disabled = !n; $('cust').disabled = !n;
+  $('bar').innerHTML = routine.map(e=>`<i style="flex-grow:${e.dur};background:var(${AREAS[e.area].color})"></i>`).join('');
+  $('badge').textContent = n; $('badge').classList.toggle('show', n>0);
+  $('pillTxt').innerHTML = n ? `${n} exercise${n>1?'s':''} <span>· ${fmt(s)}</span>` : 'Ask Dial Down';
+  $('pillSw').innerHTML = routine.slice(0,4).map(e=>`<i style="background:var(${AREAS[e.area].color})"></i>`).join('');
+}
+function bump(){ const p = $('pill'); p.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:300}); }
+
+items.addEventListener('click', async ev => {
+  const b = ev.target.closest('.rm'); if (!b) return;
+  const e = routine.find(x => x.id === +b.closest('.it').dataset.id); await removeEls([e]);
+});
+msgs.addEventListener('click', async ev => {
+  const g = ev.target.closest('[data-gentle]'); if (!g || busy) return;
+  busy = true; const intent = JSON.parse(g.dataset.gentle); g.remove();
+  const bubble = addMsg('a', intentChips(intent) + '<span class="body"></span>');
+  await apply(intent, bubble.querySelector('.body'), true);
+  await stream(bubble.querySelector('.body'), 'Kept them short and gentle. Stop if anything hurts.');
+  busy = false;
+});
+
+/* ======================== modes: closed · side · mini · full ======================== */
+let mode = 'side';
+function setMode(m){
+  mode = m;
+  const chat = $('chat');
+  chat.classList.toggle('hidden', m === 'closed' || m === 'mini');
+  chat.classList.toggle('full', m === 'full');
+  $('pill').classList.toggle('hidden', m !== 'mini');
+  $('fab').classList.toggle('hidden', m !== 'closed');
+  $('scrim').classList.toggle('show', m === 'side');
+  $('fullIco').innerHTML = m === 'full'
+    ? '<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>'
+    : '<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>';
+  $('bFull').setAttribute('aria-label', m === 'full' ? 'Back to side panel' : 'Full screen');
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+}
+$('bMin').onclick = () => setMode('mini');
+$('bFull').onclick = () => setMode(mode === 'full' ? 'side' : 'full');
+$('bClose').onclick = () => setMode('closed');
+$('fab').onclick = () => setMode('side');
+$('scrim').onclick = () => setMode('mini');                 // tap the app behind -> get out of the way
+$('pill').onclick = ev => { if (!ev.target.closest('.x')) setMode('side'); };
+$('pillClose').onclick = () => setMode('closed');
+document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+document.querySelectorAll('#samples button').forEach(b => b.onclick = () => send(b.childNodes[0].textContent));
+$('form').onsubmit = ev => { ev.preventDefault(); send($('input').value); };
+function startToast(){ const t = $('toast'); t.textContent = `▶ Starting ${routine.length} exercises · ${fmt(total())}`; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1800); }
+$('start').onclick = startToast;
+
+/* ======================== Customize (CustomizeRoutineView, "Start Mini-Routine" flavour) ========================
+   Edits the SAME `routine` array the chat tray shows, so every change in here
+   (order, time, removal) is already reflected in the tray and pill on close. */
+const PASTELS = ['--yellow','--pink','--olive','--blue','--peach','--lavender','--mint','--coral'];
+const typeOf = e => e.area === 'breathing' ? 'Breath' : e.area === 'wake' ? 'Mobility' : 'Stretch';
+const TYPE_DOT = {Breath:'--mint', Stretch:'--lavender', Mobility:'--yellow'};
+const GLYPH = {
+  Breath:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h9a3 3 0 1 0-3-3M4 15h13a3 3 0 1 1-3 3M4 12h6"/></svg>',
+  Stretch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M12 14l-4 6M12 14l4 6M6 6l6 3 6-3"/></svg>',
+  Mobility:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v6M12 13l-3 7M12 13l4 6M5 10l7-2 6 5"/></svg>',
+};
+let czDragging = false;
+
+function openCz(){ czTiles(); czCards(); $('cz').classList.add('open'); $('cz').setAttribute('aria-hidden','false'); $('czBody').scrollTop = 0; }
+function closeCz(){ $('cz').classList.remove('open'); $('cz').setAttribute('aria-hidden','true'); render(); }
+$('cust').onclick = openCz;
+$('czClose').onclick = closeCz;
+$('czAdd').onclick = () => { closeCz(); if (mode !== 'full') setMode('side'); const i = $('input'); i.placeholder = 'Ask for more, e.g. 2 for my hips'; i.focus(); };
+$('czStart').onclick = () => { closeCz(); startToast(); };
+
+function czTiles(){
+  const s = total(), mins = routine.length ? Math.max(1, Math.round(s/60)) : 0;
+  $('ringVal').style.strokeDashoffset = 251.3 * (1 - Math.min(1, s / 900));   // fills toward 15 min, like the app
+  $('czMin').textContent = mins;
+  $('czCount').textContent = routine.length;
+  const by = {}; routine.forEach(e => by[typeOf(e)] = (by[typeOf(e)]||0) + 1);
+  $('czTypes').innerHTML = Object.entries(by).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,3)
+    .map(([k,v]) => `<div><i style="background:var(${TYPE_DOT[k]})"></i>${k}<em>×${v}</em></div>`).join('');
+  $('czStart').disabled = !routine.length;
+  $('czStartMin').textContent = routine.length ? `· ${mins} min` : '';
+}
+
+function czCards(){
+  const box = $('cards');
+  if (!routine.length){ box.innerHTML = '<div class="cz-empty">No exercises left. Tap Add to ask for more.</div>'; return; }
+  box.innerHTML = routine.map((e,i) => `
+    <div class="cc" tabindex="0" data-id="${e.id}" aria-label="${esc(e.name)}, position ${i+1}. Alt plus arrow keys to move.">
+      <div class="glyph" style="background:var(${AREAS[e.area].color})">${GLYPH[typeOf(e)]}<span class="n" style="background:var(${PASTELS[i % PASTELS.length]})">${i+1}</span></div>
+      <div class="info">
+        <div><b>${esc(e.name)}${e.sided ? ' · L + R' : ''}</b><small>${typeOf(e)} · ${AREAS[e.area].label}</small></div>
+        <div class="step" role="group" aria-label="${esc(e.name)} duration">
+          <button data-d="-5" aria-label="5 seconds less"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span>${fmt(e.dur)}</span>
+          <button data-d="5" aria-label="5 seconds more"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <button class="rmx" aria-label="Remove ${esc(e.name)}"><span class="cap">Tap again to remove</span><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>`).join('');
+}
+
+/* stepper (5 s step, 5 s floor, same as the app) + tap-again-to-confirm remove */
+$('cards').addEventListener('click', ev => {
+  const card = ev.target.closest('.cc'); if (!card) return;
+  const e = routine.find(x => x.id === +card.dataset.id);
+  const step = ev.target.closest('[data-d]');
+  if (step){ e.dur = Math.max(5, e.dur + +step.dataset.d); card.querySelector('.step span').textContent = fmt(e.dur); czTiles(); return; }
+  const rm = ev.target.closest('.rmx');
+  if (rm){
+    if (!rm.classList.contains('arm')){ rm.classList.add('arm'); clearTimeout(rm._t); rm._t = setTimeout(()=>rm.classList.remove('arm'), 2500); return; }
+    routine = routine.filter(x => x !== e); czCards(); czTiles();
+  }
+});
+
+/* keyboard reorder: Alt + ↑/↓ on a focused card */
+$('cards').addEventListener('keydown', ev => {
+  const card = ev.target.closest('.cc'); if (!card || !ev.altKey || !/Arrow(Up|Down)/.test(ev.key)) return;
+  ev.preventDefault();
+  const from = routine.findIndex(x => x.id === +card.dataset.id), to = from + (ev.key === 'ArrowUp' ? -1 : 1);
+  if (to < 0 || to >= routine.length) return;
+  routine.splice(to, 0, routine.splice(from, 1)[0]); czCards();
+  $('cards').querySelector(`[data-id="${card.dataset.id}"]`).focus();
+});
+
+/* hold to lift, drag to reorder. A quick swipe still scrolls, like List.onMove. */
+(() => {
+  const box = $('cards'), body = $('czBody');
+  let card = null, timer = null, startY = 0, lifted = false, others = [], from = 0, to = 0, gap = 10, liftH = 0;
+  const reset = () => { clearTimeout(timer); timer = null; };
+
+  box.addEventListener('pointerdown', ev => {
+    const c = ev.target.closest('.cc'); if (!c || ev.target.closest('button') || ev.button > 0) return;
+    card = c; startY = ev.clientY; lifted = false;
+    timer = setTimeout(() => lift(ev.pointerId), ev.pointerType === 'mouse' ? 180 : 280);
+  });
+  function lift(pid){
+    if (!card) return;
+    lifted = true; czDragging = true; navigator.vibrate?.(10);
+    const cards = [...box.querySelectorAll('.cc')];
+    from = to = cards.indexOf(card); liftH = card.offsetHeight;
+    others = cards.map((el,i) => ({el, i, mid: el.offsetTop + el.offsetHeight/2}));
+    others.forEach(o => o.el !== card && o.el.classList.add('shift'));
+    card.classList.add('lifted'); card.style.transform = 'scale(1.03)';
+    try { card.setPointerCapture(pid); } catch {}
+  }
+  box.addEventListener('pointermove', ev => {
+    if (!card) return;
+    const dy = ev.clientY - startY;
+    if (!lifted){ if (Math.abs(dy) > 8){ reset(); card = null; } return; }   // it was a scroll, not a hold
+    card.style.transform = `translateY(${dy}px) scale(1.03)`;
+    const mid = others[from].mid + dy;
+    to = others.filter(o => o.i !== from && o.mid < mid).length;
+    others.forEach(o => {
+      if (o.i === from) return;
+      const s = (from < to && o.i > from && o.i <= to) ? -(liftH + gap) : (from > to && o.i >= to && o.i < from) ? (liftH + gap) : 0;
+      o.el.style.transform = s ? `translateY(${s}px)` : '';
+    });
+    // edge auto-scroll while dragging near the top/bottom of the list
+    const r = body.getBoundingClientRect();
+    if (ev.clientY > r.bottom - 120) body.scrollTop += 6; else if (ev.clientY < r.top + 40) body.scrollTop -= 6;
+  });
+  const drop = () => {
+    reset(); if (!card) return;
+    if (lifted){
+      const c = card, fromI = from, toI = to;
+      c.classList.add('settle');
+      const target = toI === fromI ? 0 : others.filter(o => o.i !== fromI && (fromI < toI ? (o.i > fromI && o.i <= toI) : (o.i >= toI && o.i < fromI))).reduce((a,o)=>a + o.el.offsetHeight + gap, 0) * (toI > fromI ? 1 : -1);
+      c.style.transform = `translateY(${target}px)`;
+      setTimeout(() => {
+        routine.splice(toI, 0, routine.splice(fromI, 1)[0]);
+        czDragging = false; czCards(); czTiles();
+      }, 260);
+    }
+    card = null; lifted = false;
+  };
+  box.addEventListener('pointerup', drop);
+  box.addEventListener('pointercancel', drop);
+  // once a card is lifted, a finger drag must move the card, not scroll the list
+  box.addEventListener('touchmove', ev => { if (lifted) ev.preventDefault(); }, {passive:false});
+  box.addEventListener('contextmenu', ev => { if (ev.target.closest('.cc')) ev.preventDefault(); });
+})();
+
+/* drag the header: right -> shrink to pill, up -> full, down (in full) -> side */
+(() => {
+  const head = $('head'), chat = $('chat'); let sx, sy, on = false;
+  head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; on = true; sx = e.clientX; sy = e.clientY; head.setPointerCapture(e.pointerId); chat.classList.add('dragging'); });
+  head.addEventListener('pointermove', e => {
+    if (!on) return; const dx = e.clientX - sx, dy = e.clientY - sy;
+    chat.style.transform = mode === 'side' ? `translate(${Math.max(0,dx)}px, ${Math.min(0,dy)*.4}px)` : `translateY(${Math.max(0,dy)}px)`;
+  });
+  head.addEventListener('pointerup', e => {
+    if (!on) return; on = false; chat.classList.remove('dragging'); chat.style.transform = '';
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (mode === 'side' && dx > 70) setMode('mini');
+    else if (mode === 'side' && dy < -60) setMode('full');
+    else if (mode === 'full' && dy > 90) setMode('side');
+  });
+})();
+
+/* voice: simulated live transcription (SpeechInput in the app) */
+const PHRASES = ['give me three stretches for tight hips', 'add two minutes for my neck', 'four exercises for my lower back', 'make it shorter'];
+let pi = 0, listening = false;
+$('mic').onclick = async () => {
+  if (listening || busy) return;
+  listening = true; if (mode !== 'full') setMode(mode === 'closed' || mode === 'mini' ? 'side' : mode);
+  $('mic').classList.add('on'); $('field').classList.add('listening');
+  const phrase = PHRASES[pi++ % PHRASES.length], live = $('live'); live.textContent = 'Listening…';
+  await wait(600); live.textContent = '';
+  for (const w of phrase.split(' ')){ live.textContent += (live.textContent ? ' ' : '') + w; await wait(170 + Math.random()*120); }
+  await wait(550);
+  $('mic').classList.remove('on'); $('field').classList.remove('listening'); listening = false;
+  send(phrase);
+};
+
+/* first open */
+addMsg('a', 'Tell me what feels tight, or how long you’ve got. I’ll build a routine here as we talk.');
+addMsg('a', '<div class="chips"><button>3 exercises for my neck</button><button>5 minutes to unwind</button><button>tight hips</button></div>');
+msgs.addEventListener('click', e => { const c = e.target.closest('.chips button'); if (c) send(c.textContent); });
+setMode('side');
+</script>
+</body>
+</html>

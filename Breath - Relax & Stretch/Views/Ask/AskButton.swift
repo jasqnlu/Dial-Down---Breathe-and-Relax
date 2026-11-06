@@ -4,7 +4,9 @@ import UIKit
 
 /// The floating "Ask Dial Down" entry point. Rests as a small circle above the
 /// tab bar; **tap** morphs it into a type-or-talk bar, **press and hold** listens
-/// (release sends, slide away cancels). Sending opens `AskChatSheet`.
+/// (release sends, slide away cancels). Sending opens `AskChatPanel` as a side
+/// panel, which can go full screen, shrink to a pill, or close back to the button.
+/// One chat (and the routine it builds) lasts while the app is open.
 ///
 /// Lives in a full-screen overlay above `CustomTabBar` (see `HomeView`). While
 /// resting only the circle takes touches, so the pages underneath stay usable.
@@ -28,13 +30,6 @@ struct AskButton: View {
         case holding
     }
 
-    /// One chat presentation: a fresh conversation seeded with the user's words.
-    private struct ChatRequest: Identifiable {
-        let id = UUID()
-        let text: String
-        let model: AskChatModel
-    }
-
     @Query private var catalog: [Exercise]
     @AppStorage(AppLanguage.storageKey) private var languageRaw = ""
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -45,7 +40,9 @@ struct AskButton: View {
     @State private var speech = SpeechInput()
     @State private var mode: Mode = .resting
     @State private var draft = ""
-    @State private var chat: ChatRequest?
+    /// Created on first use, then kept so the routine survives closing the chat.
+    @State private var chatModel: AskChatModel?
+    @State private var panel: AskPanelMode = .closed
     /// Why voice failed most recently; shown until the user moves on.
     @State private var voiceIssue: SpeechUnavailableReason?
     @State private var holdTask: Task<Void, Never>?
@@ -78,16 +75,29 @@ struct AskButton: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            if mode != .resting || voiceIssue != nil {
-                backdrop
-            }
-            if mode == .typing {
-                typingLayer
+            if panel.showsChat, let chatModel {
+                chatLayer(chatModel)
             } else {
-                restingLayer
+                if mode != .resting || voiceIssue != nil {
+                    backdrop
+                }
+                if mode == .typing {
+                    typingLayer
+                } else {
+                    restingLayer
+                }
             }
         }
-        .accessibilityAction(.escape) { collapse() }
+        .accessibilityAction(.escape) {
+            if panel.showsChat { setPanel(.closed) } else { collapse() }
+        }
+        .onChange(of: panel) { _, panel in
+            // Hiding the chat stops its mic; nothing listens unseen.
+            if !panel.showsChat {
+                speech.cancel()
+                voiceIssue = nil
+            }
+        }
         .onChange(of: speech.state) { _, state in
             if case .unavailable(let reason) = state { voiceIssue = reason }
         }
@@ -108,22 +118,103 @@ struct AskButton: View {
                 stopListeningSilently()
             }
         }
-        .sheet(item: $chat, onDismiss: { speech.cancel(); voiceIssue = nil }) { request in
-            // Close goes through dismiss() → onDismiss above, which cancels listening.
-            AskChatSheet(
-                model: request.model,
-                initialText: request.text,
-                speech: speech,
-                voiceIssue: voiceIssue,
-                onMicTap: { toggleSheetMic(model: request.model) },
-                onOpenSettings: openSettings,
-                onStart: { stopListeningSilently() }
-            )
-            .presentationDetents([.large])
-        }
     }
 
     // MARK: - Layers
+
+    /// The chat: a semi-transparent panel on the right above the tab bar, or full screen.
+    ///
+    /// Sized by padding and max sizes, not a GeometryReader: a size read from the
+    /// container feeds back through keyboard avoidance and can loop layout forever.
+    @ViewBuilder
+    private func chatLayer(_ model: AskChatModel) -> some View {
+        let full = panel == .full
+        AskChatPanel(
+            model: model,
+            mode: Binding(get: { panel }, set: { setPanel($0) }),
+            speech: speech,
+            voiceIssue: voiceIssue,
+            onMicTap: { toggleSheetMic(model: model) },
+            onOpenSettings: openSettings,
+            onStart: { stopListeningSilently() }
+        )
+        .background {
+            if !full {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(Color.luminaSurface.opacity(0.55)))
+                    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                    .shadow(color: .black.opacity(0.45), radius: 20, y: 8)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: full ? 0 : 24, style: .continuous))
+        // After the clip, so full screen also covers the safe areas.
+        .background { if full { Color.luminaSurface.ignoresSafeArea() } }
+        .frame(maxWidth: full ? .infinity : Self.sidePanelMaxWidth,
+               maxHeight: full ? .infinity : Self.sidePanelMaxHeight)
+        .padding(.leading, full ? 0 : 36)
+        .padding(.trailing, full ? 0 : 12)
+        .padding(.top, full ? 0 : Self.sidePanelTopInset)
+        .padding(.bottom, full ? 0 : CustomTabBar.contentClearance + 8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        .transition(.move(edge: .trailing).combined(with: .opacity))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("ask.panel")
+    }
+
+    private static let sidePanelMaxWidth: CGFloat = 380
+    private static let sidePanelMaxHeight: CGFloat = 560
+    /// Keeps the top of the page (title, streak) visible beside a side panel.
+    private static let sidePanelTopInset: CGFloat = 150
+
+    /// Shrunk chat: a pill in the button's place showing the routine so far; tap to reopen.
+    private var pill: some View {
+        Button { setPanel(.side) } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 15, weight: .semibold))
+                if let draft = chatModel?.draft, !draft.isEmpty {
+                    Text("\(draft.slotCount) exercises · \(AskRoutineCard.format(draft.totalSeconds))")
+                        .font(.luminaLabel.monospacedDigit())
+                } else {
+                    Text("Ask Dial Down").font(.luminaLabel)
+                }
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 12, weight: .bold))
+            }
+            .foregroundStyle(Color.onPastel)
+            .padding(.horizontal, 16)
+            .frame(height: Self.size)
+            .background {
+                Capsule()
+                    .fill(LinearGradient(colors: [.pastelLavender, .pastelBlue],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .matchedGeometryEffect(id: "askShape", in: ns)
+                    .shadow(color: .black.opacity(0.5), radius: 12, y: 6)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open Ask Dial Down")
+        .accessibilityIdentifier("ask.pill")
+    }
+
+    /// The routine's exercise count on the resting button once the chat is closed.
+    @ViewBuilder
+    private var badge: some View {
+        if let count = chatModel?.draft.slotCount, count > 0, mode == .resting {
+            Text(verbatim: "\(count)")
+                .font(.system(size: 12, weight: .bold).monospacedDigit())
+                .foregroundStyle(Color.onPastel)
+                .frame(minWidth: 20, minHeight: 20)
+                .background(Color.pastelMint, in: Capsule())
+                .overlay(Capsule().strokeBorder(Color.luminaSurface, lineWidth: 2))
+                .offset(x: 4, y: -4)
+                .accessibilityHidden(true)
+                .transition(.scale.combined(with: .opacity))
+        }
+    }
 
     private var backdrop: some View {
         Color.black.opacity(0.45)
@@ -150,7 +241,11 @@ struct AskButton: View {
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .trailing)))
             }
-            restingButton
+            if panel == .pill && mode == .resting {
+                pill
+            } else {
+                restingButton
+            }
         }
         .padding(.leading, 16)
         .padding(.trailing, 16)
@@ -175,13 +270,15 @@ struct AskButton: View {
         .frame(width: holding ? Self.size * 1.3 : Self.size,
                height: holding ? Self.size * 1.3 : Self.size)
         .contentShape(Circle())
+        .overlay(alignment: .topTrailing) { badge }
         .frame(width: Self.size * 1.3, height: Self.size * 1.3, alignment: .bottomTrailing)
         .gesture(pressGesture)
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel("Ask Dial Down")
+        .accessibilityValue(badgeValue)
         .accessibilityHint("Double-tap to type. Hold to speak.")
-        .accessibilityAction { expand(listening: false) }
+        .accessibilityAction { tapped() }
         .accessibilityAction(named: "Speak") { expand(listening: true) }
         .accessibilityIdentifier("ask.button")
     }
@@ -322,7 +419,7 @@ struct AskButton: View {
                 presentChat(text)
             }
         case .resting:
-            if wasTap { expand(listening: false) }
+            if wasTap { tapped() }
         case .typing:
             break
         }
@@ -332,6 +429,25 @@ struct AskButton: View {
 
     private var animation: Animation? {
         reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.8)
+    }
+
+    private var badgeValue: Text {
+        guard let count = chatModel?.draft.slotCount, count > 0 else { return Text(verbatim: "") }
+        return Text("\(count) exercises in your routine")
+    }
+
+    /// A tap on the button: back to the conversation if there is one, else the ask bar.
+    private func tapped() {
+        let hasConversation = !(chatModel?.messages.isEmpty ?? true)
+        if let next = AskPanelMode.forButtonTap(hasConversation: hasConversation) {
+            setPanel(next)
+        } else {
+            expand(listening: false)
+        }
+    }
+
+    private func setPanel(_ next: AskPanelMode) {
+        withAnimation(animation) { panel = next }
     }
 
     private func expand(listening: Bool) {
@@ -408,7 +524,11 @@ struct AskButton: View {
     }
 
     private func presentChat(_ text: String) {
-        chat = ChatRequest(text: text, model: AskChatModel(pipeline: .live()))
+        let model = chatModel ?? AskChatModel(pipeline: .live())
+        chatModel = model
+        setPanel(panel.afterSending)
+        // Queued as a draft if the chat is still answering, so nothing is lost.
+        Task { await model.acceptDictation(text, catalog: catalog) }
     }
 
     private func toggleSheetMic(model: AskChatModel) {

@@ -82,6 +82,11 @@ final class AskChatModel {
         return .draftChanged(draft.apply(intent, catalog: catalog))
     }
 
+    /// Writes the Customize screen's result back into the running routine.
+    func customize(exercises: [Exercise], durationOverrides: [UUID: Int]) {
+        draft.customize(exercises: exercises, durationOverrides: durationOverrides)
+    }
+
     /// Sends dictated words, or keeps them as a draft if a reply is still being worked out.
     func acceptDictation(_ text: String, catalog: [Exercise]) async {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)

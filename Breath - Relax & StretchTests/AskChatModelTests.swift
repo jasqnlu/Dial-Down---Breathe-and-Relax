@@ -195,6 +195,15 @@ struct AskChatModelTests {
         #expect(!m.draft.isEmpty)
     }
 
+    @Test func customizeRewritesTheDraft() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        let reversed = Array(m.draft.exercises.reversed())
+        m.customize(exercises: reversed, durationOverrides: [reversed[0].uuid: 90])
+        #expect(m.draft.exercises == reversed)
+        #expect(m.draft.totalSeconds == 90 + 60)
+    }
+
     private func ex(_ name: String, _ seconds: Int = 60) -> Exercise {
         Exercise(name: name, type: .stretch, targetBodyParts: [], durationSeconds: seconds,
                  difficulty: 1, instructions: [])

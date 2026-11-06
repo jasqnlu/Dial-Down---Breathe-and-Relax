@@ -30,6 +30,8 @@ final class AskFlowUITests: XCTestCase {
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {
+        // Let springs settle so the shot shows the finished layout.
+        Thread.sleep(forTimeInterval: 0.8)
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name
         shot.lifetime = .keepAlways
@@ -54,6 +56,90 @@ final class AskFlowUITests: XCTestCase {
         XCTAssertTrue(sheet.waitForExistence(timeout: 10), "Chat sheet not presented")
     }
 
+    /// Sends `text` from the open chat's own field.
+    private func say(_ text: String, in app: XCUIApplication) {
+        let input = app.textFields["ask.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5), "Chat input not found")
+        XCTAssertTrue(focus(input), "Chat input never took keyboard focus")
+        input.typeText(text + "\n")
+    }
+
+    /// Taps until `field` has keyboard focus. The panel slides while the ask bar's
+    /// keyboard goes away, so the first tap can land where the field just was.
+    private func focus(_ field: XCUIElement) -> Bool {
+        for _ in 0..<3 {
+            field.tap()
+            let focused = NSPredicate(format: "hasKeyboardFocus == true")
+            let wait = XCTNSPredicateExpectation(predicate: focused, object: field)
+            if XCTWaiter().wait(for: [wait], timeout: 2) == .completed { return true }
+        }
+        return false
+    }
+
+    private func trayTotal(_ app: XCUIApplication) -> XCUIElement {
+        app.staticTexts["ask.trayTotal"]
+    }
+
+    func testRoutineBuildsUpAndSurvivesClosing() throws {
+        let app = launch()
+        ask("3 exercises for my lower back", in: app)
+        let total = trayTotal(app)
+        XCTAssertTrue(total.waitForExistence(timeout: 20), "Routine tray not shown")
+        XCTAssertTrue(total.label.hasPrefix("3 exercises"), "got \(total.label)")
+        attach(app, "side-1-first-request")
+
+        say("2 for my neck", in: app)
+        let five = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH '5 exercises'")).firstMatch
+        XCTAssertTrue(five.waitForExistence(timeout: 20), "Second request didn't add to the routine: \(total.label)")
+        attach(app, "side-2-added")
+
+        // The pages under the side panel stay usable.
+        XCTAssertTrue(app.buttons["Profile"].isHittable, "Tab bar must stay reachable beside the panel")
+
+        app.buttons["ask.close"].tap()
+        let button = app.buttons["ask.button"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5))
+        XCTAssertEqual(button.value as? String, "5 exercises in your routine")
+        attach(app, "side-3-closed-badge")
+
+        button.tap()
+        XCTAssertTrue(five.waitForExistence(timeout: 5), "Reopening must keep the routine")
+    }
+
+    func testFullScreenShrinkAndReopen() throws {
+        let app = launch()
+        ask("2 exercises for my neck", in: app)
+        XCTAssertTrue(trayTotal(app).waitForExistence(timeout: 20))
+
+        app.buttons["ask.resize"].tap()
+        XCTAssertEqual(app.buttons["ask.resize"].label, "Exit full screen")
+        attach(app, "full-1-full-screen")
+
+        app.buttons["ask.shrink"].tap()
+        let pill = app.buttons["ask.pill"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "Shrink must leave a pill")
+        XCTAssertFalse(app.descendants(matching: .any)["ask.sheet"].firstMatch.exists)
+        attach(app, "full-2-pill")
+
+        pill.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ask.sheet"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["ask.resize"].label, "Full screen", "the pill reopens the side panel")
+    }
+
+    func testCustomizeOpensWithTheRoutineAndAddReturns() throws {
+        let app = launch()
+        ask("3 exercises for my lower back", in: app)
+        XCTAssertTrue(trayTotal(app).waitForExistence(timeout: 20))
+        app.buttons["ask.customize"].tap()
+
+        let add = app.buttons["customize.addMore"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5), "Customize didn't open")
+        attach(app, "customize-1-open")
+        add.tap()
+        XCTAssertTrue(app.textFields["ask.input"].waitForExistence(timeout: 5), "Add must return to the chat")
+        XCTAssertTrue(trayTotal(app).label.hasPrefix("3 exercises"))
+    }
+
     func testTypeLowerBackShowsRoutine() throws {
         let app = launch()
         ask("lower back pain", in: app)
@@ -76,6 +162,12 @@ final class AskFlowUITests: XCTestCase {
         // Setup may show a system permission alert or report voice unavailable.
         // The ask bar must remain responsive in either case.
         XCTAssertTrue(app.descendants(matching: .any)["ask.bar"].firstMatch.waitForExistence(timeout: 5))
+
+        // Leave nothing listening: a mic still running when the app is killed can wedge
+        // the simulator's dictation service and stall the next test's text-field queries.
+        let active = app.buttons.matching(identifier: "ask.mic")
+            .matching(NSPredicate(format: "label != %@", "Dictate")).firstMatch
+        if active.exists { active.tap() }
     }
 
     func testChatMicCanBeTappedAgainDuringVoiceSetup() throws {

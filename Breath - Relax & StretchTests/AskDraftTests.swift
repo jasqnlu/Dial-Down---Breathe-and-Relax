@@ -178,4 +178,28 @@ struct AskDraftTests {
         #expect(draft.apply(intent(minutes: 5), catalog: catalog) == .nothingToChange)
         #expect(draft.apply(intent(edit: .shorter), catalog: catalog) == .nothingToChange)
     }
+
+    // MARK: - Customize
+
+    @Test func customizeTakesTheNewOrderAndTimes() {
+        var draft = AskDraft()
+        draft.add(routine(neck, overrides: [neck[0].uuid: 45]), intent: intent([.neck]))
+        draft.customize(exercises: [neck[2], neck[0]], durationOverrides: [neck[2].uuid: 90, neck[0].uuid: 45])
+        #expect(names(draft) == ["Neck Roll", "Chin Tuck"])
+        #expect(draft.totalSeconds == 90 + 45)
+        #expect(draft.lastIntent?.areas == [.neck], "follow-ups like \"2 more\" still know the area")
+    }
+
+    @Test func customizeDropsTimesOfRemovedExercises() {
+        var draft = AskDraft()
+        draft.add(routine(neck), intent: intent([.neck]))
+        draft.customize(exercises: [neck[0]], durationOverrides: [neck[0].uuid: 30, neck[1].uuid: 90])
+        #expect(draft.durationOverrides == [neck[0].uuid: 30])
+    }
+
+    @Test func slotCountTreatsAPairAsOne() {
+        var draft = AskDraft()
+        draft.add(routine([neck[0], hipLeft, hipRight]), intent: intent([.hips]))
+        #expect(draft.slotCount == 2)
+    }
 }

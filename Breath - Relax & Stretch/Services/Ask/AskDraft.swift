@@ -54,6 +54,17 @@ struct AskDraft {
     // MARK: - Edits
 
     /// Applies a request that `AskIntent.isDraftEdit` marks as a change to this routine.
+    /// What the user sees as one exercise: a Left/Right pair counts once.
+    var slotCount: Int { RoutinePicker.slots(of: exercises).count }
+
+    /// Takes the order, removals and times from the Customize screen. Keeps
+    /// `lastIntent` so "2 more" still knows what was asked for.
+    mutating func customize(exercises: [Exercise], durationOverrides: [UUID: Int]) {
+        let kept = Set(exercises.map(\.uuid))
+        self.exercises = exercises
+        self.durationOverrides = durationOverrides.filter { kept.contains($0.key) }
+    }
+
     mutating func apply(_ intent: AskIntent, catalog: [Exercise]) -> AskDraftChange {
         switch intent.edit {
         case .remove: return remove(intent)

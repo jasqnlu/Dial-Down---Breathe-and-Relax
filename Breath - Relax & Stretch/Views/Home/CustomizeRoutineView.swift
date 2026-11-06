@@ -43,6 +43,9 @@ struct CustomizeRoutineView: View {
     /// same call sites, pre-unification.
     var showsAddExercisesButton: Bool = true
     let onDone: (_ name: String, _ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
+    /// Shows an "Add" toolbar button that hands back the edits so far and closes,
+    /// so the caller can go find more exercises (the Ask chat uses this).
+    var onAddMore: ((_ exercises: [Exercise], _ durationOverrides: [UUID: Int]) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
@@ -62,6 +65,8 @@ struct CustomizeRoutineView: View {
         showsPinToggle: Bool = true,
         primaryActionLabel: String = "Begin", primaryActionIcon: String = "play.fill",
         pickingOriginTab: Int = AppTab.today.rawValue, showsAddExercisesButton: Bool = true,
+        initialDurationOverrides: [UUID: Int] = [:],
+        onAddMore: ((_ exercises: [Exercise], _ durationOverrides: [UUID: Int]) -> Void)? = nil,
         onDone: @escaping (_ name: String, _ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
     ) {
         self.title = title
@@ -74,6 +79,8 @@ struct CustomizeRoutineView: View {
         self.pickingOriginTab = pickingOriginTab
         self.showsAddExercisesButton = showsAddExercisesButton
         self.onDone = onDone
+        self.onAddMore = onAddMore
+        self._durationOverrides = State(initialValue: initialDurationOverrides)
         self._pinnedToggle = State(initialValue: isPinned)
         self._currentExercises = State(initialValue: exercises)
         self._routineName = State(initialValue: initialName)
@@ -198,7 +205,18 @@ struct CustomizeRoutineView: View {
                 // hit): a tap meant for "Add Exercises" as the list's last
                 // row actually triggered Begin instead. The toolbar has no
                 // such neighbor and needs no scrolling to reach.
-                if showsAddExercisesButton {
+                if let onAddMore {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            onAddMore(currentExercises, durationOverrides)
+                            dismiss()
+                        } label: {
+                            Label("Add", systemImage: "plus")
+                                .labelStyle(.titleAndIcon)
+                        }
+                        .accessibilityIdentifier("customize.addMore")
+                    }
+                } else if showsAddExercisesButton {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             pickingSession.begin(context: .init(

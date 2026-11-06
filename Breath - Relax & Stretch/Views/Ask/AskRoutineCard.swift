@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// A routine shown as rows (a Left/Right pair collapses to one row) plus Start.
+/// A routine shown as rows (a Left/Right pair collapses to one row), plus Start
+/// when `onStart` is set.
 struct AskRoutineCard: View {
     let routine: AskRoutine
-    let onStart: () -> Void
+    var onStart: (() -> Void)? = nil
 
     @Environment(\.locale) private var locale
 
@@ -33,16 +34,18 @@ struct AskRoutineCard: View {
                 .padding(.vertical, 9)
                 Divider().overlay(Color.luminaOutline)
             }
-            Button(action: onStart) {
-                Label("Start", systemImage: "play.fill")
-                    .font(.luminaCardTitle)
-                    .foregroundStyle(Color.onPastel)
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                    .background(Color.pastelMint, in: RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous))
+            if let onStart {
+                Button(action: onStart) {
+                    Label("Start", systemImage: "play.fill")
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.onPastel)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .background(Color.pastelMint, in: RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 12)
+                .accessibilityIdentifier("ask.start")
             }
-            .buttonStyle(.plain)
-            .padding(.top, 12)
-            .accessibilityIdentifier("ask.start")
             Text("Stop if anything hurts sharply.")
                 .font(.luminaCaption)
                 .foregroundStyle(Color.luminaOnSurfaceVariant)
