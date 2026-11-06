@@ -8,7 +8,7 @@ final class ShowcaseScreenshotUITests: XCTestCase {
     func testCaptureShowcaseScreenshots() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
             // Legacy global flag: RegistrationGate migrates it to the guest's
             // per-account flag, so the coach-mark tour stays out of the shots.
             "-hasSeenAppGuide", "YES",

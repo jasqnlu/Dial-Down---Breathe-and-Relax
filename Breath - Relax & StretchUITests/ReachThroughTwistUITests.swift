@@ -18,7 +18,7 @@ final class ReachThroughTwistUITests: XCTestCase {
         for name in ["Left Standing Reach-Through Twist", "Right Standing Reach-Through Twist"] {
             let app = XCUIApplication()
             app.launchArguments += [
-                "-hasCompletedOnboarding", "YES",
+                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                 "-hasSeenAppGuide", "YES",
                 "-auth.isSignedIn", "YES",
                 "-auth.provider", "guest",

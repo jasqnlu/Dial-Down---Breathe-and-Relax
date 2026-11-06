@@ -17,7 +17,7 @@ final class AppTourWalkthroughUITests: XCTestCase {
         let app = XCUIApplication()
         // A fresh guest account id, so the per-account "seen the tour" flag
         // is unset and the tour starts on Home.
-        app.launchArguments += ["-hasCompletedOnboarding", "YES",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                                 "-auth.anonymousID", UUID().uuidString,
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]

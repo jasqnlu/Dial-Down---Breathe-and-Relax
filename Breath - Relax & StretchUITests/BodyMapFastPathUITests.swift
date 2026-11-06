@@ -14,7 +14,7 @@ final class BodyMapFastPathUITests: XCTestCase {
 
     private func launchBodyTab(extraArgs: [String]) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "YES",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                                 "-hasSeenAppGuide", "YES",
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]

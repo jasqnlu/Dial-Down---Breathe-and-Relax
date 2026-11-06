@@ -27,7 +27,7 @@ final class RoadmapWaveCarouselUITests: XCTestCase {
     func testCarouselOnHomeHeroAndCustomizeRoadmap() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launch()

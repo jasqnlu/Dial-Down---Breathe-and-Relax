@@ -27,7 +27,7 @@ final class BodyMapMiniRoutineStartUITests: XCTestCase {
     func testStartFromBodyMapMiniRoutineBarShowsSkipAndBackButtons() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launchArguments += ["-exercisesMode", "body"]

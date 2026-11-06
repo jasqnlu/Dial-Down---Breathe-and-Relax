@@ -33,7 +33,7 @@ final class AnimationAccuracyNoteUITests: XCTestCase {
     func testWallBicepStretchAnimationStillPlays() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
             "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",
@@ -48,7 +48,7 @@ final class AnimationAccuracyNoteUITests: XCTestCase {
     func testReversePrayerStretchShowsAccuracyNote() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
             "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",

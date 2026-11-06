@@ -7,7 +7,7 @@ final class AnimationDemoUITest: XCTestCase {
     func testClaspedHandsAnimationInListAndDetail() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
             "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",
@@ -47,7 +47,7 @@ final class AnimationDemoUITest: XCTestCase {
         ] {
             let app = XCUIApplication()
             app.launchArguments += [
-                "-hasCompletedOnboarding", "YES",
+                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                 "-hasSeenAppGuide", "YES",
                 "-auth.isSignedIn", "YES",
                 "-auth.provider", "guest",
@@ -96,7 +96,7 @@ final class AnimationDemoUITest: XCTestCase {
         ] {
             let app = XCUIApplication()
             app.launchArguments += [
-                "-hasCompletedOnboarding", "YES",
+                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                 "-hasSeenAppGuide", "YES",
                 "-auth.isSignedIn", "YES",
                 "-auth.provider", "guest",

@@ -18,7 +18,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
 
     func testAuthScreensDark() throws {
         let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES"]
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["Email"].waitForExistence(timeout: 10))
         attach(app, "auth-dark")
@@ -32,7 +32,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
     func testOnboardingScreensDark() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "NO", "-hasSeenAppGuide", "YES"]
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "NO", "-hasSeenAppGuide", "YES"]
         app.launch()
         let next = app.buttons["Next"]
         XCTAssertTrue(next.waitForExistence(timeout: 10))
@@ -51,7 +51,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
     func testSessionPlayerDark() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES"]
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES"]
         app.launch()
 
         // Today is the frontmost tab at launch; its hero CTA starts a session.
@@ -76,7 +76,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-debugInitialTab", "1"]
         app.launch()
         sleep(3)
@@ -120,7 +120,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "NO", "-hasSeenAppGuide", "YES"]
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "NO", "-hasSeenAppGuide", "YES"]
         app.launch()
         let next = app.buttons["Next"]
         XCTAssertTrue(next.waitForExistence(timeout: 10))
@@ -139,7 +139,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-debugInitialTab", "2"]
         app.launch()
         sleep(2)
@@ -152,7 +152,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-debugInitialTab", "1"]
         app.launch()
         sleep(2)
@@ -175,7 +175,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-debugInitialTab", "0"]
         app.launch()
         sleep(2)
@@ -188,7 +188,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         continueAfterFailure = true
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-onboardingAreas", "Chest,Legs,Core", "-debugInitialTab", "0"]
         app.launch()
         sleep(4)   // allow first-launch seeding

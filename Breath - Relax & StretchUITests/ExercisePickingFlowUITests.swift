@@ -55,7 +55,7 @@ final class ExercisePickingFlowUITests: XCTestCase {
     func testAddExercisesPickingRoundTripFromHomeToCorpusSheetAndBack() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launch()

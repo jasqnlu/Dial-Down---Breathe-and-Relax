@@ -6,7 +6,7 @@ final class LanguageSelectionUITests: XCTestCase {
         let app = XCUIApplication()
         // Don't pass `-appLanguage`: launch arguments live in the argument
         // domain, which shadows every write the app makes to that key.
-        app.launchArguments += ["-hasCompletedOnboarding", "NO",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "NO",
                                 "-AppleLanguages", "(en)",
                                 "-AppleLocale", "en_US"]
         app.launch()
@@ -86,7 +86,7 @@ final class LanguageSelectionUITests: XCTestCase {
         reset.terminate()
 
         let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "YES",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                                 "-auth.anonymousID", UUID().uuidString,
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "email",

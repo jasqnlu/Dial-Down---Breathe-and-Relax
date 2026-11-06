@@ -19,7 +19,7 @@ final class BreathPlayerLayoutPeekUITests: XCTestCase {
     func testPeekBreathPlayerLayout() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
             "-autoSkipGetReadyCountdown", "YES",
         ]

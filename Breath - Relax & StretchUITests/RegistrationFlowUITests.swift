@@ -8,7 +8,7 @@ final class RegistrationFlowUITests: XCTestCase {
     /// duplicate `-key value` pairs win, so `extra` is appended after the baseline.
     private func launch(_ extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        let baseline = ["-hasCompletedOnboarding", "YES",
+        let baseline = ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                         "-auth.anonymousID", UUID().uuidString,
                         "-auth.isSignedIn", "YES",
                         "-auth.provider", "email",
@@ -85,7 +85,7 @@ final class RegistrationFlowUITests: XCTestCase {
     /// Fresh install: showcase pages appear, Skip jumps to the goal picker.
     func testFreshInstallShowsShowcaseAndSkipWorks() {
         let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "NO",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "NO",
                                 "-auth.isSignedIn", "NO",
                                 "-auth.anonymousID", UUID().uuidString]
         app.launch()

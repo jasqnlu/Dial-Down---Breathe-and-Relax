@@ -16,7 +16,7 @@ final class SeatedSpinalTwistUITests: XCTestCase {
         for name in ["Left Seated Spinal Twist", "Right Seated Spinal Twist"] {
             let app = XCUIApplication()
             app.launchArguments += [
-                "-hasCompletedOnboarding", "YES",
+                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
                 "-hasSeenAppGuide", "YES",
                 "-auth.isSignedIn", "YES",
                 "-auth.provider", "guest",

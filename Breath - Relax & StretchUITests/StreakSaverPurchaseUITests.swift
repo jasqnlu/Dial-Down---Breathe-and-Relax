@@ -4,7 +4,7 @@ final class StreakSaverPurchaseUITests: XCTestCase {
 
     private func launch(points: Int, spent: Int = 0, savers: Int, streak: Int = 5, daysAgo: Int) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-auth.anonymousID", "streak-saver-uitest",
                                 "-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-AppleLanguages", "(en)", "-AppleLocale", "en_US",

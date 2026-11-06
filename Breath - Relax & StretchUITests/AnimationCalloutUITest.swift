@@ -13,7 +13,7 @@ final class AnimationCalloutUITest: XCTestCase {
     func testWristCirclesShowsCalloutInstructionOnDetail() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
             "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",
