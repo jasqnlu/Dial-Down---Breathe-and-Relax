@@ -9,6 +9,11 @@ enum AskReply: Equatable {
     case noMatch(intent: AskIntent)
     /// "Show gentle stretches anyway" found nothing gentle; offers browsing instead.
     case gentleNoMatch(intent: AskIntent)
+    /// A request that only makes sense against the routine being built. `AskChatModel`
+    /// resolves it against its draft; it is never shown as is.
+    case edit(AskIntent)
+    /// What a resolved `.edit` did to the routine.
+    case draftChanged(AskDraftChange)
 }
 
 /// Safety screening, then intent extraction (AI with keyword fallback), then routine picking.
@@ -27,7 +32,7 @@ struct AskPipeline {
         AskPipeline(primary: ModelIntentExtractor.isAvailable ? ModelIntentExtractor() : nil)
     }
 
-    func respond(to text: String, catalog: [Exercise]) async -> AskReply {
+    func respond(to text: String, catalog: [Exercise], excluding: Set<UUID> = []) async -> AskReply {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.unicodeScalars.contains(where: { CharacterSet.letters.contains($0) }) else {
             return .clarify
@@ -39,16 +44,23 @@ struct AskPipeline {
         let level = max(screen, intent.seriousness)
         if level > .ok { return .safety(level, intent: intent) }
         if intent.isOffTopic { return .offTopic }
+        if intent.isDraftEdit { return .edit(intent) }
         if intent.isEmpty { return .clarify }
+        return routine(for: intent, catalog: catalog, excluding: excluding)
+    }
 
-        if let routine = RoutinePicker.pick(intent: intent, from: catalog) {
+    /// A routine for `intent` that skips `excluding` (the draft), unless the user asked
+    /// for a new routine, which may reuse anything.
+    func routine(for intent: AskIntent, catalog: [Exercise], excluding: Set<UUID> = []) -> AskReply {
+        let skip = intent.wantsNewRoutine ? [] : excluding
+        if let routine = RoutinePicker.pick(intent: intent, from: catalog, excluding: skip) {
             return .routine(routine, intent: intent)
         }
         return .noMatch(intent: intent)
     }
 
-    func gentleRoutine(for intent: AskIntent, catalog: [Exercise]) -> AskReply {
-        if let routine = RoutinePicker.pick(intent: intent, from: catalog, gentle: true) {
+    func gentleRoutine(for intent: AskIntent, catalog: [Exercise], excluding: Set<UUID> = []) -> AskReply {
+        if let routine = RoutinePicker.pick(intent: intent, from: catalog, gentle: true, excluding: excluding) {
             return .routine(routine, intent: intent)
         }
         return .gentleNoMatch(intent: intent)
@@ -63,6 +75,10 @@ struct AskPipeline {
         // prefer it so a model slip can't turn "3 exercises" into 5.
         model.count = keyword.count ?? model.count
         model.wantsNewRoutine = model.wantsNewRoutine || keyword.wantsNewRoutine
+        model.edit = keyword.edit ?? model.edit
+        // "remove the last one" names no stretch, so the model may call it off-topic. Only
+        // explicit routine wording overrides that; a bare number ("a poem in 5 minutes") doesn't.
+        if keyword.edit != nil || keyword.wantsNewRoutine { model.isOffTopic = false }
         guard model.isEmpty && !model.isOffTopic else { return model }
         var merged = keyword
         merged.seriousness = max(model.seriousness, keyword.seriousness)

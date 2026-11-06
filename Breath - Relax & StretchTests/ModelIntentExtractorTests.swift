@@ -28,6 +28,12 @@ struct ModelIntentExtractorTests {
         #expect(i.wantsNewRoutine)
     }
 
+    @Test func conversionCarriesEdit() {
+        let generated = GeneratedIntent(areas: [], goal: nil, minutes: nil, edit: .swap,
+                                        seriousness: .ok, isOffTopic: false)
+        #expect(generated.toIntent().edit == .swap)
+    }
+
     @Test(arguments: [(0, nil), (-2, nil), (1, 1), (10, 10), (40, 10)] as [(Int, Int?)])
     func conversionClampsCount(_ raw: Int, _ expected: Int?) {
         let i = GeneratedIntent(areas: [], goal: nil, minutes: nil, count: raw,

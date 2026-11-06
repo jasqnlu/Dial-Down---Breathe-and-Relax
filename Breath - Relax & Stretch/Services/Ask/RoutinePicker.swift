@@ -28,7 +28,34 @@ enum RoutinePicker {
     private static let minSlots = 4
     private static let maxSlotsWithoutMinutes = 6
 
-    static func pick(intent: AskIntent, from catalog: [Exercise], gentle: Bool = false) -> AskRoutine? {
+    /// Groups an ordered list into slots: an adjacent Left/Right pair of the same exercise
+    /// is one slot, everything else stands alone. One "exercise" to the user is one slot.
+    static func slots(of exercises: [Exercise]) -> [[Exercise]] {
+        var result: [[Exercise]] = []
+        var i = 0
+        while i < exercises.count {
+            if i + 1 < exercises.count, isPair(exercises[i], exercises[i + 1]) {
+                result.append([exercises[i], exercises[i + 1]])
+                i += 2
+            } else {
+                result.append([exercises[i]])
+                i += 1
+            }
+        }
+        return result
+    }
+
+    private static func isPair(_ a: Exercise, _ b: Exercise) -> Bool {
+        pairKey(a.name) != a.name && pairKey(b.name) != b.name
+            && a.name.hasPrefix("Left ") != b.name.hasPrefix("Left ")
+            && pairKey(a.name) == pairKey(b.name)
+    }
+
+    /// `excluding` (exercises already in the routine being built) are never picked; a pair
+    /// whose other side is excluded is dropped rather than split.
+    static func pick(intent: AskIntent, from catalog: [Exercise], gentle: Bool = false,
+                     excluding: Set<UUID> = []) -> AskRoutine? {
+        let catalog = excluding.isEmpty ? catalog : catalog.filter { !excluding.contains($0.uuid) }
         var candidates = orderedCandidates(for: intent, in: catalog)
         if gentle { candidates = candidates.filter { $0.difficulty == 1 } }
         let slots = makeSlots(from: candidates, catalog: catalog,
@@ -103,10 +130,14 @@ enum RoutinePicker {
         return times
     }
 
-    /// Nudges slot times, last slot first, until they add up to `target`. Trims stop at 20 s
-    /// a slot. A leftover 5 s (catalog lengths like 45 s) can only go to a one-sided slot.
     private static func fit(_ slots: [[Exercise]], to target: Int) -> [Int] {
-        var times = slots.map(seconds(of:))
+        fit(times: slots.map(seconds(of:)), slots: slots, to: target)
+    }
+
+    /// Nudges slot `times`, last slot first, until they add up to `target`. Trims stop at
+    /// 20 s a slot. A leftover 5 s (catalog lengths like 45 s) can only go to a one-sided slot.
+    static func fit(times: [Int], slots: [[Exercise]], to target: Int) -> [Int] {
+        var times = times
         var diff = target - times.reduce(0, +)
         var i = times.count - 1
         var idle = 0
@@ -130,7 +161,7 @@ enum RoutinePicker {
 
     /// Overrides for the slots whose time changed. A pair splits its time between the sides
     /// (Left gets the half rounded down to 5 s, so the slot total stays exact).
-    private static func overrides(for slots: [[Exercise]], slotSeconds: [Int]) -> [UUID: Int] {
+    static func overrides(for slots: [[Exercise]], slotSeconds: [Int]) -> [UUID: Int] {
         var result: [UUID: Int] = [:]
         for (slot, seconds) in zip(slots, slotSeconds) where seconds != Self.seconds(of: slot) {
             if slot.count == 2 {

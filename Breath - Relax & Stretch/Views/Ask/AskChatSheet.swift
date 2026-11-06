@@ -161,6 +161,26 @@ struct AskChatSheet: View {
                 bubble { Text("I couldn't find gentle stretches for that.") }
                 browseButton(intent)
             }
+        case .draftChanged(let change):
+            bubble { changeText(change) }
+        case .edit:
+            EmptyView()   // AskChatModel always resolves these; never stored
+        }
+    }
+
+    private func changeText(_ change: AskDraftChange) -> Text {
+        switch change {
+        case .cleared:
+            return Text("Cleared. What would you like to start with?")
+        case .removed(let names):
+            let list = names.formatted(.list(type: .and).locale(locale))
+            return Text("Removed \(list).")
+        case .swapped(let from, let to):
+            return Text("Swapped \(from) for \(to).")
+        case .retimed(let seconds):
+            return Text("Your routine is now \(AskRoutineCard.format(seconds)) long.")
+        case .nothingToChange:
+            return Text("Nothing in your routine matches that.")
         }
     }
 

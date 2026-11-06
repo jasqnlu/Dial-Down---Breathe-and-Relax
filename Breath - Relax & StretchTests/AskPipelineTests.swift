@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import BreathRelaxStretch
 
@@ -126,6 +127,57 @@ struct AskPipelineTests {
             .respond(to: "start over with my lower back", catalog: catalog())
         guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
         #expect(used.wantsNewRoutine)
+    }
+
+    // MARK: - Building on a draft
+
+    @Test func requestSkipsExercisesAlreadyInTheDraft() async {
+        let cat = catalog()
+        let reply = await pipeline(nil).respond(to: "2 exercises for my lower back", catalog: cat,
+                                                excluding: [cat[0].uuid, cat[1].uuid])
+        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(Set(routine.exercises.map(\.name)) == ["Knee Hug", "Bridge"])
+    }
+
+    @Test func newRoutineMayReuseDraftExercises() async {
+        let cat = catalog()
+        let reply = await pipeline(nil).respond(to: "start over with 4 exercises for my lower back",
+                                                catalog: cat, excluding: Set(cat.map(\.uuid)))
+        guard case .routine(let routine, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(routine.exercises.count == 4)
+    }
+
+    @Test(arguments: ["remove the last one", "start over", "make it 5 minutes", "make it shorter",
+                      "2 more", "another one", "swap the last one"])
+    func draftOnlyRequestsComeBackAsEdits(_ text: String) async {
+        let reply = await pipeline(nil).respond(to: text, catalog: catalog())
+        guard case .edit = reply else { Issue.record("\(text): got \(reply)"); return }
+    }
+
+    @Test func removeByAreaIsAnEditNotANewRoutine() async {
+        let reply = await pipeline(nil).respond(to: "remove the lower back ones", catalog: catalog())
+        guard case .edit(let intent) = reply else { Issue.record("got \(reply)"); return }
+        #expect(intent.edit == .remove)
+        #expect(intent.areas == [.lowerBack])
+    }
+
+    @Test func modelCallingAnEditOffTopicStillEdits() async {
+        // "remove the last one" names no stretch, so the model may call it off-topic.
+        let reply = await pipeline(.fixed(intent(offTopic: true)))
+            .respond(to: "remove the last one", catalog: catalog())
+        guard case .edit(let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.edit == .remove)
+    }
+
+    @Test func offTopicWithANumberStaysOffTopic() async {
+        let reply = await pipeline(.fixed(intent(offTopic: true)))
+            .respond(to: "write me a poem in 5 minutes", catalog: catalog())
+        #expect(reply == .offTopic)
+    }
+
+    @Test func safetyStillComesBeforeEdits() async {
+        let reply = await pipeline(nil).respond(to: "remove the last one, I have sharp pain", catalog: catalog())
+        guard case .safety = reply else { Issue.record("got \(reply)"); return }
     }
 
     @Test func emptyModelIntentWithoutKeywordsClarifies() async {

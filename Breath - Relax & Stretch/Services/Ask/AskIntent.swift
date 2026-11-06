@@ -53,6 +53,12 @@ enum AskGoal: String, CaseIterable, Codable {
     case unwind
 }
 
+/// Ways a request can change the routine already built.
+@Generable
+enum AskEdit: String, CaseIterable, Codable {
+    case remove, swap, shorter, longer
+}
+
 enum SafetyLevel: Int, Comparable, Codable {
     case ok = 0, concerning, urgent
 
@@ -72,6 +78,14 @@ struct AskIntent: Equatable {
     /// The user explicitly asked for a new routine ("start over", "create a new routine").
     /// Otherwise a request adds to the routine they're building.
     var wantsNewRoutine = false
+    /// A change to the routine already built ("remove the last one", "make it shorter").
+    var edit: AskEdit? = nil
+
+    /// Only makes sense against the routine being built: an edit, or "start over",
+    /// "2 more", "make it 5 minutes" with no area or goal of their own.
+    var isDraftEdit: Bool {
+        edit != nil || (isEmpty && (wantsNewRoutine || count != nil || minutes != nil))
+    }
 
     /// Largest `count` any extractor reports.
     static let maxCount = 10

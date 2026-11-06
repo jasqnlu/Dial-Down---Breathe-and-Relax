@@ -263,6 +263,47 @@ struct KeywordIntentExtractorTests {
         #expect(extractor.intent(for: text).wantsNewRoutine == false)
     }
 
+    // MARK: - Edits to the routine being built
+
+    @Test(arguments: [
+        ("remove the last one", AskEdit.remove),
+        ("delete the neck ones", .remove),
+        ("remove 2 exercises", .remove),
+        ("take out the hip stretch", .remove),
+        ("swap the last one", .swap),
+        ("give me a different one", .swap),
+        ("replace the neck one", .swap),
+        ("make it shorter", .shorter),
+        ("make it longer", .longer),
+        ("quita el último", .remove),
+        ("cambia el último", .swap),
+        ("hazlo más corto", .shorter),
+        ("enlève le dernier", .remove),
+        ("remplace le dernier", .swap),
+        ("plus long", .longer),
+        ("删掉最后一个", .remove),
+        ("换一个", .swap),
+        ("短一点", .shorter),
+    ])
+    func edits(_ text: String, _ expected: AskEdit) {
+        #expect(extractor.intent(for: text).edit == expected)
+    }
+
+    @Test(arguments: ["3 exercises for my neck", "tight hips", "start over", "add 2 more for my hips"])
+    func noEdit(_ text: String) {
+        #expect(extractor.intent(for: text).edit == nil)
+    }
+
+    @Test func aDifferentOneSwapsRatherThanStartingOver() {
+        #expect(extractor.intent(for: "give me a different one").wantsNewRoutine == false)
+    }
+
+    @Test func removeKeepsItsAreaAndCount() {
+        let byArea = extractor.intent(for: "delete the neck ones")
+        #expect(byArea.areas == [.neck])
+        #expect(extractor.intent(for: "remove 2 exercises").count == 2)
+    }
+
     @Test func newRoutinePhraseIsNotACount() {
         let i = extractor.intent(for: "make a new one with 3 hip stretches")
         #expect(i.count == 3)

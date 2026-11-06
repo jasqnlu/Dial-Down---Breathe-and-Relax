@@ -66,27 +66,14 @@ extension AskRoutine {
 
     /// Display rows: an adjacent Left/Right pair collapses to one "<name> · L + R" row.
     func rows(locale: Locale) -> [Row] {
-        var result: [Row] = []
-        var i = 0
-        while i < exercises.count {
-            let current = exercises[i]
-            if i + 1 < exercises.count, Self.isPair(current, exercises[i + 1]) {
-                let name = RoutinePicker.pairKey(current.name)
-                let title = String(localized: LocalizedStringResource("\(name) · L + R", locale: locale))
-                result.append(Row(id: current.uuid, title: title,
-                                  seconds: seconds(for: current) + seconds(for: exercises[i + 1])))
-                i += 2
-            } else {
-                result.append(Row(id: current.uuid, title: current.name, seconds: seconds(for: current)))
-                i += 1
+        RoutinePicker.slots(of: exercises).map { slot in
+            let seconds = slot.reduce(0) { $0 + self.seconds(for: $1) }
+            guard slot.count == 2 else {
+                return Row(id: slot[0].uuid, title: slot[0].name, seconds: seconds)
             }
+            let name = RoutinePicker.pairKey(slot[0].name)
+            let title = String(localized: LocalizedStringResource("\(name) · L + R", locale: locale))
+            return Row(id: slot[0].uuid, title: title, seconds: seconds)
         }
-        return result
-    }
-
-    private static func isPair(_ a: Exercise, _ b: Exercise) -> Bool {
-        RoutinePicker.pairKey(a.name) != a.name && RoutinePicker.pairKey(b.name) != b.name
-            && a.name.hasPrefix("Left ") != b.name.hasPrefix("Left ")
-            && RoutinePicker.pairKey(a.name) == RoutinePicker.pairKey(b.name)
     }
 }

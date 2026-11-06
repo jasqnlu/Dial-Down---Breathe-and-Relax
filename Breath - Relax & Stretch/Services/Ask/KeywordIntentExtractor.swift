@@ -17,6 +17,9 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         var working = PhraseMatcher.boundaryForm(normalized)
 
         let minutes = Self.minutes(in: &working)
+        let edit = Self.editTable.first { _, phrases in
+            phrases.contains { $0.blankFirstMatch(in: &working) }
+        }?.0
         // "New routine" phrases are blanked before counting, so "a new one" is never "1 exercise".
         let wantsNewRoutine = Self.newRoutinePhrases.reduce(false) { found, phrase in
             phrase.blankFirstMatch(in: &working) || found
@@ -39,8 +42,34 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
 
         return AskIntent(areas: areas, goal: goal, minutes: minutes,
                          seriousness: .ok, isOffTopic: false,
-                         count: count, wantsNewRoutine: wantsNewRoutine)
+                         count: count, wantsNewRoutine: wantsNewRoutine, edit: edit)
     }
+
+    // MARK: - Edits to the routine being built
+
+    /// Checked in order; the first edit found wins.
+    private static let editTable: [(AskEdit, [PhraseMatcher])] = [
+        (.remove, [
+            "remove", "delete", "drop", "take out", "get rid of",
+            "quita", "quitar", "quitame", "elimina", "eliminar", "saca", "borra",
+            "enleve", "enlever", "supprime", "supprimer", "retire", "retirer",
+            "删掉", "删除", "去掉", "拿掉"]),
+        (.swap, [
+            "swap", "replace", "switch out", "different one", "something else",
+            "cambia", "cambiar", "reemplaza", "reemplazar",
+            "remplace", "remplacer", "change", "changer",
+            "换一个", "替换", "换掉"]),
+        (.shorter, [
+            "shorter", "quicker", "less time",
+            "mas corto", "mas corta", "menos tiempo",
+            "plus court", "plus courte", "moins de temps",
+            "短一点", "缩短"]),
+        (.longer, [
+            "longer", "more time",
+            "mas largo", "mas larga", "mas tiempo",
+            "plus long", "plus longue", "plus de temps",
+            "长一点", "延长"]),
+    ].map { edit, words in (edit, words.map { PhraseMatcher($0) }) }
 
     // MARK: - Exercise count
 
@@ -96,7 +125,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
     /// Only explicit wording replaces the routine; every other request adds to it.
     private static let newRoutinePhrases = [
         "start over", "start again", "start fresh", "from scratch", "new routine", "new one",
-        "different routine", "different one", "fresh routine", "instead",
+        "different routine", "fresh routine", "instead",
         "nueva rutina", "rutina nueva", "otra rutina", "rutina diferente", "empezar de nuevo",
         "empecemos de nuevo", "desde cero", "en su lugar", "en lugar de eso",
         "nouvelle routine", "autre routine", "routine differente", "recommencer", "on recommence",

@@ -114,6 +114,87 @@ struct AskChatModelTests {
         #expect(m.messages[0].reply == .clarify)
     }
 
+    // MARK: - The running routine (draft)
+
+    /// Five lower-back and three neck stretches, 60 s each.
+    private func bigCatalog() -> [Exercise] {
+        let back = ["Pelvic Tilt", "Lumbar Roll", "Knee Hug", "Bridge", "Sphinx"].map {
+            Exercise(name: $0, type: .stretch, targetBodyParts: ["Lower Back"],
+                     durationSeconds: 60, difficulty: 1, instructions: [])
+        }
+        let neck = ["Chin Tuck", "Neck Tilt", "Neck Roll"].map {
+            Exercise(name: $0, type: .stretch, targetBodyParts: ["Neck"],
+                     durationSeconds: 60, difficulty: 1, instructions: [])
+        }
+        return back + neck
+    }
+
+    private func parts(_ m: AskChatModel) -> [String] { m.draft.exercises.flatMap(\.targetBodyParts) }
+
+    @Test func requestsAddUpInTheDraft() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        await m.send("2 for my neck", catalog: cat)
+        // In request order: the two back stretches stay first, the neck ones follow.
+        #expect(parts(m) == ["Lower Back", "Lower Back", "Neck", "Neck"])
+    }
+
+    @Test func moreOfTheSameNeverRepeats() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        await m.send("2 more", catalog: cat)
+        #expect(parts(m) == ["Lower Back", "Lower Back", "Lower Back", "Lower Back"])
+        #expect(Set(m.draft.exercises.map(\.name)).count == 4, "no exercise twice")
+        guard case .routine = m.messages.last?.reply else {
+            Issue.record("got \(String(describing: m.messages.last?.reply))"); return
+        }
+    }
+
+    @Test func anotherOneWithNothingToGoOnClarifies() async {
+        let m = model()
+        await m.send("another one", catalog: bigCatalog())
+        #expect(m.messages.last?.reply == .clarify)
+        #expect(m.draft.isEmpty)
+    }
+
+    @Test func explicitNewRoutineReplacesTheDraft() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        await m.send("create a new routine with 2 neck stretches", catalog: cat)
+        #expect(parts(m) == ["Neck", "Neck"])
+    }
+
+    @Test func startOverAloneClears() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        await m.send("start over", catalog: cat)
+        #expect(m.draft.isEmpty)
+        #expect(m.messages.last?.reply == .draftChanged(.cleared))
+    }
+
+    @Test func removeEditsTheDraftAndSaysWhat() async {
+        let m = model(), cat = bigCatalog()
+        await m.send("2 exercises for my lower back", catalog: cat)
+        let before = m.draft.exercises.map(\.name)
+        await m.send("remove the last one", catalog: cat)
+        #expect(m.draft.exercises.map(\.name) == [before[0]])
+        #expect(m.messages.last?.reply == .draftChanged(.removed([before[1]])))
+    }
+
+    @Test func editOnAnEmptyDraftSaysThereIsNothingToChange() async {
+        let m = model()
+        await m.send("remove the last one", catalog: bigCatalog())
+        #expect(m.messages.last?.reply == .draftChanged(.nothingToChange))
+    }
+
+    @Test func gentleAnywayAddsToTheDraft() async {
+        let m = model()
+        guard let safety = await concerningMessage(m, catalog: catalog()) else { return }
+        #expect(m.draft.isEmpty)
+        m.showGentleAnyway(for: safety.id, catalog: catalog())
+        #expect(!m.draft.isEmpty)
+    }
+
     private func ex(_ name: String, _ seconds: Int = 60) -> Exercise {
         Exercise(name: name, type: .stretch, targetBodyParts: [], durationSeconds: seconds,
                  difficulty: 1, instructions: [])

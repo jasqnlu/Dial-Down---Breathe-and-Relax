@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import BreathRelaxStretch
 
@@ -237,6 +238,22 @@ struct RoutinePickerTests {
         let catalog = (0..<10).map { make("Back Move \($0)", ["Lower Back"], seconds: 50) }
         let routine = RoutinePicker.pick(intent: intent([.lowerBack]), from: catalog)
         #expect(routine?.durationOverrides.isEmpty == true)
+    }
+
+    // MARK: - Building on a draft
+
+    @Test func excludedExercisesAreNeverPicked() {
+        let catalog = (0..<4).map { make("Back Move \($0)", ["Lower Back"]) }
+        let inDraft: Set<UUID> = [catalog[0].uuid, catalog[1].uuid]
+        let routine = RoutinePicker.pick(intent: intent([.lowerBack], count: 2), from: catalog, excluding: inDraft)
+        #expect(names(routine) == ["Back Move 2", "Back Move 3"])
+    }
+
+    @Test func slotsGroupAdjacentPairs() {
+        let list = [make("Bridge", []), make("Left Hip Opener", []), make("Right Hip Opener", []),
+                    make("Left Calf Stretch", []), make("Knee Hug", [])]
+        #expect(RoutinePicker.slots(of: list).map { $0.map(\.name) } ==
+                [["Bridge"], ["Left Hip Opener", "Right Hip Opener"], ["Left Calf Stretch"], ["Knee Hug"]])
     }
 
     @Test func pairKeyStripsSidePrefix() {
