@@ -124,7 +124,10 @@ struct RecommendedCarousel: View {
             }
         }
         .onReceive(advance) { _ in
-            guard !reduceMotion, items.count > 1 else { return }
+            // UI tests launch with `-carousel.paused YES`: XCUITest waits for animations to
+            // finish before every step, and one every 4 s can stall it for many minutes.
+            guard !reduceMotion, items.count > 1,
+                  !UserDefaults.standard.bool(forKey: "carousel.paused") else { return }
             withAnimation(.easeInOut(duration: 0.5)) {
                 index = (index + 1) % items.count
             }

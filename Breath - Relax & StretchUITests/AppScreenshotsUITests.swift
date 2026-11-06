@@ -23,6 +23,7 @@ final class AppScreenshotsUITests: XCTestCase {
             "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
             "-appLanguage", "en",
+            "-carousel.paused", "YES",   // see RecommendedCarousel
         ]
         app.launch()
         let notNow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Not Now"]

@@ -15,6 +15,7 @@ final class AskFlowUITests: XCTestCase {
             "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
             "-appLanguage", "en",
+            "-carousel.paused", "YES",
         ]
         app.launch()
         dismissSystemAlerts()
