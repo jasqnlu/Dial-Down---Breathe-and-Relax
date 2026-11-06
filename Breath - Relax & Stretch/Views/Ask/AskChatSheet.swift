@@ -4,8 +4,11 @@ import SwiftUI
 struct AskChatSheet: View {
     let model: AskChatModel
     let initialText: String?
+    let speech: SpeechInput
+    let voiceIssue: SpeechUnavailableReason?
     /// Shows the mic button when set (wired up by the caller).
     var onMicTap: (() -> Void)? = nil
+    var onOpenSettings: (() -> Void)? = nil
     /// Called when a routine's Start is tapped, before the player opens
     /// (the caller stops any listening it started).
     var onStart: (() -> Void)? = nil
@@ -17,11 +20,16 @@ struct AskChatSheet: View {
     @State private var playing: PlayableRoutine?
     @Environment(\.locale) private var locale
 
-    init(model: AskChatModel, initialText: String?,
-         onMicTap: (() -> Void)? = nil, onStart: (() -> Void)? = nil) {
+    init(model: AskChatModel, initialText: String?, speech: SpeechInput,
+         voiceIssue: SpeechUnavailableReason? = nil,
+         onMicTap: (() -> Void)? = nil, onOpenSettings: (() -> Void)? = nil,
+         onStart: (() -> Void)? = nil) {
         self.model = model
         self.initialText = initialText
+        self.speech = speech
+        self.voiceIssue = voiceIssue
         self.onMicTap = onMicTap
+        self.onOpenSettings = onOpenSettings
         self.onStart = onStart
     }
 
@@ -48,6 +56,7 @@ struct AskChatSheet: View {
                     if let last = model.messages.last { withAnimation { proxy.scrollTo(last.id, anchor: .bottom) } }
                 }
             }
+            voiceStatus
             inputRow
         }
         .onChange(of: model.pendingDraft) {
@@ -76,7 +85,9 @@ struct AskChatSheet: View {
 
     private var header: some View {
         HStack {
-            Text("Ask Dial Down").font(.luminaCardTitle)
+            Text("Ask Dial Down")
+                .font(.luminaCardTitle)
+                .accessibilityIdentifier("ask.sheet")
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
@@ -234,16 +245,55 @@ struct AskChatSheet: View {
                 .accessibilityIdentifier("ask.input")
             if let onMicTap {
                 Button(action: onMicTap) {
-                    Image(systemName: "mic.fill")
+                    Image(systemName: speech.state == .preparing || speech.state == .listening
+                          ? "stop.fill" : "mic.fill")
                         .foregroundStyle(Color.onPastel)
                         .frame(width: 44, height: 44)
-                        .background(Color.pastelLavender, in: Circle())
+                        .background(speech.state == .preparing || speech.state == .listening
+                                    ? Color.pastelMint : Color.pastelLavender, in: Circle())
                 }
-                .accessibilityLabel("Dictate")
+                .accessibilityLabel(speech.state == .preparing ? "Cancel voice setup" :
+                                    speech.state == .listening ? "Stop and send" : "Dictate")
                 .accessibilityIdentifier("ask.mic")
             }
         }
         .padding(16)
+    }
+
+    @ViewBuilder
+    private var voiceStatus: some View {
+        if let voiceIssue {
+            VoiceIssueNote(reason: voiceIssue, openSettings: { onOpenSettings?() })
+                .padding(.horizontal, 16)
+        } else if speech.state == .preparing || speech.state == .listening {
+            VStack(alignment: .leading, spacing: 6) {
+                if speech.transcript.isEmpty {
+                    Text(speech.state == .preparing ? "Getting voice ready…" : "Listening…")
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                } else {
+                    Text(verbatim: speech.transcript).foregroundStyle(Color.luminaOnSurface)
+                }
+                if speech.state == .preparing {
+                    Button("Cancel") { onMicTap?() }
+                        .font(.luminaCaption)
+                        .accessibilityIdentifier("ask.cancelVoice")
+                } else {
+                    Text("Tap the mic again to send.")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+            }
+            .font(.luminaBody)
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .strokeBorder(Color.pastelMint, lineWidth: 1.5)
+            )
+            .padding(.horizontal, 16)
+            .accessibilityIdentifier("ask.voiceStatus")
+        }
     }
 
     private func submit(_ text: String) {

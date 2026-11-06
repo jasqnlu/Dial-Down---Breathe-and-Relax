@@ -65,6 +65,8 @@ struct AskButton: View {
     }
 
     private var isListening: Bool { speech.state == .listening }
+    private var isPreparing: Bool { speech.state == .preparing }
+    private var isVoiceActive: Bool { isPreparing || isListening }
 
     /// The mic fails closed: leaving the app (or anything else making the scene inactive,
     /// e.g. Control Center or an incoming call) stops it. The one exception is our own
@@ -111,12 +113,13 @@ struct AskButton: View {
             AskChatSheet(
                 model: request.model,
                 initialText: request.text,
+                speech: speech,
+                voiceIssue: voiceIssue,
                 onMicTap: { toggleSheetMic(model: request.model) },
+                onOpenSettings: openSettings,
                 onStart: { stopListeningSilently() }
             )
-            .overlay(alignment: .bottom) { sheetVoiceStatus }
             .presentationDetents([.large])
-            .accessibilityIdentifier("ask.sheet")
         }
     }
 
@@ -234,15 +237,16 @@ struct AskButton: View {
                 .padding(.leading, 18)
                 .accessibilityIdentifier("ask.field")
             Button(action: toggleBarMic) {
-                Image(systemName: isListening ? "stop.fill" : "mic.fill")
+                Image(systemName: isVoiceActive ? "stop.fill" : "mic.fill")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.onPastel)
                     .frame(width: 40, height: 40)
-                    .background(isListening ? Color.pastelMint : Color.pastelLavender, in: Circle())
+                    .background(isVoiceActive ? Color.pastelMint : Color.pastelLavender, in: Circle())
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isListening ? Text("Stop and send") : Text("Dictate"))
+            .accessibilityLabel(isPreparing ? Text("Cancel voice setup") :
+                                isListening ? Text("Stop and send") : Text("Dictate"))
             .accessibilityIdentifier("ask.mic")
         }
         .padding(5)
@@ -252,44 +256,11 @@ struct AskButton: View {
                 .fill(Color.luminaContainer)
                 .matchedGeometryEffect(id: "askShape", in: ns)
         }
-        .overlay(Capsule().strokeBorder(isListening ? Color.pastelMint : Color.pastelLavender, lineWidth: 1.5))
+        .overlay(Capsule().strokeBorder(isVoiceActive ? Color.pastelMint : Color.pastelLavender, lineWidth: 1.5))
         .shadow(color: .black.opacity(0.4), radius: 14, y: 6)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("ask.bar")
         .onAppear { fieldFocused = true }
-    }
-
-    /// Listening/unavailable status floated above the chat sheet's input row.
-    @ViewBuilder
-    private var sheetVoiceStatus: some View {
-        Group {
-            if let voiceIssue {
-                VoiceIssueNote(reason: voiceIssue, openSettings: openSettings)
-            } else if isListening {
-                VStack(alignment: .leading, spacing: 6) {
-                    if speech.transcript.isEmpty {
-                        Text("Listening…").foregroundStyle(Color.luminaOnSurfaceVariant)
-                    } else {
-                        Text(verbatim: speech.transcript).foregroundStyle(Color.luminaOnSurface)
-                    }
-                    Text("Tap the mic again to send.")
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                }
-                .font(.luminaBody)
-                .padding(.horizontal, 14).padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                        .strokeBorder(Color.pastelMint, lineWidth: 1.5)
-                )
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .padding(.horizontal, 16)
-        // Clears the sheet's input row (44pt field + 16pt padding each side).
-        .padding(.bottom, 80)
     }
 
     // MARK: - Press handling
@@ -416,7 +387,9 @@ struct AskButton: View {
     }
 
     private func toggleBarMic() {
-        if isListening {
+        if isPreparing {
+            speech.cancel()
+        } else if isListening {
             send(speech.stop())
         } else {
             voiceIssue = nil
@@ -439,7 +412,9 @@ struct AskButton: View {
     }
 
     private func toggleSheetMic(model: AskChatModel) {
-        if isListening {
+        if isPreparing {
+            speech.cancel()
+        } else if isListening {
             // Kept as a draft if the sheet is still answering, so nothing is lost.
             let text = speech.stop()
             Task { await model.acceptDictation(text, catalog: catalog) }
@@ -472,7 +447,7 @@ private struct VoiceReadyNote: View {
 }
 
 /// Why voice can't be used, with a way to fix it when it's a permission.
-private struct VoiceIssueNote: View {
+struct VoiceIssueNote: View {
     let reason: SpeechUnavailableReason
     let openSettings: () -> Void
 

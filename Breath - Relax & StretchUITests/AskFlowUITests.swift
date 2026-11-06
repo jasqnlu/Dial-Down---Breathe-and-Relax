@@ -61,6 +61,68 @@ final class AskFlowUITests: XCTestCase {
         attach(app, "3-routine")
     }
 
+    func testMicCanBeTappedBeforeTyping() throws {
+        let app = launch()
+        let button = app.buttons["ask.button"]
+        XCTAssertTrue(button.waitForExistence(timeout: 20))
+        button.tap()
+
+        let field = app.textFields["ask.field"]
+        let mic = app.buttons["ask.mic"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertTrue(mic.isHittable, "The mic should be tappable with an empty draft")
+        mic.tap()
+
+        // Setup may show a system permission alert or report voice unavailable.
+        // The ask bar must remain responsive in either case.
+        XCTAssertTrue(app.descendants(matching: .any)["ask.bar"].firstMatch.waitForExistence(timeout: 5))
+    }
+
+    func testChatMicCanBeTappedAgainDuringVoiceSetup() throws {
+        let app = launch()
+        ask("lower back pain", in: app)
+
+        let mic = app.buttons["ask.mic"]
+        XCTAssertTrue(mic.waitForExistence(timeout: 5))
+        mic.tap()
+
+        let status = app.descendants(matching: .any)["ask.voiceStatus"].firstMatch
+        if status.waitForExistence(timeout: 5) {
+            XCTAssertTrue(mic.isHittable, "Voice status must not cover the chat mic")
+            mic.tap()
+            XCTAssertFalse(status.waitForExistence(timeout: 2), "Second tap must stop or cancel voice")
+        } else {
+            // A permission or model failure can make voice unavailable instead.
+            XCTAssertTrue(app.descendants(matching: .any)["ask.voiceIssue"].firstMatch.exists)
+        }
+        XCTAssertTrue(app.buttons["Close"].isHittable, "The chat must remain dismissible")
+    }
+
+    func testChatVoiceSetupResolvesAndChatStaysUsable() throws {
+        let app = launch()
+        ask("lower back pain", in: app)
+
+        let mic = app.buttons["ask.mic"]
+        XCTAssertTrue(mic.waitForExistence(timeout: 5))
+        mic.tap()
+
+        let stop = app.buttons.matching(identifier: "ask.mic")
+            .matching(NSPredicate(format: "label == %@", "Stop and send")).firstMatch
+        let issue = app.descendants(matching: .any)["ask.voiceIssue"].firstMatch
+        let ready = stop.waitForExistence(timeout: 15)
+        if ready {
+            stop.tap()
+        } else {
+#if targetEnvironment(simulator)
+            XCTAssertTrue(issue.waitForExistence(timeout: 3), "Voice never left setup")
+#else
+            XCTFail("On-device voice never began listening: \(issue.exists ? "unavailable" : "stuck preparing")")
+#endif
+        }
+        XCTAssertFalse(app.descendants(matching: .any)["ask.voiceStatus"].firstMatch.exists)
+        XCTAssertTrue(app.buttons["Close"].isHittable)
+    }
+
     func testUrgentShowsNoStart() throws {
         let app = launch()
         ask("chest pain", in: app)
