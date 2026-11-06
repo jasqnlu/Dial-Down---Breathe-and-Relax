@@ -74,10 +74,10 @@ extension AskRoutine {
                 let name = RoutinePicker.pairKey(current.name)
                 let title = String(localized: LocalizedStringResource("\(name) · L + R", locale: locale))
                 result.append(Row(id: current.uuid, title: title,
-                                  seconds: current.durationSeconds + exercises[i + 1].durationSeconds))
+                                  seconds: seconds(for: current) + seconds(for: exercises[i + 1])))
                 i += 2
             } else {
-                result.append(Row(id: current.uuid, title: current.name, seconds: current.durationSeconds))
+                result.append(Row(id: current.uuid, title: current.name, seconds: seconds(for: current)))
                 i += 1
             }
         }

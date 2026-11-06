@@ -58,7 +58,11 @@ struct AskPipeline {
 
     private func extractIntent(from text: String) async -> AskIntent {
         let keyword = fallback.intent(for: text)
-        guard let primary, let model = await extractWithTimeout(primary, text) else { return keyword }
+        guard let primary, var model = await extractWithTimeout(primary, text) else { return keyword }
+        // An explicit number or "start over" is read precisely by the keyword parser;
+        // prefer it so a model slip can't turn "3 exercises" into 5.
+        model.count = keyword.count ?? model.count
+        model.wantsNewRoutine = model.wantsNewRoutine || keyword.wantsNewRoutine
         guard model.isEmpty && !model.isOffTopic else { return model }
         var merged = keyword
         merged.seriousness = max(model.seriousness, keyword.seriousness)

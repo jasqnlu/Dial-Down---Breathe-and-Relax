@@ -179,4 +179,93 @@ struct KeywordIntentExtractorTests {
         #expect(extractor.intent(for: "10mins neck").minutes == 10)
         #expect(extractor.intent(for: "dos minutos para el cuello").minutes == 2)
     }
+
+    // MARK: - Exercise count (live mini routine)
+
+    @Test(arguments: [
+        ("3 exercises for my neck", 3),
+        ("three stretches for my hips", 3),
+        ("one breathing exercise", 1),
+        ("a couple of really gentle hip stretches", 2),
+        ("give me a few stretches for my back", 3),
+        ("2 more for my hips", 2),
+        ("one more neck stretch", 1),
+        ("2 for my shoulders", 2),
+        ("add 4 for my calves", 4),
+        ("another one", 1),
+        ("another neck stretch", 1),
+        ("tres ejercicios para el cuello", 3),
+        ("dos estiramientos para la espalda", 2),
+        ("trois étirements pour le cou", 3),
+        ("deux exercices pour le dos", 2),
+        ("三个拉伸动作", 3),
+        ("3个脖子的动作", 3),
+    ])
+    func exerciseCount(_ text: String, _ expected: Int) {
+        #expect(extractor.intent(for: text).count == expected)
+    }
+
+    @Test(arguments: [
+        "my neck is tight",
+        "5 minute neck stretch",
+        "3 minute neck stretches",
+        "mal de dos",
+        "hace dos días me duele el cuello",
+    ])
+    func noExerciseCount(_ text: String) {
+        #expect(extractor.intent(for: text).count == nil)
+    }
+
+    @Test func countAndMinutesTogether() {
+        let i = extractor.intent(for: "three exercises in 3 minutes for my neck")
+        #expect(i.count == 3)
+        #expect(i.minutes == 3)
+        #expect(i.areas == [.neck])
+    }
+
+    @Test func countWordIsNotAnArea() {
+        // French "dos" (back) must survive as an area when Spanish "dos" isn't a count.
+        let i = extractor.intent(for: "deux exercices pour le dos")
+        #expect(i.areas == [.lowerBack])
+    }
+
+    @Test func countIsClampedToTen() {
+        #expect(extractor.intent(for: "50 exercises for my neck").count == 10)
+    }
+
+    // MARK: - Explicit "new routine" (default is to add to the current one)
+
+    @Test(arguments: [
+        "create a new routine for my lower back",
+        "make a new one with 3 hip stretches",
+        "start over",
+        "let's start fresh with my neck",
+        "do calves instead",
+        "nueva rutina para las caderas",
+        "empezar de nuevo",
+        "une nouvelle routine pour le cou",
+        "recommencer",
+        "重新开始",
+        "换一套脖子的动作",
+    ])
+    func wantsNewRoutine(_ text: String) {
+        #expect(extractor.intent(for: text).wantsNewRoutine)
+    }
+
+    @Test(arguments: [
+        "3 exercises for my neck",
+        "add 2 more for my hips",
+        "another one",
+        "tight hips",
+        "my new job gives me neck pain",
+    ])
+    func addsByDefault(_ text: String) {
+        #expect(extractor.intent(for: text).wantsNewRoutine == false)
+    }
+
+    @Test func newRoutinePhraseIsNotACount() {
+        let i = extractor.intent(for: "make a new one with 3 hip stretches")
+        #expect(i.count == 3)
+        #expect(i.areas == [.hips])
+    }
 }

@@ -112,6 +112,22 @@ struct AskPipelineTests {
         #expect(routine.exercises.allSatisfy { $0.targetBodyParts.contains("Lower Back") })
     }
 
+    @Test func keywordCountFillsInWhenModelMissesIt() async {
+        // The model understood the area but not the number; the keyword parser's count is used.
+        let reply = await pipeline(.fixed(intent([.lowerBack])))
+            .respond(to: "3 exercises for my lower back", catalog: catalog())
+        guard case .routine(let routine, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.count == 3)
+        #expect(routine.exercises.count == 3)
+    }
+
+    @Test func keywordNewRoutineFillsInWhenModelMissesIt() async {
+        let reply = await pipeline(.fixed(intent([.lowerBack])))
+            .respond(to: "start over with my lower back", catalog: catalog())
+        guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.wantsNewRoutine)
+    }
+
     @Test func emptyModelIntentWithoutKeywordsClarifies() async {
         let reply = await pipeline(.fixed(intent())).respond(to: "hello there", catalog: catalog())
         #expect(reply == .clarify)

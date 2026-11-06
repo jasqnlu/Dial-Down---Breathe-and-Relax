@@ -17,6 +17,11 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         var working = PhraseMatcher.boundaryForm(normalized)
 
         let minutes = Self.minutes(in: &working)
+        // "New routine" phrases are blanked before counting, so "a new one" is never "1 exercise".
+        let wantsNewRoutine = Self.newRoutinePhrases.reduce(false) { found, phrase in
+            phrase.blankFirstMatch(in: &working) || found
+        }
+        let count = Self.count(in: &working)
 
         // The goal is read before area phrases are blanked, so "mal au dos" and
         // "dolor de cabeza" keep their pain word.
@@ -33,8 +38,71 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         }
 
         return AskIntent(areas: areas, goal: goal, minutes: minutes,
-                         seriousness: .ok, isOffTopic: false)
+                         seriousness: .ok, isOffTopic: false,
+                         count: count, wantsNewRoutine: wantsNewRoutine)
     }
+
+    // MARK: - Exercise count
+
+    private static let countWords: [String: Int] = numberWords.merging([
+        "a couple of": 2, "couple of": 2, "a few": 3, "few": 3, "un par de": 2, "quelques": 3,
+    ]) { current, _ in current }
+
+    /// Latin number tokens, longest first so "a couple of" wins over "couple of".
+    private static let latinNumber: String = {
+        let words = countWords.keys
+            .filter { !$0.unicodeScalars.contains { $0.value >= 0x2E80 } }
+            .sorted { $0.count > $1.count }
+            .map { NSRegularExpression.escapedPattern(for: $0) }
+        return "(\\d{1,3}|" + words.joined(separator: "|") + ")"
+    }()
+    private static let cjkNumber = "(\\d{1,2}|[一二两三四五六七八九十]{1,2})"
+
+    private static let countNouns = [
+        "exercises?", "stretch(?:es)?", "moves?", "poses?", "ones",
+        "ejercicios?", "estiramientos?", "movimientos?", "posturas?",
+        "exercices?", "etirements?", "mouvements?", "postures?",
+    ].joined(separator: "|")
+
+    /// Each pattern's group 1 is the number token (blanked once read). A nil group means the
+    /// pattern itself stands for one exercise ("another one").
+    private static let countPatterns: [(Regex<AnyRegexOutput>, fixed: Int?)] = [
+        // "3 exercises", "a couple of really gentle hip stretches" (up to 3 words in between),
+        // but not "30 seconds per stretch".
+        (try! Regex(" \(latinNumber)(?! (?:secs?|seconds?|segundos?|secondes?) )(?: [a-z]+){0,3}? (?:\(countNouns)) "), nil),
+        // "2 more", "one more neck stretch"
+        (try! Regex(" \(latinNumber) more "), nil),
+        // "2 for my shoulders", "add 4 for my calves"
+        (try! Regex("(?:^| add| give me| do| dame| ajoute) \(latinNumber) (?:for|of|on|to|para|pour) "), nil),
+        // "三个拉伸动作", "3个脖子的动作"
+        (try! Regex("\(cjkNumber)个?[^ ]{0,6}?(?:动作|练习|拉伸|伸展)"), nil),
+        // "another one", "another neck stretch"
+        (try! Regex(" another(?: [a-z]+){0,2} (?:\(countNouns)|one) "), 1),
+    ]
+
+    /// Reads (and blanks the number of) "N exercises" and its variants, clamped to 1...10.
+    private static func count(in working: inout String) -> Int? {
+        for (pattern, fixed) in countPatterns {
+            guard let match = working.firstMatch(of: pattern) else { continue }
+            if let fixed { return fixed }
+            guard let token = match.output[1].substring, let range = match.output[1].range else { continue }
+            working.replaceSubrange(range, with: String(repeating: " ", count: token.count))
+            guard let value = Int(token) ?? countWords[String(token)], value > 0 else { return nil }
+            return min(value, AskIntent.maxCount)
+        }
+        return nil
+    }
+
+    /// Only explicit wording replaces the routine; every other request adds to it.
+    private static let newRoutinePhrases = [
+        "start over", "start again", "start fresh", "from scratch", "new routine", "new one",
+        "different routine", "different one", "fresh routine", "instead",
+        "nueva rutina", "rutina nueva", "otra rutina", "rutina diferente", "empezar de nuevo",
+        "empecemos de nuevo", "desde cero", "en su lugar", "en lugar de eso",
+        "nouvelle routine", "autre routine", "routine differente", "recommencer", "on recommence",
+        "a zero", "depuis le debut", "a la place",
+        "重新开始", "重新来", "从头开始", "换一套", "新的一套", "换成",
+    ].map { PhraseMatcher($0) }
 
     // MARK: - Minutes
 

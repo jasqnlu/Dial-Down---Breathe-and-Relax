@@ -62,7 +62,8 @@ struct AskChatSheet: View {
             await model.send(initialText, catalog: catalog)
         }
         .fullScreenCover(item: $playing) { item in
-            SessionPlayerView(exercises: item.routine.exercises)
+            SessionPlayerView(exercises: item.routine.exercises,
+                              durationOverrides: item.routine.durationOverrides)
         }
     }
 

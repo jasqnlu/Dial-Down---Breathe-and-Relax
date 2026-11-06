@@ -25,6 +25,10 @@ struct GeneratedIntent {
     var goal: AskGoal?
     @Guide(description: "Minutes the user asked for, if they named a duration.")
     var minutes: Int?
+    @Guide(description: "How many exercises or stretches the user asked for, if they named a number of them. Not minutes.")
+    var count: Int? = nil
+    @Guide(description: "True only if the user explicitly asks for a new or different routine, to start over, or for something instead. False when they just ask for more or name a body area.")
+    var wantsNewRoutine: Bool = false
     @Guide(description: "How serious the described symptoms are.")
     var seriousness: GeneratedSeriousness
     @Guide(description: "True if the request is not about stretching, breathing, tension or soreness.")
@@ -34,8 +38,10 @@ struct GeneratedIntent {
         var seen = Set<AskArea>()
         let uniqueAreas = areas.filter { seen.insert($0).inserted }
         let clampedMinutes = minutes.flatMap { $0 >= 1 ? min($0, 20) : nil }
+        let clampedCount = count.flatMap { $0 >= 1 ? min($0, AskIntent.maxCount) : nil }
         return AskIntent(areas: uniqueAreas, goal: goal, minutes: clampedMinutes,
-                         seriousness: seriousness.level, isOffTopic: isOffTopic)
+                         seriousness: seriousness.level, isOffTopic: isOffTopic,
+                         count: clampedCount, wantsNewRoutine: wantsNewRoutine)
     }
 }
 

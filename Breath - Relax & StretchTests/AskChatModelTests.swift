@@ -127,6 +127,14 @@ struct AskChatModelTests {
         #expect(rows.map(\.seconds) == [60, 75, 60])
     }
 
+    @Test func rowsAndTotalUseSplitTimes() {
+        let bridge = ex("Bridge"), left = ex("Left Hip Stretch", 30), right = ex("Right Hip Stretch", 45)
+        let routine = AskRoutine(exercises: [bridge, left, right], isGentle: false,
+                                 durationOverrides: [bridge.uuid: 90, left.uuid: 45])
+        #expect(routine.rows(locale: Locale(identifier: "en")).map(\.seconds) == [90, 90])
+        #expect(routine.totalSeconds == 180)
+    }
+
     @Test func unmatchedSidesStaySeparate() {
         let routine = AskRoutine(exercises: [ex("Left Hip Stretch"), ex("Left Calf Stretch")], isGentle: false)
         #expect(routine.rows(locale: Locale(identifier: "en")).count == 2)

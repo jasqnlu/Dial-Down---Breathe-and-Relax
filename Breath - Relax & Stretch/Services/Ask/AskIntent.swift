@@ -67,6 +67,14 @@ struct AskIntent: Equatable {
     var minutes: Int?
     var seriousness: SafetyLevel
     var isOffTopic: Bool
+    /// Exercises asked for ("3 stretches"), 1...10. A Left/Right pair counts as one.
+    var count: Int? = nil
+    /// The user explicitly asked for a new routine ("start over", "create a new routine").
+    /// Otherwise a request adds to the routine they're building.
+    var wantsNewRoutine = false
+
+    /// Largest `count` any extractor reports.
+    static let maxCount = 10
 
     var isEmpty: Bool { areas.isEmpty && goal == nil }
 }
