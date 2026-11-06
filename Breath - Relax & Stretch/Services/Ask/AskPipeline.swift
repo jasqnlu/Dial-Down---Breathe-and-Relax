@@ -39,7 +39,10 @@ struct AskPipeline {
         }
 
         let screen = SafetyScreener.screen(trimmed)
-        let intent = await extractIntent(from: trimmed)
+        var intent = await extractIntent(from: trimmed)
+        // The model may raise the level only for a described symptom; with none it
+        // over-reads ("another calf exercise" came back urgent on device).
+        if !SafetyScreener.describesSymptom(trimmed) { intent.seriousness = .ok }
 
         let level = max(screen, intent.seriousness)
         if level > .ok { return .safety(level, intent: intent) }
@@ -75,13 +78,17 @@ struct AskPipeline {
         // prefer it so a model slip can't turn "3 exercises" into 5.
         model.count = keyword.count ?? model.count
         model.wantsNewRoutine = model.wantsNewRoutine || keyword.wantsNewRoutine
-        model.edit = keyword.edit ?? model.edit
+        // An edit can delete exercises, so a model guess never beats clear "add" wording
+        // ("Can I get one calf exercise, add this" was read as an edit on device).
+        let asksToAdd = keyword.count != nil || KeywordIntentExtractor.asksToAdd(text)
+        model.edit = keyword.edit ?? (asksToAdd ? nil : model.edit)
         // "remove the last one" names no stretch, so the model may call it off-topic. Only
         // explicit routine wording overrides that; a bare number ("a poem in 5 minutes") doesn't.
         if keyword.edit != nil || keyword.wantsNewRoutine { model.isOffTopic = false }
         guard model.isEmpty && !model.isOffTopic else { return model }
         var merged = keyword
         merged.seriousness = max(model.seriousness, keyword.seriousness)
+        merged.edit = merged.edit ?? model.edit   // "I don't like the last one" names no area
         return merged
     }
 

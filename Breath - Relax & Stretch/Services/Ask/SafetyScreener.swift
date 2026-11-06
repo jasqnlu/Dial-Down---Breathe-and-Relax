@@ -10,6 +10,34 @@ nonisolated enum SafetyScreener {
         return .ok
     }
 
+    /// Whether the text describes any symptom at all. The AI may raise the safety level
+    /// only when it does; deliberately broad, so missing a word errs toward listening.
+    static func describesSymptom(_ text: String) -> Bool {
+        let haystack = PhraseMatcher.boundaryForm(PhraseMatcher.normalize(text))
+        return (symptomWords + urgentPhrases + concerningPhrases).contains { $0.matches(haystack) }
+    }
+
+    private static let symptomWords: [PhraseMatcher] = [
+        // en
+        "pain*", "hurt*", "ache*", "aching", "achy", "sore*", "injur*", "strain*", "sprain*",
+        "pulled", "tweaked", "tear", "torn", "dizz*", "faint*", "lightheaded", "light headed",
+        "breath*", "chest", "heart", "throb*", "burn*", "cramp*", "spasm*", "stiff*", "weak*",
+        "bleed*", "bruis*", "warm", "hot", "red", "fever*", "can t feel", "can t move", "cannot",
+        "fall", "fell", "pressure", "tight*", "pinch*", "locked", "giving out", "gave out",
+        "blood clot", "clot*", "nause*", "vomit*", "pregnan*", "surgery", "operation",
+        // es
+        "dolor*", "duele*", "dolio", "molest*", "lesion*", "lastim*", "mare*", "pecho",
+        "respir*", "calambre*", "rigid*", "debil*", "sangr*", "moreton*", "caliente", "fiebre",
+        "cai", "caida", "embaraz*", "cirugia", "operacion", "coagulo*",
+        // fr
+        "douleur*", "douloureu*", "mal", "blesse*", "blessure*", "vertige*", "poitrine",
+        "respir*", "crampe*", "raide*", "faible*", "saign*", "bleu", "chaud", "fievre",
+        "tombe*", "chute", "enceinte", "chirurgie", "caillot*",
+        // zh
+        "疼", "痛", "伤", "晕", "胸", "呼吸", "麻", "肿", "抽筋", "僵", "无力", "流血", "发烧",
+        "发热", "摔", "怀孕", "手术", "血栓", "不舒服", "难受",
+    ].map { PhraseMatcher($0) }
+
     // Phrases ending in "*" are deliberate stems (match as a word prefix); all other
     // Latin-script phrases match whole words only. CJK phrases match as substrings.
     // Avoid stems that catch everyday words: no "numb*" ("number"), no "fall*"

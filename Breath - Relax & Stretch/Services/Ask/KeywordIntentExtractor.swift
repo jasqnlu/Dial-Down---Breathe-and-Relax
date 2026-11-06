@@ -71,6 +71,21 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
             "长一点", "延长"]),
     ].map { edit, words in (edit, words.map { PhraseMatcher($0) }) }
 
+    // MARK: - Adding
+
+    /// Explicit wording for adding to the routine ("add", "another", "one more").
+    static func asksToAdd(_ text: String) -> Bool {
+        let haystack = PhraseMatcher.boundaryForm(PhraseMatcher.normalize(text))
+        return addPhrases.contains { $0.matches(haystack) }
+    }
+
+    private static let addPhrases = [
+        "add", "adding", "another", "more", "also", "include", "plus", "extra",
+        "anade", "anadir", "agrega", "agregar", "otro", "otra", "mas", "tambien", "incluye",
+        "ajoute", "ajouter", "un autre", "une autre", "encore", "aussi", "en plus",
+        "加", "再", "添加", "增加", "多一个", "也",
+    ].map { PhraseMatcher($0) }
+
     // MARK: - Exercise count
 
     private static let countWords: [String: Int] = numberWords.merging([

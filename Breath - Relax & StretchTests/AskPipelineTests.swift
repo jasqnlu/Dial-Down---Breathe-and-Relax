@@ -66,9 +66,42 @@ struct AskPipelineTests {
 
     @Test func modelCanRaiseLevel() async {
         let reply = await pipeline(.fixed(intent([.lowerBack], seriousness: .concerning)))
-            .respond(to: "my back", catalog: catalog())
+            .respond(to: "my back hurts when I bend", catalog: catalog())
         guard case .safety(let level, _) = reply else { Issue.record("got \(reply)"); return }
         #expect(level == .concerning)
+    }
+
+    /// Seen on device: the model called "another calf exercise" urgent (calf → blood clot?).
+    @Test(arguments: ["Like can you add one another calf exercise to this", "3 exercises for my lower back"])
+    func modelCannotRaiseLevelWithoutASymptom(_ text: String) async {
+        let reply = await pipeline(.fixed(intent([.lowerBack], seriousness: .urgent)))
+            .respond(to: text, catalog: catalog())
+        guard case .routine = reply else { Issue.record("\(text): got \(reply)"); return }
+    }
+
+    @Test(arguments: ["my calf is warm and hurts", "my back aches a lot", "me duele la espalda", "j'ai mal au dos", "我腰疼"])
+    func modelCanRaiseLevelWhenASymptomIsDescribed(_ text: String) async {
+        let reply = await pipeline(.fixed(intent([.lowerBack], seriousness: .urgent)))
+            .respond(to: text, catalog: catalog())
+        #expect(reply == .safety(.urgent, intent: intent([.lowerBack], seriousness: .urgent)), "\(text)")
+    }
+
+    /// Seen on device: "add this" read as an edit, answered "Nothing in your routine matches that."
+    @Test(arguments: ["Can I get one calf exercise add this", "add a stretch for my lower back",
+                      "another lower back one", "2 more for my lower back"])
+    func modelEditIsIgnoredWhenTheUserAsksToAdd(_ text: String) async {
+        var guess = intent([.lowerBack])
+        guess.edit = .remove
+        let reply = await pipeline(.fixed(guess)).respond(to: text, catalog: catalog())
+        guard case .routine = reply else { Issue.record("\(text): got \(reply)"); return }
+    }
+
+    @Test func modelEditStillWorksForParaphrases() async {
+        var guess = intent()
+        guess.edit = .remove
+        let reply = await pipeline(.fixed(guess)).respond(to: "I don't like the last one", catalog: catalog())
+        guard case .edit(let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.edit == .remove)
     }
 
     @Test func throwingModelFallsBackToKeywords() async {
