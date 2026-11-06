@@ -17,6 +17,8 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         var working = PhraseMatcher.boundaryForm(normalized)
 
         let minutes = Self.minutes(in: &working)
+        // "…to the previous lower chest routine" names the routine, not what to add.
+        working.replace(Self.targetRoutine) { String(repeating: " ", count: $0.output.count) }
         let edit = Self.editTable.first { _, phrases in
             phrases.contains { $0.blankFirstMatch(in: &working) }
         }?.0
@@ -25,6 +27,7 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
             phrase.blankFirstMatch(in: &working) || found
         }
         let count = Self.count(in: &working)
+            ?? (Self.asksToAdd(text) && working.contains(Self.singleExercise) ? 1 : nil)
 
         // The goal is read before area phrases are blanked, so "mal au dos" and
         // "dolor de cabeza" keep their pain word.
@@ -85,6 +88,17 @@ nonisolated struct KeywordIntentExtractor: nonisolated IntentExtractor {
         "ajoute", "ajouter", "un autre", "une autre", "encore", "aussi", "en plus",
         "加", "再", "添加", "增加", "多一个", "也",
     ].map { PhraseMatcher($0) }
+
+    /// "to the previous lower chest exercises routine", "a mi rutina", "dans ma routine".
+    private static let targetRoutine = try! Regex(
+        " (?:to|into|onto|in|a|en|dans)(?: the| my| this| that| our| your| la| mi| esta| ma| mon| cette)"
+        + "(?: [a-z]+){0,5}? (?:routine|rutina|workout|session) ")
+
+    /// "a calf exercise", "un estiramiento": one, but only with add wording, so
+    /// "a full body stretch" stays a normal request.
+    private static let singleExercise = try! Regex(
+        " (?:a|an|un|una|une)(?: [a-z]+){0,2} (?:exercise|stretch|move|pose|ejercicio|estiramiento"
+        + "|movimiento|postura|exercice|etirement|mouvement|posture) ")
 
     // MARK: - Exercise count
 

@@ -76,14 +76,48 @@ struct AskPipelineTests {
     func modelCannotRaiseLevelWithoutASymptom(_ text: String) async {
         let reply = await pipeline(.fixed(intent([.lowerBack], seriousness: .urgent)))
             .respond(to: text, catalog: catalog())
-        guard case .routine = reply else { Issue.record("\(text): got \(reply)"); return }
+        if case .safety = reply { Issue.record("\(text): got \(reply)") }
     }
 
+    /// The model alone never shows the urgent card: urgent needs a red-flag phrase.
     @Test(arguments: ["my calf is warm and hurts", "my back aches a lot", "me duele la espalda", "j'ai mal au dos", "我腰疼"])
-    func modelCanRaiseLevelWhenASymptomIsDescribed(_ text: String) async {
+    func modelRaisesASymptomToConcerningAtMost(_ text: String) async {
         let reply = await pipeline(.fixed(intent([.lowerBack], seriousness: .urgent)))
             .respond(to: text, catalog: catalog())
-        #expect(reply == .safety(.urgent, intent: intent([.lowerBack], seriousness: .urgent)), "\(text)")
+        guard case .safety(let level, _) = reply else { Issue.record("\(text): got \(reply)"); return }
+        #expect(level == .concerning, "\(text)")
+    }
+
+    /// Seen on device: urgent for a request that only names the chest as a body area.
+    @Test(arguments: ["No like add a calf exercise to the previous lower chest exercises routine",
+                      "Five lower chest exercise exercises", "my hips feel tight and stiff"])
+    func bodyAreasAndEverydayTightnessAreNotSymptoms(_ text: String) async {
+        let reply = await pipeline(.fixed(intent([.chest], seriousness: .urgent)))
+            .respond(to: text, catalog: catalog())
+        if case .safety = reply { Issue.record("\(text): got \(reply)") }
+    }
+
+    @Test func redFlagPhraseIsStillUrgentWithoutTheModel() async {
+        let reply = await pipeline(.fixed(intent())).respond(to: "I have chest pain", catalog: catalog())
+        guard case .safety(let level, _) = reply else { Issue.record("got \(reply)"); return }
+        #expect(level == .urgent)
+    }
+
+    /// Seen on device: "Can you add a cat exercise to this" replaced the routine.
+    @Test func modelCannotStartANewRoutineOnItsOwn() async {
+        var guess = intent([.lowerBack])
+        guess.wantsNewRoutine = true
+        let reply = await pipeline(.fixed(guess)).respond(to: "can you add a lower back exercise to this",
+                                                         catalog: catalog())
+        guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(!used.wantsNewRoutine)
+    }
+
+    @Test func keywordAreasWinOverTheModels() async {
+        let reply = await pipeline(.fixed(intent([.lowerBack, .neck])))
+            .respond(to: "add a stretch for my lower back", catalog: catalog())
+        guard case .routine(_, let used) = reply else { Issue.record("got \(reply)"); return }
+        #expect(used.areas == [.lowerBack])
     }
 
     /// Seen on device: "add this" read as an edit, answered "Nothing in your routine matches that."
@@ -93,7 +127,10 @@ struct AskPipelineTests {
         var guess = intent([.lowerBack])
         guess.edit = .remove
         let reply = await pipeline(.fixed(guess)).respond(to: text, catalog: catalog())
-        guard case .routine = reply else { Issue.record("\(text): got \(reply)"); return }
+        switch reply {
+        case .routine, .noMatch: break   // "calf" has no match in this lower-back catalog
+        default: Issue.record("\(text): got \(reply)")
+        }
     }
 
     @Test func modelEditStillWorksForParaphrases() async {

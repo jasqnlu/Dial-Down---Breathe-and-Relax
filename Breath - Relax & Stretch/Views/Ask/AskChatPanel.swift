@@ -305,6 +305,11 @@ struct AskChatPanel: View {
             }
         case .draftChanged(let change):
             bubble { changeText(change) }
+        case .choose(let word, _, let choices):
+            VStack(alignment: .leading, spacing: 10) {
+                bubble { Text("I'm not sure what “\(word)” means. Did you mean one of these?") }
+                choiceList(choices, for: id)
+            }
         case .edit:
             EmptyView()   // AskChatModel always resolves these; never stored
         }
@@ -323,6 +328,44 @@ struct AskChatPanel: View {
             return Text("Your routine is now \(AskRoutineCard.format(seconds)) long.")
         case .nothingToChange:
             return Text("Nothing in your routine matches that.")
+        case .added(let names):
+            let list = names.formatted(.list(type: .and).locale(locale))
+            return Text("Added \(list).")
+        }
+    }
+
+    /// "Did you mean…?" answers, one per line (exercise names can be long). Locks once
+    /// one is tapped and keeps that one highlighted.
+    private func choiceList(_ choices: [AskChoice], for id: UUID) -> some View {
+        let picked = model.chosen[id]
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(choices, id: \.self) { choice in
+                let isPicked = picked == choice
+                Button {
+                    model.choose(choice, for: id, catalog: catalog)
+                } label: {
+                    HStack(spacing: 8) {
+                        if isPicked { Image(systemName: "checkmark") }
+                        Text(verbatim: label(for: choice))
+                            .multilineTextAlignment(.leading)
+                    }
+                    .font(.luminaLabel)
+                    .foregroundStyle(isPicked ? Color.onPastel : Color.luminaOnSurface)
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .background(isPicked ? Color.pastelLavender : Color.luminaCardFill, in: Capsule())
+                    .opacity(picked == nil || isPicked ? 1 : 0.45)
+                }
+                .buttonStyle(.plain)
+                .disabled(picked != nil || model.isThinking)
+                .accessibilityIdentifier("ask.choice")
+            }
+        }
+    }
+
+    private func label(for choice: AskChoice) -> String {
+        switch choice {
+        case .area(let area): area.displayName.resolved(in: locale).capitalized(with: locale)
+        case .exercise(let name): name
         }
     }
 

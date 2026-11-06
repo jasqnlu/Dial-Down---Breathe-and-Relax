@@ -10,8 +10,8 @@ nonisolated enum SafetyScreener {
         return .ok
     }
 
-    /// Whether the text describes any symptom at all. The AI may raise the safety level
-    /// only when it does; deliberately broad, so missing a word errs toward listening.
+    /// Whether the text describes a symptom. The AI may suggest a doctor only when it does.
+    /// Body areas ("chest"), everyday "tight"/"stiff" and vague words are not symptoms.
     static func describesSymptom(_ text: String) -> Bool {
         let haystack = PhraseMatcher.boundaryForm(PhraseMatcher.normalize(text))
         return (symptomWords + urgentPhrases + concerningPhrases).contains { $0.matches(haystack) }
@@ -20,22 +20,17 @@ nonisolated enum SafetyScreener {
     private static let symptomWords: [PhraseMatcher] = [
         // en
         "pain*", "hurt*", "ache*", "aching", "achy", "sore*", "injur*", "strain*", "sprain*",
-        "pulled", "tweaked", "tear", "torn", "dizz*", "faint*", "lightheaded", "light headed",
-        "breath*", "chest", "heart", "throb*", "burn*", "cramp*", "spasm*", "stiff*", "weak*",
-        "bleed*", "bruis*", "warm", "hot", "red", "fever*", "can t feel", "can t move", "cannot",
-        "fall", "fell", "pressure", "tight*", "pinch*", "locked", "giving out", "gave out",
-        "blood clot", "clot*", "nause*", "vomit*", "pregnan*", "surgery", "operation",
+        "torn", "dizz*", "faint*", "lightheaded", "throb*", "burning", "cramp*", "spasm*",
+        "bleed*", "bruis*", "fever*", "can t feel", "can t move", "giving out", "gave out",
+        "blood clot", "clot*", "nause*", "vomit*",
         // es
-        "dolor*", "duele*", "dolio", "molest*", "lesion*", "lastim*", "mare*", "pecho",
-        "respir*", "calambre*", "rigid*", "debil*", "sangr*", "moreton*", "caliente", "fiebre",
-        "cai", "caida", "embaraz*", "cirugia", "operacion", "coagulo*",
+        "dolor*", "duele*", "dolio", "lesion*", "lastim*", "mare*", "calambre*", "sangr*",
+        "moreton*", "fiebre", "coagulo*",
         // fr
-        "douleur*", "douloureu*", "mal", "blesse*", "blessure*", "vertige*", "poitrine",
-        "respir*", "crampe*", "raide*", "faible*", "saign*", "bleu", "chaud", "fievre",
-        "tombe*", "chute", "enceinte", "chirurgie", "caillot*",
+        "douleur*", "douloureu*", "mal", "blesse*", "blessure*", "vertige*", "crampe*",
+        "saign*", "fievre", "caillot*",
         // zh
-        "疼", "痛", "伤", "晕", "胸", "呼吸", "麻", "肿", "抽筋", "僵", "无力", "流血", "发烧",
-        "发热", "摔", "怀孕", "手术", "血栓", "不舒服", "难受",
+        "疼", "痛", "受伤", "晕", "抽筋", "流血", "发烧", "血栓",
     ].map { PhraseMatcher($0) }
 
     // Phrases ending in "*" are deliberate stems (match as a word prefix); all other

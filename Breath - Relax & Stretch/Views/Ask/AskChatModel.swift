@@ -82,6 +82,43 @@ final class AskChatModel {
         return .draftChanged(draft.apply(intent, catalog: catalog))
     }
 
+    /// The answer tapped on each "Did you mean…?" message; each can be answered once.
+    private(set) var chosen: [UUID: AskChoice] = [:]
+
+    /// Answers a "Did you mean…?" message: an area builds the original request for that
+    /// area; an exercise adds exactly that one (both sides of a Left/Right pair).
+    func choose(_ choice: AskChoice, for messageID: UUID, catalog: [Exercise]) {
+        guard chosen[messageID] == nil else { return }
+        chosen[messageID] = choice
+        var request = AskIntent(areas: [], goal: nil, minutes: nil, seriousness: .ok, isOffTopic: false)
+        if case .choose(_, let intent, _)? = messages.first(where: { $0.id == messageID })?.reply {
+            request = intent
+        }
+        request.goal = nil
+        request.edit = nil
+        request.wantsNewRoutine = false
+
+        let reply: AskReply
+        switch choice {
+        case .area(let area):
+            request.areas = [area]
+            reply = absorb(pipeline.routine(for: request, catalog: catalog, excluding: draft.ids),
+                           catalog: catalog)
+        case .exercise(let name):
+            let slot = catalog
+                .filter { RoutinePicker.pairKey($0.name) == name && !draft.ids.contains($0.uuid) }
+                .sorted { $0.name.hasPrefix("Left ") && !$1.name.hasPrefix("Left ") }
+            if slot.isEmpty {
+                reply = .draftChanged(.nothingToChange)
+            } else {
+                request.areas = []
+                draft.add(AskRoutine(exercises: slot, isGentle: false), intent: request)
+                reply = .draftChanged(.added([name]))
+            }
+        }
+        messages.append(AskMessage(role: .reply, reply: reply))
+    }
+
     /// Writes the Customize screen's result back into the running routine.
     func customize(exercises: [Exercise], durationOverrides: [UUID: Int]) {
         draft.customize(exercises: exercises, durationOverrides: durationOverrides)

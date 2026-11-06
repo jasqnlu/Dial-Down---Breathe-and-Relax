@@ -59,6 +59,13 @@ enum AskEdit: String, CaseIterable, Codable {
     case remove, swap, shorter, longer
 }
 
+/// One answer to "Did you mean…?": a body area, or a catalog exercise by its shared
+/// name (a Left/Right pair by the name without its side).
+enum AskChoice: Hashable {
+    case area(AskArea)
+    case exercise(String)
+}
+
 enum SafetyLevel: Int, Comparable, Codable {
     case ok = 0, concerning, urgent
 

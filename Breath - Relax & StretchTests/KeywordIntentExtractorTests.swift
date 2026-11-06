@@ -216,6 +216,32 @@ struct KeywordIntentExtractorTests {
         #expect(extractor.intent(for: text).count == nil)
     }
 
+    /// "add a calf exercise" is one; "a full body stretch" with no add wording isn't a count.
+    @Test(arguments: [
+        ("add a calf exercise", 1),
+        ("No like add a calf exercise to the previous lower chest exercises routine", 1),
+        ("can you add a lower back stretch", 1),
+        ("añade un estiramiento para el cuello", 1),
+        ("ajoute un exercice pour le cou", 1),
+    ])
+    func addingASingleExercise(_ text: String, _ expected: Int) {
+        #expect(extractor.intent(for: text).count == expected)
+    }
+
+    @Test func aWithoutAddWordingIsNoCount() {
+        #expect(extractor.intent(for: "a full body stretch").count == nil)
+    }
+
+    /// The routine being added to is named, not asked for.
+    @Test(arguments: [
+        ("add a calf exercise to the previous lower chest exercises routine", [AskArea.calves]),
+        ("add 2 neck stretches to my lower back routine", [.neck]),
+        ("give me a stretch for my lower back", [.lowerBack]),
+    ])
+    func theTargetRoutineIsNotAnArea(_ text: String, _ expected: [AskArea]) {
+        #expect(extractor.intent(for: text).areas == expected)
+    }
+
     @Test func countAndMinutesTogether() {
         let i = extractor.intent(for: "three exercises in 3 minutes for my neck")
         #expect(i.count == 3)

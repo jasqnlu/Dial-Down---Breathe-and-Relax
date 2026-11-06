@@ -7,6 +7,8 @@ enum AskDraftChange: Equatable {
     case removed([String])
     case swapped(from: String, to: String)
     case retimed(totalSeconds: Int)
+    /// Names of exercises picked from "Did you mean…?" (a Left/Right pair by its shared name).
+    case added([String])
     /// The routine is empty, or nothing in it matched.
     case nothingToChange
 }

@@ -14,6 +14,9 @@ enum AskReply: Equatable {
     case edit(AskIntent)
     /// What a resolved `.edit` did to the routine.
     case draftChanged(AskDraftChange)
+    /// `word` matched no body area but sounds like one or names an exercise ("cat" for
+    /// "calf"): ask instead of guessing. `intent` keeps the rest of the request (count…).
+    case choose(word: String, intent: AskIntent, choices: [AskChoice])
 }
 
 /// Safety screening, then intent extraction (AI with keyword fallback), then routine picking.
@@ -40,12 +43,22 @@ struct AskPipeline {
 
         let screen = SafetyScreener.screen(trimmed)
         var intent = await extractIntent(from: trimmed)
-        // The model may raise the level only for a described symptom; with none it
-        // over-reads ("another calf exercise" came back urgent on device).
-        if !SafetyScreener.describesSymptom(trimmed) { intent.seriousness = .ok }
+        // Urgent (the emergency card) needs a red-flag phrase from the screener. The model
+        // over-reads ("another calf exercise" came back urgent on device), so on its own it
+        // may only suggest a doctor (concerning), and only when a symptom is described.
+        intent.seriousness = SafetyScreener.describesSymptom(trimmed)
+            ? min(intent.seriousness, .concerning) : .ok
 
         let level = max(screen, intent.seriousness)
         if level > .ok { return .safety(level, intent: intent) }
+        // Nothing literal to go on but a word that sounds like an area or names an
+        // exercise: ask before trusting the model's guess (before off-topic, too, since a
+        // misheard word is likelier than an off-topic request in this app).
+        let literal = fallback.intent(for: trimmed)
+        if literal.isEmpty && literal.edit == nil && !literal.wantsNewRoutine,
+           let found = AskChoices.find(in: trimmed, catalog: catalog, excluding: excluding) {
+            return .choose(word: found.word, intent: intent, choices: found.choices)
+        }
         if intent.isOffTopic { return .offTopic }
         if intent.isDraftEdit { return .edit(intent) }
         if intent.isEmpty { return .clarify }
@@ -77,7 +90,11 @@ struct AskPipeline {
         // An explicit number or "start over" is read precisely by the keyword parser;
         // prefer it so a model slip can't turn "3 exercises" into 5.
         model.count = keyword.count ?? model.count
-        model.wantsNewRoutine = model.wantsNewRoutine || keyword.wantsNewRoutine
+        // Replacing throws the routine away, so only explicit wording does it (the model
+        // turned "add a cat exercise to this" into a new routine on device).
+        model.wantsNewRoutine = keyword.wantsNewRoutine
+        // Areas the user literally named beat the model's reading of them.
+        if !keyword.areas.isEmpty { model.areas = keyword.areas }
         // An edit can delete exercises, so a model guess never beats clear "add" wording
         // ("Can I get one calf exercise, add this" was read as an edit on device).
         let asksToAdd = keyword.count != nil || KeywordIntentExtractor.asksToAdd(text)

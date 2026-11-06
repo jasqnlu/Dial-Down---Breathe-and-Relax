@@ -1927,6 +1927,29 @@
         }
       }
     },
+    "Added %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido: %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouté : %@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已添加 %@。"
+          }
+        }
+      }
+    },
     "All Time" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5944,6 +5967,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我明白了，仍然显示轻柔拉伸"
+          }
+        }
+      }
+    },
+    "I'm not sure what “%@” means. Did you mean one of these?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sé bien qué significa «%@». ¿Querías decir alguno de estos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je ne suis pas sûr de ce que « %@ » veut dire. Tu voulais dire l'un de ceux-ci ?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我不太确定“%@”是什么意思。你是指下面哪一个？"
           }
         }
       }

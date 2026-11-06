@@ -80,6 +80,36 @@ final class AskFlowUITests: XCTestCase {
         app.staticTexts["ask.trayTotal"]
     }
 
+    /// Dictation heard "calf" as "cat" on device. The chat asks instead of guessing,
+    /// and the tapped choice is added to (not replacing) the routine.
+    func testMisheardWordOffersChoices() throws {
+        let app = launch()
+        ask("3 exercises for my lower back", in: app)
+        let total = trayTotal(app)
+        XCTAssertTrue(total.waitForExistence(timeout: 20), "Routine tray not shown")
+
+        say("Can you add a cat exercise to this", in: app)
+        let choices = app.buttons.matching(identifier: "ask.choice")
+        XCTAssertTrue(choices.firstMatch.waitForExistence(timeout: 20), "No \"Did you mean\" choices")
+        XCTAssertTrue(app.buttons["Calves"].exists, "The sound-alike area is offered")
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'Cat-Cow'")).count > 0, "Exercises named \"cat\" are offered")
+        attach(app, "choice-1-offered")
+
+        // Read the tray's own count: the Today page behind the panel has "4 exercises · 6 min".
+        let before = total.label
+        let offered = ["Upper-Back Cat-Cow (Seated)", "Kneeling Cat-Cow Side Bend (Lateral Flow)", "Cat-Cow Flow"]
+        guard let pick = offered.first(where: { app.buttons[$0].exists }) else {
+            return XCTFail("No Cat-Cow exercise offered")
+        }
+        app.buttons[pick].tap()
+        let grew = NSPredicate(format: "label BEGINSWITH '4 exercises'")
+        let wait = XCTNSPredicateExpectation(predicate: grew, object: total)
+        XCTAssertEqual(XCTWaiter().wait(for: [wait], timeout: 10), .completed,
+                       "Choice didn't add to the routine: \(before) → \(total.label)")
+        XCTAssertFalse(app.buttons["Calves"].isEnabled, "A choice works once")
+        attach(app, "choice-2-added")
+    }
+
     func testRoutineBuildsUpAndSurvivesClosing() throws {
         let app = launch()
         ask("3 exercises for my lower back", in: app)
