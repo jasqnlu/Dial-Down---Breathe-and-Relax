@@ -1,180 +1,204 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "NSCalendarsFullAccessUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adds each completed session to your calendar and finds free slots to suggest your next session, when you turn on calendar sync."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cuando activas la sincronización del calendario, añade cada sesión completada a tu calendario y busca huecos libres para sugerir tu próxima sesión."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quand tu actives la synchronisation du calendrier, ajoute chaque séance terminée à ton calendrier et trouve des créneaux libres pour proposer ta prochaine séance."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "开启日历同步后，将每次完成的练习添加到你的日历，并查找空闲时段来推荐下一次练习。"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dial Down"
           }
         }
       }
     },
-    "NSFaceIDUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Face ID unlocks the app when App Lock is turned on."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Face ID desbloquea la app cuando el bloqueo de la app está activado."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Face ID déverrouille l’app quand le verrouillage de l’app est activé."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "开启应用锁后，使用面容 ID 解锁本应用。"
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "BreathRelaxStretch"
           }
         }
       }
     },
-    "NSHealthShareUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reads last night's sleep to suggest a gentler routine when you're under-rested."
+    "NSCalendarsFullAccessUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adds each completed session to your calendar and finds free slots to suggest your next session, when you turn on calendar sync."
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lee tu sueño de anoche para sugerirte una rutina más suave cuando hayas descansado poco."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando activas la sincronización del calendario, añade cada sesión completada a tu calendario y busca huecos libres para sugerir tu próxima sesión."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lit ton sommeil de la nuit dernière pour te proposer une routine plus douce quand tu as peu dormi."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand tu actives la synchronisation du calendrier, ajoute chaque séance terminée à ton calendrier et trouve des créneaux libres pour proposer ta prochaine séance."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "读取你昨晚的睡眠数据，在你休息不足时推荐更轻柔的练习。"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启日历同步后，将每次完成的练习添加到你的日历，并查找空闲时段来推荐下一次练习。"
           }
         }
       }
     },
-    "NSHealthUpdateUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health."
+    "NSFaceIDUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID unlocks the app when App Lock is turned on."
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guarda las sesiones de estiramiento como entrenamientos de Flexibilidad y las de respiración como Minutos de atención plena en Apple Salud."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID desbloquea la app cuando el bloqueo de la app está activado."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enregistre les séances d’étirement comme entraînements de Souplesse et les séances de respiration comme Minutes de pleine conscience dans Apple Santé."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID déverrouille l’app quand le verrouillage de l’app est activé."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "将拉伸练习作为“柔韧性”体能训练、呼吸练习作为“正念分钟数”保存到 Apple“健康”。"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启应用锁后，使用面容 ID 解锁本应用。"
           }
         }
       }
     },
-    "NSMicrophoneUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Used only while you hold the Ask Dial Down button or tap its mic, so you can ask for exercises by voice. Audio is processed on your iPhone and never leaves it."
+    "NSHealthShareUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reads last night's sleep to suggest a gentler routine when you're under-rested."
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Solo se usa mientras mantienes pulsado el botón Pregunta a Dial Down o tocas su micrófono, para que puedas pedir ejercicios con la voz. El audio se procesa en tu iPhone y nunca sale de él."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lee tu sueño de anoche para sugerirte una rutina más suave cuando hayas descansado poco."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Utilisé uniquement quand tu maintiens le bouton Demander à Dial Down ou touches son micro, pour demander des exercices à la voix. L’audio est traité sur ton iPhone et n’en sort jamais."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lit ton sommeil de la nuit dernière pour te proposer une routine plus douce quand tu as peu dormi."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "仅在你按住“询问 Dial Down”按钮或轻点其麦克风时使用，让你可以用语音请求练习。音频在你的 iPhone 上处理，绝不会离开设备。"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "读取你昨晚的睡眠数据，在你休息不足时推荐更轻柔的练习。"
           }
         }
       }
     },
-    "NSSpeechRecognitionUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Turns what you say to Ask Dial Down into text, on your iPhone, so it can find matching exercises."
+    "NSHealthUpdateUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health."
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Convierte en texto lo que le dices a Pregunta a Dial Down, en tu iPhone, para encontrar ejercicios adecuados."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda las sesiones de estiramiento como entrenamientos de Flexibilidad y las de respiración como Minutos de atención plena en Apple Salud."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transforme en texte ce que tu dis à Demander à Dial Down, sur ton iPhone, pour trouver des exercices adaptés."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistre les séances d’étirement comme entraînements de Souplesse et les séances de respiration comme Minutes de pleine conscience dans Apple Santé."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在你的 iPhone 上将你对“询问 Dial Down”说的话转为文字，以便找到合适的练习。"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将拉伸练习作为“柔韧性”体能训练、呼吸练习作为“正念分钟数”保存到 Apple“健康”。"
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used only while you hold the Ask Dial Down button or tap its mic, so you can ask for exercises by voice. Audio is processed on your iPhone and never leaves it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo se usa mientras mantienes pulsado el botón Pregunta a Dial Down o tocas su micrófono, para que puedas pedir ejercicios con la voz. El audio se procesa en tu iPhone y nunca sale de él."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisé uniquement quand tu maintiens le bouton Demander à Dial Down ou touches son micro, pour demander des exercices à la voix. L’audio est traité sur ton iPhone et n’en sort jamais."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅在你按住“询问 Dial Down”按钮或轻点其麦克风时使用，让你可以用语音请求练习。音频在你的 iPhone 上处理，绝不会离开设备。"
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turns what you say to Ask Dial Down into text, on your iPhone, so it can find matching exercises."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convierte en texto lo que le dices a Pregunta a Dial Down, en tu iPhone, para encontrar ejercicios adecuados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transforme en texte ce que tu dis à Demander à Dial Down, sur ton iPhone, pour trouver des exercices adaptés."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在你的 iPhone 上将你对“询问 Dial Down”说的话转为文字，以便找到合适的练习。"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

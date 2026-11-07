@@ -12,6 +12,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("onboardingGoals")      private var goalsStr = ""
     @AppStorage(AppLanguage.storageKey) private var appLanguage = AppLanguage.system.rawValue
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
+    @AppStorage(BreathingSounds.storageKey) private var breathingSoundsEnabled = true
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
     @State private var legalDocument: LegalDocument?
@@ -190,6 +191,12 @@ struct ProfileSettingsTab: View {
                         .pastelTint(.pastel(for: "waveform"))
                         .labelStyle(LuminaPastelLabelStyle())
                 }
+                Toggle(isOn: $breathingSoundsEnabled) {
+                    Label("Breathing Sounds", systemImage: "bell")
+                        .pastelTint(.pastel(for: "bell"))
+                        .labelStyle(LuminaPastelLabelStyle())
+                }
+                .accessibilityIdentifier("settings.breathingSounds")
                 Toggle(isOn: $autoSkipGetReadyCountdown) {
                     Label("Auto-Skip Get-Ready Countdown", systemImage: "forward.end")
                         .pastelTint(.pastel(for: "forward.end"))
@@ -200,7 +207,7 @@ struct ProfileSettingsTab: View {
                     .font(.luminaLabel)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
-                Text("Announces exercise names and breathing phases aloud during sessions. Auto-skip jumps straight into each exercise without the 3-2-1 countdown.")
+                Text("Announces exercise names and breathing phases aloud during sessions. Breathing sounds play a soft tone at each inhale, hold and exhale in the Breathe tab. Auto-skip jumps straight into each exercise without the 3-2-1 countdown.")
             }
 
             // Reminders

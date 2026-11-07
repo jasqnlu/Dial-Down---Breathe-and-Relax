@@ -2088,24 +2088,24 @@
         }
       }
     },
-    "Announces exercise names and breathing phases aloud during sessions. Auto-skip jumps straight into each exercise without the 3-2-1 countdown." : {
+    "Announces exercise names and breathing phases aloud during sessions. Breathing sounds play a soft tone at each inhale, hold and exhale in the Breathe tab. Auto-skip jumps straight into each exercise without the 3-2-1 countdown." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anuncia en voz alta los nombres de los ejercicios y las fases de respiración durante las sesiones. Omitir automáticamente salta directo a cada ejercicio sin la cuenta regresiva 3-2-1."
+            "value" : "Anuncia en voz alta los nombres de los ejercicios y las fases de respiración durante las sesiones. Los sonidos de respiración tocan un tono suave en cada inhalación, pausa y exhalación en la pestaña Respirar. Omitir automáticamente salta directo a cada ejercicio sin la cuenta regresiva 3-2-1."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Annonce à voix haute les noms des exercices et les phases de respiration pendant les séances. Le saut automatique passe directement à chaque exercice sans le compte à rebours 3-2-1."
+            "value" : "Annonce à voix haute les noms des exercices et les phases de respiration pendant les séances. Les sons de respiration jouent une note douce à chaque inspiration, pause et expiration dans l’onglet Respirer. Le saut automatique passe directement à chaque exercice sans le compte à rebours 3-2-1."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在训练过程中语音播报动作名称和呼吸阶段。自动跳过将直接开始每个动作，不再显示3-2-1倒计时。"
+            "value" : "在训练过程中语音播报动作名称和呼吸阶段。呼吸提示音会在“呼吸”标签页中的每次吸气、屏息和呼气时播放柔和的提示音。自动跳过将直接开始每个动作，不再显示3-2-1倒计时。"
           }
         }
       }
@@ -2812,6 +2812,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "呼吸指南"
+          }
+        }
+      }
+    },
+    "Breathing Sounds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonidos de respiración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sons de respiration"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "呼吸提示音"
           }
         }
       }

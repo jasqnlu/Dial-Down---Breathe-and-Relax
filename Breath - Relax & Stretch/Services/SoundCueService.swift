@@ -28,16 +28,28 @@ enum SoundCue: CaseIterable {
     case cueBeep     // cue reminder / phase change
     case transition  // exercise advance
     case complete    // session done
+    case breatheIn   // Breathe tab: inhale (rising)
+    case breatheOut  // Breathe tab: exhale (falling)
+    case breatheHold // Breathe tab: either hold (steady, pitched between the two)
 
-    /// One sine note: frequency in Hz, duration in seconds.
-    typealias Note = (frequency: Double, duration: Double)
+    /// One sine note gliding from `frequency` to `endFrequency` (Hz) over
+    /// `duration` seconds. Equal frequencies give a steady tone.
+    typealias Note = (frequency: Double, endFrequency: Double, duration: Double)
+
+    private static func tone(_ frequency: Double, _ duration: Double) -> Note {
+        (frequency, frequency, duration)
+    }
 
     var notes: [Note] {
         switch self {
-        case .tick:       return [(1000, 0.03)]
-        case .cueBeep:    return [(660, 0.11)]
-        case .transition: return [(523.25, 0.09), (783.99, 0.14)]
-        case .complete:   return [(523.25, 0.13), (659.25, 0.13), (783.99, 0.30)]
+        case .tick:        return [Self.tone(1000, 0.03)]
+        case .cueBeep:     return [Self.tone(660, 0.11)]
+        case .transition:  return [Self.tone(523.25, 0.09), Self.tone(783.99, 0.14)]
+        case .complete:    return [Self.tone(523.25, 0.13), Self.tone(659.25, 0.13), Self.tone(783.99, 0.30)]
+        // G4 up to C5, C5 down to G4, and A4 in between.
+        case .breatheIn:   return [(392.00, 523.25, 0.6)]
+        case .breatheOut:  return [(523.25, 392.00, 0.6)]
+        case .breatheHold: return [Self.tone(440.00, 0.5)]
         }
     }
 
@@ -46,6 +58,18 @@ enum SoundCue: CaseIterable {
         case .tick: return 0.25
         case .cueBeep, .transition: return 0.45
         case .complete: return 0.5
+        case .breatheIn, .breatheOut, .breatheHold: return 0.32
+        }
+    }
+
+    /// Breathing cues add a quiet octave and ring out longer, so they sound
+    /// like a soft bell rather than a beep.
+    private var octaveLevel: Double { isBreathing ? 0.25 : 0 }
+    private var decayRate: Double { isBreathing ? 3 : 4 }
+    private var isBreathing: Bool {
+        switch self {
+        case .breatheIn, .breatheOut, .breatheHold: return true
+        default: return false
         }
     }
 
@@ -57,15 +81,20 @@ enum SoundCue: CaseIterable {
         var samples: [Int16] = []
         for note in notes {
             let count = Int(note.duration * Double(Self.sampleRate))
-            let attack = max(1, Int(0.004 * Double(Self.sampleRate)))
+            let attack = max(1, Int((isBreathing ? 0.02 : 0.004) * Double(Self.sampleRate)))
+            var phase = 0.0
             for i in 0..<count {
-                let t = Double(i) / Double(Self.sampleRate)
+                // Phase accumulates so a gliding pitch stays continuous.
+                let progress = Double(i) / Double(count)
+                let frequency = note.frequency + (note.endFrequency - note.frequency) * progress
+                phase += 2 * .pi * frequency / Double(Self.sampleRate)
                 // Short linear attack and an exponential decay to silence, so
                 // notes neither click on nor cut off abruptly.
                 let fadeIn = min(1, Double(i) / Double(attack))
-                let decay = exp(-4 * Double(i) / Double(count))
+                let decay = exp(-decayRate * progress)
                 let fadeOut = min(1, Double(count - i) / Double(attack))
-                let value = sin(2 * .pi * note.frequency * t) * fadeIn * decay * fadeOut * gain
+                let wave = (sin(phase) + octaveLevel * sin(2 * phase)) / (1 + octaveLevel)
+                let value = wave * fadeIn * decay * fadeOut * gain
                 samples.append(Int16(value * Double(Int16.max)))
             }
         }
@@ -121,5 +150,28 @@ final class SoundCueService {
         player.prepareToPlay()
         players[cue] = player
         return player
+    }
+}
+
+/// The Breathe tab's phase sounds. On by default; Settings → Session →
+/// Breathing Sounds turns them off.
+enum BreathingSounds {
+    static let storageKey = "breathingSoundsEnabled"
+
+    static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: storageKey) as? Bool ?? true
+    }
+
+    static func cue(for phase: BreathPhase) -> SoundCue {
+        switch phase {
+        case .inhale:       return .breatheIn
+        case .exhale:       return .breatheOut
+        case .hold, .hold2: return .breatheHold
+        }
+    }
+
+    static func play(for phase: BreathPhase) {
+        guard isEnabled() else { return }
+        SoundCueService.shared.play(cue(for: phase))
     }
 }

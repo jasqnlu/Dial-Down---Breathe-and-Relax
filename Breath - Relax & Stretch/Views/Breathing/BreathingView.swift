@@ -558,6 +558,7 @@ struct BreathingView: View {
     }
 
     private func transition(to phase: BreathPhase, duration: Int) {
+        BreathingSounds.play(for: phase)
         VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
@@ -616,6 +617,8 @@ struct BreathingView: View {
         showCompletion   = false
         pausedRemaining  = nil
         phaseEndDate     = Date().addingTimeInterval(TimeInterval(p.inhale))
+        SoundCueService.shared.prepare()
+        BreathingSounds.play(for: .inhale)
 
         withAnimation(.easeInOut(duration: 0.4)) {
             isRunning        = true
