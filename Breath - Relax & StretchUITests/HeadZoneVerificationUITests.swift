@@ -17,7 +17,7 @@ final class HeadZoneVerificationUITests: XCTestCase {
 
     private func launchBodyTab() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
+        app.launchArguments += ["-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES",
                                 "-hasSeenAppGuide", "YES",
                                 "-auth.isSignedIn", "YES",
                                 "-auth.provider", "guest"]

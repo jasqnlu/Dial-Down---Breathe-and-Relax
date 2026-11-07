@@ -28,7 +28,7 @@ final class TapAgainToConfirmExtensionUITests: XCTestCase {
     func testFirstExerciseExitRequiresDoubleTap() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launch()
@@ -88,7 +88,7 @@ final class TapAgainToConfirmExtensionUITests: XCTestCase {
     func testRemovingExerciseRequiresDoubleTap() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launch()

@@ -29,7 +29,7 @@ final class SupineExercisesUITests: XCTestCase {
         for name in names {
             let app = XCUIApplication()
             app.launchArguments += [
-                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
+                "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES",
                 "-hasSeenAppGuide", "YES",
                 "-auth.isSignedIn", "YES",
                 "-auth.provider", "guest",

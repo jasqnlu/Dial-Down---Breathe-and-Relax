@@ -18,7 +18,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
         for (index, name) in tabs.enumerated() {
             let app = XCUIApplication()
             app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                    "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                    "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                     "-debugInitialTab", "\(index)"]
             app.launch()
             sleep(index == 0 ? 6 : 4) // first launch seeds exercises
@@ -86,7 +86,7 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     private func launch(tab: Int, extraArgs: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+                                "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                                 "-debugInitialTab", "\(tab)"] + extraArgs
         app.launch()
         sleep(4)
@@ -306,20 +306,20 @@ final class ModernRestyleScreenshotTests: XCTestCase {
     /// Signed-out, app lock, and onboarding.
     func testEntryScreens() throws {
         continueAfterFailure = true
-        var app = launchRaw(["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+        var app = launchRaw(["-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                              "-auth.isSignedIn", "NO"])
         attach(app, "r01-auth")
         let email = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'email'")).firstMatch
         if tapIfExists(email) { sleep(2); attach(app, "r02-email-auth") }
         app.terminate()
 
-        app = launchRaw(["-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+        app = launchRaw(["-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
                          "-auth.isSignedIn", "YES", "-auth.provider", "guest",
                          "-auth.appLockEnabled", "YES"])
         attach(app, "r03-app-lock")
         app.terminate()
 
-        app = launchRaw(["-carousel.paused", "YES", "-hasCompletedOnboarding", "NO", "-auth.isSignedIn", "NO"])
+        app = launchRaw(["-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "NO", "-auth.isSignedIn", "NO"])
         for i in 0..<7 {
             attach(app, "r1\(i)-onboarding")
             let next = app.buttons["Next"].firstMatch

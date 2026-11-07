@@ -15,7 +15,7 @@ final class ExerciseSessionCueUITest: XCTestCase {
         // arguments so a fresh install lands straight on the Today tab
         // (where "Begin" lives) instead of the app-guide carousel.
         app.launchArguments += [
-            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES",
+            "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES",
             "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES",
             "-auth.provider", "guest",

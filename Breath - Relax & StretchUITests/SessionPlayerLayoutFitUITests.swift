@@ -20,7 +20,7 @@ final class SessionPlayerLayoutFitUITests: XCTestCase {
     func testTimerAndTransportControlsBothVisibleWithoutScrolling() throws {
         let app = XCUIApplication()
         app.launchArguments += [
-            "-carousel.paused", "YES", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
+            "-carousel.paused", "YES", "-appLanguage", "en", "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
             "-auth.isSignedIn", "YES", "-auth.provider", "guest",
         ]
         app.launch()
