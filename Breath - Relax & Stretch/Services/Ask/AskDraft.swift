@@ -101,7 +101,7 @@ struct AskDraft {
         let gone = Set(removed.flatMap { $0.map(\.uuid) })
         exercises.removeAll { gone.contains($0.uuid) }
         for id in gone { durationOverrides[id] = nil }
-        return .removed(removed.map(Self.name(of:)))
+        return .removed(removed.map { Self.name(of: $0) })
     }
 
     /// Replaces the last exercise (or the last one in the named area) with another from the

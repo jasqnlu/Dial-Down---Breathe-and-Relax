@@ -131,7 +131,7 @@ enum RoutinePicker {
     }
 
     private static func fit(_ slots: [[Exercise]], to target: Int) -> [Int] {
-        fit(times: slots.map(seconds(of:)), slots: slots, to: target)
+        fit(times: slots.map { seconds(of: $0) }, slots: slots, to: target)
     }
 
     /// Nudges slot `times`, last slot first, until they add up to `target`. Trims stop at

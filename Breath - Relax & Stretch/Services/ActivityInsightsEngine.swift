@@ -52,7 +52,7 @@ struct ActivityInsightsEngine {
     /// today yet — still salvageable, worth a nudge. A deterministic rule,
     /// not a statistical estimate: "did they practice today" has an exact
     /// answer.
-    static func isStreakAtRisk(profile: UserProfile, now: Date = Date()) -> Bool {
+    nonisolated static func isStreakAtRisk(profile: UserProfile, now: Date = Date()) -> Bool {
         guard profile.streak > 0, let last = profile.lastSessionDate else { return false }
         return !Calendar.current.isDate(last, inSameDayAs: now)
     }

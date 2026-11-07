@@ -206,7 +206,11 @@ final class GoogleAuthService: NSObject {
 
 extension GoogleAuthService: ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        presentationAnchor ?? ASPresentationAnchor()
+        if let presentationAnchor { return presentationAnchor }
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        if let window = scenes.lazy.compactMap(\.keyWindow).first { return window }
+        guard let scene = scenes.first else { preconditionFailure("Google sign-in needs a window scene") }
+        return ASPresentationAnchor(windowScene: scene)
     }
 }
 

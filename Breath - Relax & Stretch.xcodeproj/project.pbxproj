@@ -411,8 +411,8 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lets you ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say into text on your iPhone so Dial Down can find matching exercises.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used only while you hold the Ask Dial Down button or tap its mic, so you can ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say to Ask Dial Down into text, on your iPhone, so it can find matching exercises.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -428,7 +428,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--Stretch";
 				PRODUCT_NAME = BreathRelaxStretch;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -466,8 +466,8 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID unlocks the app when App Lock is turned on.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads last night's sleep to suggest a gentler routine when you're under-rested.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Saves stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes in Apple Health.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lets you ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say into text on your iPhone so Dial Down can find matching exercises.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used only while you hold the Ask Dial Down button or tap its mic, so you can ask for exercises by voice. Audio is processed on your iPhone and never leaves it.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Turns what you say to Ask Dial Down into text, on your iPhone, so it can find matching exercises.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -483,7 +483,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--Stretch";
 				PRODUCT_NAME = BreathRelaxStretch;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -511,7 +511,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--StretchTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -537,7 +537,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--StretchTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -562,7 +562,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--StretchUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -587,7 +587,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Dial--Down--Breath--StretchUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

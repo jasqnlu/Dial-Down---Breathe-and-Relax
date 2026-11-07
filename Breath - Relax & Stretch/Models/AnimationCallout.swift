@@ -10,7 +10,7 @@ import CoreGraphics
 ///
 /// See docs/superpowers/specs/2026-09-06-exercise-animation-instruction-callouts-design.md
 /// for the full design.
-struct AnimationCallout: Codable, Equatable {
+nonisolated struct AnimationCallout: Codable, Equatable {
     /// Which arrow primitive `AnimationCalloutOverlay` draws. `angle`'s
     /// meaning is documented per case below.
     enum Shape: String, Codable {

@@ -584,7 +584,7 @@ struct SupabaseAuthError: LocalizedError {
     }
 }
 
-private struct SupabaseAuthErrorBody: Decodable {
+nonisolated private struct SupabaseAuthErrorBody: Decodable {
     let error_code: String?
     let msg: String?
     let error: String?

@@ -39,7 +39,7 @@ struct ShowcasePage: View {
             Spacer(minLength: 150)   // clears OnboardingView's Next button overlay
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title). \(subtitle)")
+        .accessibilityLabel(Text("\(Text(title)). \(Text(subtitle))"))
     }
 }
 

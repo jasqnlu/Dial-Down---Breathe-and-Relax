@@ -95,7 +95,7 @@ struct AskIntent: Equatable {
     }
 
     /// Largest `count` any extractor reports.
-    static let maxCount = 10
+    nonisolated static let maxCount = 10
 
     var isEmpty: Bool { areas.isEmpty && goal == nil }
 }
